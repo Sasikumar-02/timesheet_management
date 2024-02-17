@@ -560,7 +560,6 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       key: 'reportingTo',
       fixed: 'left',
     },
-    
     {
       title: 'Actions',
       dataIndex: 'actions',
