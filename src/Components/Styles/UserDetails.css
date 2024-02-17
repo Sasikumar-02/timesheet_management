@@ -1,0 +1,31 @@
+.filter-button{
+        margin-top: 20px;
+        color:#0B4266;
+        font-weight: bold;
+        text-decoration: none;
+        display: flex;
+        margin-left: 200px;
+}
+
+.userdetails{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+}
+
+#userdetails-submit{
+    height: 40px;
+    margin-top: 20px;
+    display: flex;
+    padding: 0.5em 2em;
+    border: transparent;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    background: #0B4266; 
+    border: none;
+    cursor: pointer;
+    color: #ffffff; 
+}

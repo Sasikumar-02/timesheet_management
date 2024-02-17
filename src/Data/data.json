@@ -1,0 +1,186 @@
+{
+    "locations": ["Coimbatore", "Chennai", "Bangalore","Hydrabad"],
+    "employees": [
+      {
+        "employeeName": "Haritha",
+        "employeeNumber": "EMP001",
+        "role": "Data Engineeer",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Muthu Meena",
+        "employeeNumber": "EMP002",
+        "role": "Business Analyst",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Gowri Shankar",
+        "employeeNumber": "EMP003",
+        "role": "Frontend Developer",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Nageswar",
+        "employeeNumber": "EMP004",
+        "role": "Backend Developer",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Santhosh",
+        "employeeNumber": "EMP005",
+        "role": "HR",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Nithila",
+        "employeeNumber": "EMP006",
+        "role": "Data Engineeer",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Bharat",
+        "employeeNumber": "EMP008",
+        "role": "Business Analyst",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Subramanian",
+        "employeeNumber": "EMP007",
+        "role": "Frontend Developer",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Simson",
+        "employeeNumber": "EMP009",
+        "role": "Backend Developer",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Sreenivasan",
+        "employeeNumber": "EMP0010",
+        "role": "Manager",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Sruthi",
+        "employeeNumber": "EMP023",
+        "role": "Data Engineeer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Kumaresan",
+        "employeeNumber": "EMP018",
+        "role": "DevOps Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Kabilan",
+        "employeeNumber": "EMP013",
+        "role": "Frontend Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Swetha Sree",
+        "employeeNumber": "EMP014",
+        "role": "Backend Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Selva Kumar",
+        "employeeNumber": "EMP051",
+        "role": "UI/UX Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Haritha",
+        "employeeNumber": "EMP001",
+        "role": "Data Engineeer",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Muthu Meena",
+        "employeeNumber": "EMP002",
+        "role": "Business Analyst",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Gowri Shankar",
+        "employeeNumber": "EMP003",
+        "role": "Frontend Developer",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Nageswar",
+        "employeeNumber": "EMP004",
+        "role": "Backend Developer",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Santhosh",
+        "employeeNumber": "EMP005",
+        "role": "HR",
+        "location": "Coimbatore"
+      },
+      {
+        "employeeName": "Nithila",
+        "employeeNumber": "EMP006",
+        "role": "Data Engineeer",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Bharat",
+        "employeeNumber": "EMP008",
+        "role": "Business Analyst",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Subramanian",
+        "employeeNumber": "EMP007",
+        "role": "Frontend Developer",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Simson",
+        "employeeNumber": "EMP009",
+        "role": "Backend Developer",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Sreenivasan",
+        "employeeNumber": "EMP0010",
+        "role": "Manager",
+        "location": "Hydrabad"
+      },
+      {
+        "employeeName": "Sruthi",
+        "employeeNumber": "EMP023",
+        "role": "Data Engineeer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Kumaresan",
+        "employeeNumber": "EMP018",
+        "role": "DevOps Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Kabilan",
+        "employeeNumber": "EMP013",
+        "role": "Frontend Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Swetha Sree",
+        "employeeNumber": "EMP014",
+        "role": "Backend Developer",
+        "location": "Bangalore"
+      },
+      {
+        "employeeName": "Selva Kumar",
+        "employeeNumber": "EMP051",
+        "role": "UI/UX Developer",
+        "location": "Bangalore"
+      }
+    ]
+  }
+  

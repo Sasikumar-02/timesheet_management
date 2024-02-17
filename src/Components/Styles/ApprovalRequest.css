@@ -1,0 +1,63 @@
+.container {
+    width: 300px;
+    height: 100px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+.modalTitle{
+  margin-bottom: 10px;
+  color: active #0B4266;
+  text-align: center;
+  font-family: poppins;
+  font-size: 16px;
+  font-weight: bold;
+}
+.rowstyle{
+    border: 1px solid grey;
+}
+
+.odd-row {
+    background-color: #E8E8E9;
+}
+
+.even-row {
+    background-color: white;
+}
+
+.white-row{
+    background-color: white ;
+}
+  
+.ant-table-column-title{
+    background-color: white;
+    color:#0B4266;
+    font-size: 16px;
+    font-family: poppins;
+}
+
+.ant-table-column-title>title{
+    color:#0B4266;
+    font-size: 16px;
+    font-family: poppins;
+}
+
+.ant-table-cell{
+    color:#0B4266;
+    font-size: 16px;
+    font-family: poppins;
+}
+
+.ant-table-wrapper .ant-table-thead >div, :where(.css-dev-only-do-not-override-1qhpsh8).ant-table-wrapper .ant-table-thead >div {
+    position: relative;
+    /* color: rgba(0, 0, 0, 0.88); */
+    font-weight: 600;
+    text-align: start;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s ease;
+}

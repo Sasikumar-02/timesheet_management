@@ -1,0 +1,279 @@
+.header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-right: 0%;
+}
+
+.date{
+    margin: 35px 20px 35px 150px;
+    font-size: 20px;
+    display: flex;
+}
+
+.task-select{
+    margin-top: 10px;
+}
+
+
+#task:hover{
+    border-bottom: rgb(22, 119, 255);
+}
+
+
+.button-addtask{
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+    margin: 10px 20px;
+}
+
+#task {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 5%; /* Adjusted padding using percentage */
+    margin: 10px 1% 20px 0; /* Adjusted margin using percentage */
+    background: #ffffff;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #d9d9d9;
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    list-style: none;
+    position: relative;
+    min-width: 0;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  
+  .description-input {
+    padding-right: 5%; /* Adjusted padding using percentage */
+    margin-left: 0;
+    margin-top: 10px;
+    width: 190%; /* Adjusted width using percentage */
+    height: 130px;
+    border-color: #d9d9d9;
+  }
+  
+  .timepicker {
+    height: 33px;
+  padding-bottom: 15px;
+  margin-top: 10px;
+  width: 100%; /* Adjusted width using percentage */
+  display: flex; /* Use flexbox */
+  align-items: center; /* Center items vertically */
+  }
+  
+  /* Style to center the time symbol specifically */
+.ant-picker-input > input {
+    line-height: 33px; /* Adjust line height to center the symbol */
+  }
+  .section-addtask{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row; 
+    /* Stack children vertically */
+    /* margin-right: 200px;  */
+    /* Set the width to 200% for the entire section */
+  }
+
+  .create-layout-addtask{
+    /* width: 270px; */
+    width: 100%;
+    text-align: left;
+    margin: 10px 20px; 
+}
+.create-layout-reportingTo{
+  /* width: 270px; */
+  width: 100%;
+  text-align: left;
+  margin: 10px 20px 10px 0px; 
+}
+.create-layout-addtask-left{
+  /* width: 270px; */
+  width: 100%;
+  text-align: left;
+  margin: 10px 20px; 
+}
+.create-layout-addtask-reportingTo{
+  /* width: 270px; */
+  width: 100%;
+  text-align: left;
+  margin: 0px 20px 10px 20px; 
+}
+.create-layout-description{
+    text-align: left;
+    margin: 10px 20px;
+    width: 50%;
+}
+
+.search-addtask{
+  margin-top: 5px;
+  margin-left: 0%;
+  width:328px;
+  height:35px;
+  text-align: left;
+}
+
+#cancel-addtask{
+  margin-top: 10px;
+  display: flex;
+  margin-left: 520px;
+  margin-right: 40px;
+  padding: 0.5em 2em;
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  background: #0B42664D; 
+  border: none;
+  cursor: pointer;
+  color: #0B4266;
+}
+#reportingTo-addtask{
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 10px;
+  margin: 0px 20px 0px 0px;
+  background: #ffffff;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #d9d9d9;
+  font-size: 14px;
+  line-height: 1.5714285714285714;
+  list-style: none;
+  position: relative;
+  min-width: 0;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+#submit-less{
+  margin-top: 10px;
+  margin-left: 2px;
+  margin-right: 2px;
+  display: flex;
+  /* padding: 0.5em 2em; */
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  background: #0B4266; 
+  border: none;
+  cursor: pointer;
+  color: #ffffff; 
+
+}
+#submit-addtask{
+  margin-top: 10px;
+  display: flex;
+  padding: 0.5em 2em;
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  background: #0B4266; 
+  border: none;
+  cursor: pointer;
+  color: #ffffff; 
+}
+
+#submit-overall{
+  margin-left: 90%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 0.5em 2em;
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  gap: 10px;
+  border-radius: 4px;
+  background: #0B4266; 
+  border: none;
+  cursor: pointer;
+  color: #ffffff; 
+}
+
+.ant-select-selector{
+    margin-top: 10px;
+    display: flex;
+    padding: 0.5em 2em;
+    border: transparent;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    background: #0B4266; 
+    border: none;
+    cursor: pointer;
+   
+}
+
+/* // {
+  //   title: 'Actions',
+  //   dataIndex: 'actions',
+  //   key: 'actions',
+  //   render: (_, record, index) => (
+  //     <div>
+  //        <EditOutlined onClick={() => handleEditTask(index)} style={{ marginRight: '8px', cursor: 'pointer', color:'blue',fontSize: '20px'  }} />
+  //        <DeleteOutlined onClick={() => handleDeleteTask(index)} style={{ cursor: 'pointer', color:'red',fontSize: '20px'  }} />
+  //     </div>
+  //   ),
+  // }, */
+
+  /* // const handleFormSubmit = () => {
+    //   if (addTask.slNo !== undefined) {
+    //     const editedTaskIndex = taskList.findIndex((task) => task.slNo === addTask.slNo);
+    
+    //     if (editedTaskIndex !== -1) {
+    //       setTaskList((prevTaskList) => [
+    //         ...prevTaskList.slice(0, editedTaskIndex),
+    //         { ...addTask },
+    //         ...prevTaskList.slice(editedTaskIndex + 1),
+    //       ]);
+    //     }
+    //     setIsEdited(false);
+    //     setAddTask({
+    //       date: addTask.date,
+    //       userId: '',
+    //       task: '',
+    //       startTime: '',
+    //       endTime: '',
+    //       description: '',
+    //       reportingTo: '',
+    //     });
+    //   } else {
+    //     const nextSlNo = taskList.length + 1;
+    
+    //     const newTask = { ...addTask, slNo: nextSlNo, date: addTask.date };
+    //     setTaskList((prevTaskList) => [...prevTaskList, newTask]);
+    //     setAddTask({
+    //       date: addTask.date,
+    //       userId: '',
+    //       task: '',
+    //       startTime: '',
+    //       endTime: '',
+    //       description: '',
+    //       reportingTo: '',
+    //     });
+    //   }
+    
+    //   // Use the callback function of setTaskList to ensure the state is updated before updating localStorage
+    //   setTaskList((updatedTaskList) => {
+    //     localStorage.setItem('taskList', JSON.stringify(updatedTaskList));
+    
+    //     // Update filteredTaskList based on the selected date
+    //     const tasksForSelectedDate = updatedTaskList.filter((task) => task.date === addTask.date);
+    //     setFilteredTaskList(tasksForSelectedDate.map((task, i) => ({ ...task, slNo: i + 1 })));
+    
+    //     return updatedTaskList;
+    //   });
+    // };
+     */

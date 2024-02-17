@@ -1,0 +1,57 @@
+.userprofile-main{
+    margin: 10px 20px;
+    color: #0B4266;
+    text-align: left;
+    font-family: poppins;
+    font-size: medium;
+    font-weight: bold;
+  }
+  .userprofile-main>h2{
+    color: #0B4266;
+    text-align: left;
+    font-family: poppins;
+    font-size: 24px;
+  }
+  .label-div{
+    color: #7191A6;
+    font-weight: bold;
+  }
+  .desingation-style{
+    color:#00000080;
+    font-size: small;
+
+  }
+  .diplaydetails{
+    color:#0B4266;
+    font-size: small;
+    margin-top: 5px;
+  }
+  .userprofile-main-dev{
+    display:flex;
+    justify-content:space-between;
+    border: 1px solid #E6E6E6;
+    padding:20px 40px;
+    margin-bottom: 40px;
+  }
+  .create-layout-userprofile{
+    /* width: 270px; */
+    width: 100%;
+    text-align: left;
+}
+.calendar{   
+    color: black;
+    text-decoration: none;
+    background-color: transparent;
+    outline: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+:where(.css-dev-only-do-not-override-1qhpsh8) a {
+    color: black;
+    text-decoration: none;
+    background-color: transparent;
+    outline: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
