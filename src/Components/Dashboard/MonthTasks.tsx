@@ -1,5 +1,6 @@
 import React,{useState, useEffect} from 'react'
 import moment from 'moment'
+import isEqual from 'lodash/isEqual';
 import {
     UserOutlined,
     DownOutlined,
@@ -12,11 +13,15 @@ import { ColumnsType } from 'antd/es/table'
 import { Table } from 'antd'
 import { TaskObject } from './ApprovalRequest'
 import { Task } from './AddTask'
+import ApprovalRequest from './ApprovalRequest';
 interface DateTask{
     key: string;
     task: Task[];
 }
-const MonthTasks = () => {
+interface ApprovalRequestsProps{
+    setSelectedKeys: React.Dispatch<React.SetStateAction<string[]>>;
+}
+const MonthTasks: React.FC<ApprovalRequestsProps> = ({setSelectedKeys}) => {
     const location = useLocation();
     const { formattedMonth, userId, tasksForClickedMonth, tasksObject } = location.state;
 
@@ -24,22 +29,84 @@ const MonthTasks = () => {
     // const {formattedMonth='', userId=''}=useParams();
     const [monthTasks, setMonthTasks] = useState<{ [key: string]: TaskObject }>({});
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    //const [selectedKeys, setSelectedKeys]=useState<string[]>([]);
     const [rowTask, setRowTask]= useState<string[]>([]);
     const [comments, setComments] = useState('');
     const [commentVisible, setCommentVisible] = useState(false);
+    const [monthTasksData, setMonthTasksData] = useState<DateTask[]>([]);
+    const [rejectKeys, setRejectKeys]= useState<string[]>([]);
     console.log("received data", formattedMonth,userId, tasksForClickedMonth)
     useEffect(() => {
         setMonthTasks(tasksForClickedMonth);
         setRowTask(tasksObject);
     }, [tasksForClickedMonth, tasksObject]);
+    
+    useEffect(() => {
+        const storedKeysString: string | null = localStorage.getItem('selectedKeys');
+        if (storedKeysString !== null) {
+            const storedKeys: string[] = JSON.parse(storedKeysString);
+            setSelectedKeys(storedKeys);
+        } else {
+           console.log("else-useEffect", storedKeysString);
+        }
+    }, []);
+    
+    
+
 
     const handleRowSelection = (selectedRowKeys: React.Key[]) => {
         setSelectedRows(selectedRowKeys as string[]);
+        setSelectedKeys(selectedRowKeys as string[]);
         console.log("handleRowSelection", selectedRowKeys);
     };
 
     const handleReject = () => {
-        setCommentVisible(true);
+        //setCommentVisible(true);
+        let key: any[] = [];
+        let date: any[] = [];
+        const updatedMonthTasksData = monthTasksData.filter(row => {
+            const isRowIncluded = selectedRows.includes(row.key);
+            if (isRowIncluded) {
+                if (!key.includes(row.key)) {
+                    key.push(row.key);
+                    const datekey = row.task.length > 0 ? row.task[0].date : '';
+                    date.push(datekey);
+                }
+            }
+            return !isRowIncluded;
+        });
+    
+        setRejectKeys(date);
+    
+        // Get stored keys from localStorage or initialize an empty array if none exists
+        const storedKeys: any[] = JSON.parse(localStorage.getItem('rejectedKeys') || '[]');
+    
+        // Filter out keys that are already present in storedKeys to avoid duplicates
+        const newKeysToAdd = date.filter(newKey => !storedKeys.includes(newKey));
+    
+        // Update storedKeys with the new keys to add
+        const updatedSelectedKeys: any[] = [...storedKeys, ...newKeysToAdd];
+        localStorage.setItem('rejectedKeys', JSON.stringify(updatedSelectedKeys));
+    
+        console.log("key", key);
+        console.log("handleReject-updatedMonthTasksData", updatedMonthTasksData);
+    
+        setMonthTasksData(updatedMonthTasksData);
+    
+        const updatedMonthTasksDataObj = Object.keys(monthTasks).reduce((acc: { [key: string]: TaskObject }, dateKey: string) => {
+            const dateData = monthTasks[dateKey];
+            const filteredData = Object.fromEntries(Object.entries(dateData).filter(([date, data]) => !key.includes(data.key)));
+            console.log("filteredData", filteredData);
+            if (Object.keys(filteredData).length > 0) {
+                acc[dateKey] = filteredData;
+            }
+            return acc;
+        }, {});
+    
+        setMonthTasks(updatedMonthTasksDataObj);
+        console.log("handleRejected-updatedMonthTasksDataObj", updatedMonthTasksDataObj);
+    
+        setSelectedRows([]);
       };
     
       const handleCancel = () => {
@@ -87,18 +154,77 @@ const MonthTasks = () => {
     //     setGroupedTasks(updatedGroupedTasks);
     // };
 
-    const monthTaskData: TaskObject[] = Object.keys(monthTasks).map((dateKey: string) => {
-        const dateData = monthTasks[dateKey];
-        const dateTasks: { [date: string]: { key: string; tasks: Task[] } } = {};
-        for (const dateKey in dateData) {
-            dateTasks[dateKey] = {
-                key: dateData[dateKey].key,
-                tasks: dateData[dateKey].tasks
-            };
-        }
-        console.log("monthTaskData", dateTasks);
-        return dateTasks;
-    });
+    const handleApprove = async () => {
+        let key: any[] = [];
+        let date: any[] = [];
+        const updatedMonthTasksData = monthTasksData.filter(row => {
+            const isRowIncluded = selectedRows.includes(row.key);
+            if (isRowIncluded) {
+                if (!key.includes(row.key)) {
+                    key.push(row.key);
+                    const datekey = row.task.length > 0 ? row.task[0].date : '';
+                    date.push(datekey);
+                }
+            }
+            return !isRowIncluded;
+        });
+    
+        setSelectedKeys(date);
+    
+        // Get stored keys from localStorage or initialize an empty array if none exists
+        const storedSelectedKeys: any[] = JSON.parse(localStorage.getItem('selectedKeys') || '[]');
+        const storedRejectedKeys: any[] = JSON.parse(localStorage.getItem('rejectedKeys') || '[]');
+    
+        // Filter out keys that are already present in storedSelectedKeys to avoid duplicates
+        const newKeysToAdd = date.filter(newKey => !storedSelectedKeys.includes(newKey));
+    
+        // Update storedSelectedKeys with the new keys to add
+        const updatedSelectedKeys: any[] = [...storedSelectedKeys, ...newKeysToAdd];
+        localStorage.setItem('selectedKeys', JSON.stringify(updatedSelectedKeys));
+    
+        // Remove keys from rejectedKeys
+        const updatedRejectedKeys: any[] = storedRejectedKeys.filter(rejectedKey => !key.includes(rejectedKey));
+        localStorage.setItem('rejectedKeys', JSON.stringify(updatedRejectedKeys));
+    
+        // Wait for the localStorage to be updated before continuing
+        await new Promise(resolve => setTimeout(resolve, 0));
+    
+        console.log("key", key);
+        console.log("handleApprove-updatedMonthTasksData", updatedMonthTasksData);
+    
+        setMonthTasksData(updatedMonthTasksData);
+    
+        const updatedMonthTasksDataObj = Object.keys(monthTasks).reduce((acc: { [key: string]: TaskObject }, dateKey: string) => {
+            const dateData = monthTasks[dateKey];
+            const filteredData = Object.fromEntries(Object.entries(dateData).filter(([date, data]) => !key.includes(data.key)));
+            console.log("filteredData", filteredData);
+            if (Object.keys(filteredData).length > 0) {
+                acc[dateKey] = filteredData;
+            }
+            return acc;
+        }, {});
+    
+        setMonthTasks(updatedMonthTasksDataObj);
+        console.log("handleApprove-updatedMonthTasksDataObj", updatedMonthTasksDataObj);
+    
+        setSelectedRows([]);
+    };    
+    
+    
+
+
+    // const monthTaskData: TaskObject[] = Object.keys(monthTasks).map((dateKey: string) => {
+    //     const dateData = monthTasks[dateKey];
+        // const dateTasks: { [date: string]: { key: string; tasks: Task[] } } = {};
+        // for (const dateKey in dateData) {
+        //     dateTasks[dateKey] = {
+        //         key: dateData[dateKey].key,
+        //         tasks: dateData[dateKey].tasks
+        //     };
+        // }
+    //     console.log("monthTaskData", dateTasks);
+    //     return dateTasks;
+    // });
 
     // const monthTaskDatas: TaskObject[] = Object.values(monthTasks).map(dateData => {
     //     console.log("monthTaskData-monthtasks", monthTasks)
@@ -132,30 +258,45 @@ const MonthTasks = () => {
         return dateData ;
     });
 
-    const monthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
-        console.log("monthTasksData",taskObject);
-        const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
-        console.log("date", date)
-        const { key, tasks } = taskObject[date];
-        return { key, task: tasks }; // Assuming 'tasks' property is mapped to 'task' in DateTask
-    });
+    // const monthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
+    //     console.log("monthTasksData",taskObject);
+    //     const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
+    //     console.log("date", date)
+    //     const { key, tasks } = taskObject[date];
+    //     return { key, task: tasks }; // Assuming 'tasks' property is mapped to 'task' in DateTask
+    // });
+    
+    useEffect(() => {
+        // Process the monthTaskDatas and store it in the state
+        const processedMonthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
+            const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
+            const { key, tasks } = taskObject[date];
+            return { key, task: tasks }; // Store the data according to the DateTask interface
+        });
+    
+        // Check if the processed data is different from the current state
+        if (!isEqual(processedMonthTasksData, monthTasksData)) {
+            // Update the state with the processed data
+            setMonthTasksData(processedMonthTasksData);
+        }
+    }, [monthTaskDatas, monthTasksData]); // Add monthTasksData to the dependency array
     
 
-    const monthTaskDataskey: TaskObject[] = Object.values(rowTask).map(dateData => {
-        console.log("monthTaskData-monthtasks", monthTasks)
-        console.log("dateData", dateData);
-        if (!dateData) return {}; // Check if dateData is undefined or null
-        // const taskObject: TaskObject = {};
-        // Object.entries(dateData).forEach(([date, data]) => {
-        //     taskObject[date] = {
-        //         key: data?.key,
-        //         tasks: data?.tasks
-        //     };
-        // });
-        // console.log("taskObject",taskObject);
-        // return taskObject;
-        return dateData;
-    });
+    // const monthTaskDataskey: TaskObject[] = Object.values(rowTask).map(dateData => {
+    //     console.log("monthTaskData-monthtasks", monthTasks)
+    //     console.log("dateData", dateData);
+    //     if (!dateData) return {}; // Check if dateData is undefined or null
+    //     // const taskObject: TaskObject = {};
+    //     // Object.entries(dateData).forEach(([date, data]) => {
+    //     //     taskObject[date] = {
+    //     //         key: data?.key,
+    //     //         tasks: data?.tasks
+    //     //     };
+    //     // });
+    //     // console.log("taskObject",taskObject);
+    //     // return taskObject;
+    //     return dateData;
+    // });
 
     // const monthTaskDatas: TaskObject[] = Object.entries(tasksForClickedMonth).map(([key, dateData]) => {
     //     console.log("monthTaskData-tasksForClickedMonth", tasksForClickedMonth)
@@ -166,25 +307,25 @@ const MonthTasks = () => {
     //     console.log("taskObject", taskObject);
     //     return taskObject;
     // });
-    const flattenedData = (groupedTasks: TaskObject[] | undefined) => {
-        console.log("groupedTasks",groupedTasks);
-        if (!groupedTasks) {
-            return [];
-        }
-        const tasks: TaskObject[] = [];
-        groupedTasks?.forEach(taskObject => {
-            Object.keys(taskObject)?.forEach(key => {
-                const value = taskObject[key];
-                tasks.push({
-                    [key]: {
-                        key: value.key,
-                        tasks: value.tasks
-                    }
-                });
-            });
-        });
-        return tasks;
-    };
+    // const flattenedData = (groupedTasks: TaskObject[] | undefined) => {
+    //     console.log("groupedTasks",groupedTasks);
+    //     if (!groupedTasks) {
+    //         return [];
+    //     }
+    //     const tasks: TaskObject[] = [];
+    //     groupedTasks?.forEach(taskObject => {
+    //         Object.keys(taskObject)?.forEach(key => {
+    //             const value = taskObject[key];
+    //             tasks.push({
+    //                 [key]: {
+    //                     key: value.key,
+    //                     tasks: value.tasks
+    //                 }
+    //             });
+    //         });
+    //     });
+    //     return tasks;
+    // };
 
     const getColumn = (formattedMonth: string) => {
         const column: ColumnsType<DateTask> = [
@@ -426,7 +567,7 @@ const MonthTasks = () => {
                 }} 
             />
             <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>
-                <Button style={{width:'10%', backgroundColor:'green', color:'white'}}>Approve</Button>
+                <Button style={{width:'10%', backgroundColor:'green', color:'white'}} onClick={handleApprove}>Approve</Button>
                 <Button style={{ width: '10%', backgroundColor: 'red', color: 'white' }} onClick={handleReject}>
                   Reject
                 </Button>
@@ -447,7 +588,7 @@ const MonthTasks = () => {
                   <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
                 </Modal>
               </div> 
-</DashboardLayout>
+        </DashboardLayout>
 
     )
 }

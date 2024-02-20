@@ -104,6 +104,7 @@ import 'chart.js/auto';
 import React from 'react';
 import { Pie } from 'react-chartjs-2';
 import DashboardLayout from './Layout';
+import EmployeeTaskStatus from './EmployeeTaskStatus';
 
 interface PieChartProps {
   data: { [key: string]: number };
@@ -129,6 +130,8 @@ const Dashboard: React.FC<PieChartProps> = ({ data }) => {
 
   return (
   <DashboardLayout>
+    <EmployeeTaskStatus/>
+    
     <Pie data={chartData} />
   </DashboardLayout>
   

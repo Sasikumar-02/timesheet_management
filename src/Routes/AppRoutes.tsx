@@ -47,7 +47,9 @@ const AppRoutes: React.FC = () => {
   const userEmail = localStorage.getItem('email');
   const [pieChartData, setPieChartData] = useState<{ [key: string]: number }>({});
   const [approvalRequestsData, setApprovalRequestsData] = useState<Task[]>([]);
-
+  const [selectedKeys, setSelectedKeys]=useState<string[]>([]);
+  const [selectedMonth, setSelectedMonth]= useState<string>('');
+  const [selectedMYear, setSelectedYear]= useState<string>('');
   useEffect(() => {
     // Retrieve approvalRequestsData from local storage
     const storedData = localStorage.getItem('approvalRequestsData');
@@ -56,6 +58,7 @@ const AppRoutes: React.FC = () => {
     }
   }, []); // Fetch data only once on component mount
 
+  
   return (
     <Routes>
       <Route path="/" element={<Navigate to='/dashboard' />} />
@@ -81,7 +84,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/userprofile/:userId" element={userEmail === 'sasikumarmurugan02@gmail.com' ? <UserProfile /> : <Navigate to="/dashboard" />} />
         <Route path="/createuser/:userId" element={userEmail === 'sasikumarmurugan02@gmail.com' ? <CreateUser /> : <Navigate to="/dashboard" />} />
         <Route path='/approvalrequests' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <ApprovalRequest/> : <Navigate to="/dashboard" />} />
-        <Route path='/monthTasks' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <MonthTasks/> : <Navigate to="/dashboard" />} />
+        <Route path='/monthTasks' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <MonthTasks setSelectedKeys ={setSelectedKeys} /> : <Navigate to="/dashboard" />} />
       </Route>
     </Routes>
   );

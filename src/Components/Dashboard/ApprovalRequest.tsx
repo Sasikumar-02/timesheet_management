@@ -46,6 +46,7 @@ interface DateTask{
   key: string;
   task: Task[];
 }
+
 // interface GroupedTasks {
 //   key: string;
 //   slNo?: number;
@@ -76,10 +77,14 @@ interface GroupedTasks {
   totalDaysInMonth: number;
 }
 
-const ApprovalRequest:React.FC= () => { 
-  const navigate = useNavigate();
-  const [forceUpdate, setForceUpdate] = useState(false);
+interface ApprovalRequestsProps {
+  selectedKeys: string[]; // Define the type for selectedKeys prop
+}
 
+const ApprovalRequest:React.FC = () => { 
+  const [selectedKeys, setSelectedKeys]= useState<string[]>([]);
+  const [rejectKeys, setRejectKeys]= useState<string[]>([]);
+  const navigate = useNavigate();
   //const [selectedRows, setSelectedRows] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedInnerRows, setSelectedInnerRows] = useState<string[]>([]);
@@ -106,19 +111,56 @@ const ApprovalRequest:React.FC= () => {
   }, []); // Fetch data only once on component mount
 
   useEffect(() => {
+    const storedKeysString: string | null = localStorage.getItem('selectedKeys');
+    if (storedKeysString !== null) {
+        const storedKeys: string[] = JSON.parse(storedKeysString);
+        setSelectedKeys(storedKeys);
+    } else {
+       console.log("else-useEffect", storedKeysString);
+    }
+}, []);
+
+  useEffect(() => {
+    const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
+    if (storedKeysString !== null) {
+        const storedKeys: string[] = JSON.parse(storedKeysString);
+        setRejectKeys(storedKeys);
+    } else {
+      console.log("else-useEffect", storedKeysString);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("useeffect", selectedKeys.length);
       if (approvalRequests.length > 0) { // Check if approvalRequests has data
           // Process approvalRequests data
           handleGroupedTasks(approvalRequests);
       }
-  }, [approvalRequests]);
+  }, [approvalRequests]); //no use
 
   useEffect(() => {
-    // Log monthTasks
-    console.log("useEffect monthTasks", monthTasks);
-    
-    // Store monthTasks in localStorage
-    localStorage.setItem('monthTasks', JSON.stringify(monthTasks));
-  }, [monthTasks]); 
+    const storedData = localStorage.getItem('groupedTasks');
+    if (storedData && selectedKeys.length > 0   ) { //&& rejectKeys.length>0
+        const parsedData: { [key: string]: GroupedTasks } = JSON.parse(storedData);
+        const updatedData = Object.keys(parsedData).reduce((acc: { [key: string]: GroupedTasks }, monthKey: string) => {
+            const monthData = parsedData[monthKey];
+            const filteredTasks: TaskObject = {};
+            Object.keys(monthData.tasks).forEach(dateKey => {
+                // Check if the dateKey is not included in selectedKeys
+                if (!selectedKeys.includes(dateKey) && !selectedKeys.includes(dateKey)) {
+                    filteredTasks[dateKey] = monthData.tasks[dateKey];
+                }
+            });
+            // Check if there are tasks left for the month after filtering
+            if (Object.keys(filteredTasks).length > 0) {
+                acc[monthKey] = { ...monthData, tasks: filteredTasks };
+            }
+            return acc;
+        }, {});
+        // Update the state with the filtered data
+        setGroupedTasks(updatedData);
+    }
+}, [selectedKeys]);
 
   const handleReject = () => {
     setCommentVisible(true);
@@ -138,41 +180,43 @@ const ApprovalRequest:React.FC= () => {
     setCommentVisible(false);
   };
 
-  const handleApprove = () => {
-    // Filter out the selected row from the groupedTasks state
-    const updatedGroupedTasks = { ...groupedTasks };
-    console.log("handleApprove", updatedGroupedTasks);
-    // Iterate through selected rows
-    selectedInnerRows.forEach(rowKey => {
-        // Check if the rowKey exists in updatedGroupedTasks and if its tasks property is defined
-        if (updatedGroupedTasks[rowKey]?.tasks) {
-            const tasks = updatedGroupedTasks[rowKey].tasks;
-            // Iterate through tasks for each date
-            Object.values(tasks).forEach(dateTasks => {
-                // Iterate through individual tasks
-                dateTasks.tasks.forEach(task => {
-                    // Add a special CSS class or inline style to change the background color to green
-                    (task as Task & { backgroundColor?: string }).backgroundColor = 'green'; // Adjust this to your styling needs
-                });
-            });
-        }
-    });
-    console.log("updatedGroupedTaks", updatedGroupedTasks);
-    // Update the selectedInnerRows array to remove the approved row
-    setSelectedInnerRows([]);
+//   const handleApprove = () => {
+//     // Filter out the selected row from the groupedTasks state
+//     const updatedGroupedTasks = { ...groupedTasks };
+//     console.log("handleApprove", updatedGroupedTasks);
+//     // Iterate through selected rows
+//     selectedInnerRows.forEach(rowKey => {
+//         // Check if the rowKey exists in updatedGroupedTasks and if its tasks property is defined
+//         if (updatedGroupedTasks[rowKey]?.tasks) {
+//             const tasks = updatedGroupedTasks[rowKey].tasks;
+//             // Iterate through tasks for each date
+//             Object.values(tasks).forEach(dateTasks => {
+//                 // Iterate through individual tasks
+//                 dateTasks.tasks.forEach(task => {
+//                     // Add a special CSS class or inline style to change the background color to green
+//                     (task as Task & { backgroundColor?: string }).backgroundColor = 'green'; // Adjust this to your styling needs
+//                 });
+//             });
+//         }
+//     });
+//     console.log("updatedGroupedTaks", updatedGroupedTasks);
+//     // Update the selectedInnerRows array to remove the approved row
+//     setSelectedInnerRows([]);
 
-    // Close the modal
-    setModalVisible(false);
+//     // Close the modal
+//     setModalVisible(false);
 
-    // Update the state with the modified groupedTasks
-    setGroupedTasks(updatedGroupedTasks);
-};
+//     // Update the state with the modified groupedTasks
+//     setGroupedTasks(updatedGroupedTasks);
+// };
 
   
   function getDaysInMonth(month: number, year: number) {
     // month is 0-based in JavaScript
     return new Date(year, month + 1, 0).getDate();
   }
+
+  
 
   const handleGroupedTasks = (requestData: Task[]) => {
     // Group tasks by month
@@ -184,6 +228,7 @@ const ApprovalRequest:React.FC= () => {
     const existingData: { [key: string]: GroupedTasks } = existingDataJSON ? JSON.parse(existingDataJSON) : {};
     // Process each month's tasks
     for (const monthKey in grouped) {
+      console.log("monthKye", monthKey);
       const tasksArray = grouped[monthKey] as Task[];
       console.log("taskArray", tasksArray);
       const firstTaskDate = dayjs(tasksArray[0].date, 'YYYY-MM-DD');
@@ -201,6 +246,11 @@ const ApprovalRequest:React.FC= () => {
                 existingData[monthKey].tasks[dateKey] = { key: uuidv4(), tasks: tasksArray };
                 daysFilled++;
             } else {
+              console.log("else");
+              if(selectedKeys.includes(dateKey) || rejectKeys.includes(dateKey) ){ // || rejectKeys.includes(dateKey)
+                console.log("sasi", dateKey);
+                return;
+              }
               existingData[monthKey].tasks[dateKey].tasks = [...tasksArray];
             }
         } else {
@@ -231,7 +281,40 @@ const ApprovalRequest:React.FC= () => {
   
     // Update the state with the combined data
     setGroupedTasks(existingData);
+    setApprovalRequests([]);
   };
+
+
+  useEffect(() => {
+    
+    const storedData = localStorage.getItem('groupedTasks');
+    //console.log("useEffect-selectedKeys", storedData);
+    if (storedData && selectedKeys.length>0 ) { //&& rejectKeys.length>0
+        const parsedData: { [key: string]: GroupedTasks } = JSON.parse(storedData);
+        console.log("useEffect-parsedData", parsedData);
+        // Filter out the data based on selectedKeys
+        const updatedData = Object.keys(parsedData).reduce((acc: { [key: string]: GroupedTasks }, monthKey: string) => {
+            const monthData = parsedData[monthKey];
+            console.log("useEffect-monthData", monthData);
+            const filteredTasks: TaskObject = {};
+            Object.keys(monthData.tasks).forEach(dateKey => {
+              console.log("useEffect-dateKey", dateKey);
+                if (!selectedKeys.includes(dateKey) && !rejectKeys.includes(dateKey) ) { //&& !rejectKeys.includes(dateKey)
+                    console.log("sasi", dateKey);
+                    filteredTasks[dateKey] = monthData.tasks[dateKey];
+                }
+            });
+            // Check if there are tasks left for the month after filtering
+            if (Object.keys(filteredTasks).length > 0) {
+                acc[monthKey] = { ...monthData, tasks: filteredTasks };
+            }
+            return acc;
+        }, {});
+        // Update the state with the filtered data
+        console.log("useEffect-updatedData", updatedData);
+        setGroupedTasks(updatedData);
+    }
+  }, [selectedKeys]);
   
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
     console.log("handleRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
@@ -322,15 +405,13 @@ useEffect(() => {
       return { key, task: tasks }; // Assuming 'tasks' property is mapped to 'task' in DateTask
   });
 
+  
+
   const handleInnerRowSelection = (selectedRowKeys: React.Key[]) => {
     console.log("handleInnerRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
     setSelectedInnerRows(selectedRowKeys as string[]);
   };
   
-  // UseEffect hook
-  useEffect(() => {
-    // Your useEffect logic here
-  }, [selectedInnerRows]);
 
       // const getColumn = (formattedMonth: string) => {
       //   const column: ColumnsType<TaskObject> = [
@@ -759,7 +840,9 @@ useEffect(() => {
     
     
     const aggregatedData: GroupedTasks[] = Object.keys(groupedTasks).map((monthKey: string) => {
+      console.log("aggregatedData-monthKey",monthKey);
       const monthData = groupedTasks[monthKey];
+      console.log("aggregatedData-monthData",monthData);
       const monthTasks: { [date: string]: { key: string; tasks: Task[] } } = {};
       let daysFilled = 0;
       for (const dateKey in monthData.tasks) {
@@ -808,10 +891,6 @@ useEffect(() => {
       formattedMonth: string,
       event: React.MouseEvent<HTMLElement>
     ) => {
-      console.log('handleRowClick record', record);
-      const tasksForClickedMonth: TaskObject[] = flattenedData(
-        record
-      );
     
       // Set the month tasks in the state
       //setMonthTasks(tasksForClickedMonth);
@@ -933,7 +1012,7 @@ useEffect(() => {
               console.log("onRow-tasksForClickedMonth", tasksForClickedMonth);
               setMonthTasks(tasksForClickedMonth);
               // Pass TaskObject and formattedMonth to handleRowClick
-             // handleRowClick(tasksObject, formattedMonth, event);
+              //handleRowClick(tasksObject, formattedMonth, event);
               navigate(`/monthtasks?formattedMonth=${formattedMonth}&userId=${userId}`, {state: {
                 formattedMonth: monthYear, //formattedMonth
                 userId: userId,
@@ -951,6 +1030,8 @@ useEffect(() => {
           expandable={{
             expandedRowRender: (record: GroupedTasks) => {
               const taskHours: { [key: string]: number } = {};
+              let totalExtraHours = 0; // Track total extra hours for all dates
+              
               for (const dateKey in record.tasks) {
                 record.tasks[dateKey].tasks.forEach(task => {
                   if (taskHours.hasOwnProperty(task.task)) {
@@ -970,52 +1051,67 @@ useEffect(() => {
               
               const totalHours = Math.floor(Object.values(taskHours).reduce((acc, curr) => acc + curr, 0));
               const regularHours = Math.min(totalHours, 9);
-              const extraHours = totalHours - regularHours;
-          
+              let extraHours = totalHours - regularHours;
               
-                return (
-                  <div>
-                    <ul style={{ display: 'flex', justifyContent: 'space-around', listStyle: 'none' }}>
-                      {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
-                        <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-                          <div style={{ paddingRight: '20px' }}>
-                            <div style={{ color: 'grey', paddingBottom: '5px' }}>
-                              {taskName}
-                            </div>
-                            <div style={{ fontWeight: "bold", fontSize: '20px', color: 'black' }}>
-                              {taskTotalHours}H
-                            </div>
+              // Calculate extra hours for each date
+              for (const dateKey in record.tasks) {
+                const dateTotalHours = record.tasks[dateKey].tasks.reduce((acc, task) => acc + parseFloat(task.totalHours || '0'), 0);
+                if (dateTotalHours > 9) {
+                  extraHours += dateTotalHours - 9; // Increment extra hours by the difference
+                  totalExtraHours += dateTotalHours - 9; // Track total extra hours
+                }
+              }
+              
+              return (
+                <div>
+                  <ul style={{ display: 'flex', justifyContent: 'space-around', listStyle: 'none' }}>
+                    {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
+                      <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
+                        <div style={{ paddingRight: '20px' }}>
+                          <div style={{ color: 'grey', paddingBottom: '5px' }}>
+                            {taskName}
                           </div>
-                          <div>
-                            <Progress
-                              type="circle"
-                              percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
-                              width={60}
-                            />
+                          <div style={{ fontWeight: "bold", fontSize: '20px', color: 'black' }}>
+                            {taskTotalHours}H
                           </div>
                         </div>
-                      ))}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-                        <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-                          Extra Hours
-                        </div>
-                        <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: "bold", fontSize: '20px' }}>
-                          {extraHours}H
+                        <div>
+                          <Progress
+                            type="circle"
+                            percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
+                            width={60}
+                          />
                         </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-                        <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-                          Total Hours
-                        </div>
-                        <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
-                          {totalHours}H
-                        </div>
+                    ))}
+                    {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
+                      <div style={{ color: '#0B4266', paddingRight: '20px' }}>
+                        Extra Hours
                       </div>
-                    </ul>
-                  </div>
-                );
-              
-              return null;
+                      <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: "bold", fontSize: '20px' }}>
+                        {extraHours}H
+                      </div>
+                    </div> */}
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
+                      <div style={{ color: '#0B4266', paddingRight: '20px' }}>
+                        Extra Hours
+                      </div>
+                      <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
+                        {totalExtraHours.toFixed(2)}H
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
+                      <div style={{ color: '#0B4266', paddingRight: '20px' }}>
+                        Total Hours
+                      </div>
+                      <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
+                        {totalHours}H
+                      </div>
+                    </div>
+                   
+                  </ul>
+                </div>
+              );
             },
             expandRowByClick: true,
             expandIcon: ({ expanded, onExpand, record }) => (
@@ -1023,7 +1119,8 @@ useEffect(() => {
                 <UpOutlined onClick={(event) => onExpand(record, event)} /> :
                 <DownOutlined onClick={(event) => onExpand(record, event)} />
             ),
-          }}  
+          }}
+          
         />
       </div>
       <Modal
@@ -1050,7 +1147,7 @@ useEffect(() => {
       >
         {modalContent}
         <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>
-          <Button style={{width:'10%', backgroundColor:'green', color:'white'}} onClick={handleApprove}>Approve</Button>
+          <Button style={{width:'10%', backgroundColor:'green', color:'white'}}>Approve</Button>
           <Button style={{ width: '10%', backgroundColor: 'red', color: 'white' }} onClick={handleReject}>
             Reject
           </Button>

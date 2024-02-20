@@ -61,6 +61,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   // State to manage the search input
   const [searchInput, setSearchInput] = useState('');
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [selectedKeysToHide, setSelectedKeysToHide]=useState<string[]>([]);
  const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
   return tasks.map((task, index) => ({
     ...task,
@@ -92,6 +93,17 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
    // padding: '10px 20px',
     width: formWidth + 'px',
   };
+
+  useEffect(()=>{
+    const storedKeysString: string | null = localStorage.getItem('selectedKeys');
+    if (storedKeysString !== null) {
+        const storedKeys: string[] = JSON.parse(storedKeysString);
+        console.log("storedKeys", storedKeys);
+        setSelectedKeysToHide(storedKeys);
+    } else {
+       console.log("else-useEffect", storedKeysString);
+    }
+  },[])
   
   const handleInputChange = (field: keyof Task, value: string) => {
     if (field === 'date') {
@@ -295,9 +307,18 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   };
 
   const handleFormSubmit = () => {
-    console.log("---fd1", dayjs(addTask.date).format('YYYY-MM-DD'), dayjs(addTask.startTime).format('hh:mm A'), dayjs(addTask.endTime).format('hh:mm A'));
+
+    // Check if the addTask date is included in selectedKeysToHide
+    if (selectedKeysToHide.includes(addTask.date)) {
+      notification.warning({
+          message: 'Restricted',
+          description: `The Task Approved: ${addTask.date} & Restrict to Add New Task`,
+      });
+      return;
+  }
+
     // Check for overlapping tasks in the specified time range
-    const overlappingTask = taskList.find((task) => {
+    const overlappingTask = taskList.find(task => {
       const newTaskStartTime = dayjs(addTask.startTime, 'hh:mm A');
       const newTaskEndTime = dayjs(addTask.endTime, 'hh:mm A');
       const taskStartTime = dayjs(task.startTime, 'hh:mm A');
@@ -307,9 +328,9 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       return (
         !isEdited && task.date === addTask.date &&
         (
-          ((newTaskStartTime.isSame(taskStartTime) || newTaskStartTime.isAfter(taskStartTime))&& newTaskStartTime.isBefore(taskEndTime)) ||
-          ((newTaskEndTime.isSame(taskStartTime) || newTaskEndTime.isAfter(taskStartTime))&& newTaskEndTime.isBefore(taskEndTime)) ||
-          (newTaskStartTime.isBefore(taskStartTime) && (newTaskEndTime.isSame(taskEndTime)|| newTaskEndTime.isAfter(taskEndTime)))
+          ((newTaskStartTime.isSame(taskStartTime) || newTaskStartTime.isAfter(taskStartTime)) && newTaskStartTime.isBefore(taskEndTime)) ||
+          ((newTaskEndTime.isSame(taskStartTime) || newTaskEndTime.isAfter(taskStartTime)) && newTaskEndTime.isBefore(taskEndTime)) ||
+          (newTaskStartTime.isBefore(taskStartTime) && (newTaskEndTime.isSame(taskEndTime) || newTaskEndTime.isAfter(taskEndTime)))
         )
       );
     });
@@ -324,7 +345,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 
     if (isEdited) {
       // If editing, update the existing task
-      const updatedTaskList = taskList.map((task) =>
+      const updatedTaskList = taskList.map(task =>
         task.idx === addTask.idx ? { ...addTask } : task
       );
       setTaskList(updatedTaskList);
@@ -333,7 +354,10 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       setIsEdited(false);
     } else {
       // Update the taskList
-      const updatedTaskList = [...taskList, { ...addTask, idx: taskList.length + 1 }];
+      const updatedTaskList = [
+        ...taskList,
+        { ...addTask, idx: taskList.length + 1 }
+      ];
       setTaskList(updatedTaskList);
       setFilteredTasks(updateSlNo(updatedTaskList, deletedTask));
       localStorage.setItem('taskList', JSON.stringify(updatedTaskList));
@@ -353,7 +377,9 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     });
     setIsEdited(false);
     setIsFormSubmitted(true);
-  };
+};
+
+
 
   const handleClearSubmit = () => {
     // Clear the form with the default date and set idx
@@ -370,13 +396,74 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     });
   }
   
-  const handleEditTask = (idx: number) => {
-    // Implement the logic to edit the task based on date, startTime, and endTime
-    // You can use the setAddTask function to update the form fields with the selected task's details
+//   const handleEditTask = (idx: number) => {
+//     const taskToEdit = taskList.find((task) => task.idx === idx);
+//     const isExistingTask = taskToEdit !== undefined; // Check if taskToEdit is defined
+//     // if (taskToEdit) {
+//         // const isDateSelected = selectedKeysToHide.includes(taskToEdit.date);
+        
+//     //     // if (isDateSelected && isExistingTask) {
+//     //     //     // Date is selected and it's an existing task, so prevent further action
+//     //     //     // You can display a message or handle this case according to your application's logic
+//     //     //     return;
+//     //     // }
+
+//     //     // setIsEdited(true);
+//     //     // setAddTask({
+//     //     //     date: taskToEdit.date,
+//     //     //     userId: taskToEdit.userId,
+//     //     //     task: taskToEdit.task,
+//     //     //     startTime: taskToEdit.startTime,
+//     //     //     endTime: taskToEdit.endTime,
+//     //     //     totalHours: taskToEdit.totalHours,
+//     //     //     description: taskToEdit.description,
+//     //     //     reportingTo: taskToEdit.reportingTo,
+//     //     //     idx: taskToEdit.idx, 
+//     //     // });
+
+//     //     // // Now, you can perform additional actions or display a modal for editing
+//     //     // setCurrentDate(dayjs(taskToEdit.date));
+
+//     // }
+
+//     if (taskToEdit) {
+//       const isDateSelected = selectedKeysToHide.includes(taskToEdit.date);
+
+//       if (isDateSelected && taskToEdit.isNew) {
+//           // If the task is newly added and its date is selected, allow editing
+//           setIsEdited(true);
+//           setAddTask({ ...taskToEdit });
+//           setCurrentDate(dayjs(taskToEdit.date));
+//       } else if (!isDateSelected) {
+//           // If the date is not selected, allow editing
+//           setIsEdited(true);
+//           setAddTask({ ...taskToEdit });
+//           setCurrentDate(dayjs(taskToEdit.date));
+//       } else {
+//           // Date is selected and it's an existing task, so prevent further action
+//           // You can display a message or handle this case according to your application's logic
+//           return;
+//       }
+//   } else {
+//       // Handle the case where taskToEdit is undefined
+//       // You can display a message or handle this case according to your application's logic
+//       return;
+//   }
+// };
+
+const handleEditTask = (idx: number) => {
+  const taskToEdit = taskList.find((task) => task.idx === idx);
+  if (taskToEdit) {
+    // Check if the date is included in selectedKeysToHide
+    if (selectedKeysToHide.includes(taskToEdit.date)) {
+      // Date is included in selectedKeysToHide, so prevent further action
+      // You can display a message or handle this case according to your application's logic
+      return;
+    }
+
     setIsEdited(true);
-    const taskToEdit = taskList.find((task) => task.idx === idx);
-    if (taskToEdit) {
-      setAddTask({
+  
+    setAddTask({
         date: taskToEdit.date,
         userId: taskToEdit.userId,
         task: taskToEdit.task,
@@ -386,39 +473,53 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
         description: taskToEdit.description,
         reportingTo: taskToEdit.reportingTo,
         idx: taskToEdit.idx, 
-      });
+    });
 
-      // Now, you can perform additional actions or display a modal for editing
-      setCurrentDate(dayjs(taskToEdit.date));
-    }
-  };
-  
-  const handleDeleteTask = useCallback((idx: number) => {
-    // Toggle the deletedTask flag
-    setDeletedTask(true);
-    // Save idx in state
-    setDeletedTaskIdx(idx);
-  }, []);
+    // Now, you can perform additional actions or display a modal for editing
+    setCurrentDate(dayjs(taskToEdit.date));
+  }
+};
+
+
+
+const handleDeleteTask = useCallback((idx: number) => {
+  // Check if the date is included in selectedKeysToHide
+  const isDateIncluded = selectedKeysToHide.some(date => {
+      // Assuming taskList contains tasks with a 'date' property
+      const task = taskList.find(task => task.idx === idx);
+      return task && task.date === date;
+  });
+
+  // Toggle the deletedTask flag based on the presence of the date in selectedKeysToHide
+  setDeletedTask(!isDateIncluded);
+
+  // Save idx in state
+  setDeletedTaskIdx(idx);
+}, [selectedKeysToHide, taskList]);
+
 
   useEffect(() => {
     if (deletedTask) {
       // Implement the logic to delete the task based on idx
-      const updatedTaskList = taskList.filter((task) => task.idx !== deletedTaskIdx);
-
+      const updatedTaskList = taskList.filter(task => {
+        // Check if the task date is not included in selectedKeysToHide and isNew is true
+        return !selectedKeysToHide.includes(task.date);
+      });
+  
       // Reindex the idx starting from 1 and use deletedTask flag
       const reindexedTaskList = updateSlNo(updatedTaskList, deletedTask);
-
+  
       setTaskList(reindexedTaskList);
       setFilteredTasks(reindexedTaskList);
-
+  
       // Update localStorage
       localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
-
+  
       // Reset the deletedTask flag after updating
       setDeletedTask(false);
     }
-  }, [deletedTask, deletedTaskIdx]);
-
+  }, [deletedTask, deletedTaskIdx, selectedKeysToHide, taskList]);
+  
   // const handleOverallSubmit = () => {
   //   // Assuming you have an API endpoint for approval requests
   //   //const apiUrl = 'http://localhost:3000/approvalrequests';
@@ -501,6 +602,22 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 
     // Store the approvalRequestsData in local storage
     localStorage.setItem('approvalRequestsData', JSON.stringify(requestData));
+
+    // Retrieve rejectedKeys from local storage
+    const rejectedKeysString = localStorage.getItem('rejectedKeys');
+    console.log("rejectedKeysString",rejectedKeysString);
+    if (rejectedKeysString) {
+        let rejectedKeys = JSON.parse(rejectedKeysString);
+        console.log("rejectedKeys",rejectedKeys);
+        // Check if 'submit' exists in rejectedKeys
+        const date = requestData.length>0?requestData[0].date:'';
+        if (rejectedKeys.includes(date)) {
+            // Remove 'date' from rejectedKey
+            rejectedKeys = rejectedKeys.filter((key:any) => key !== date);
+            // Update rejectedKeys in local storage
+            localStorage.setItem('rejectedKeys', JSON.stringify(rejectedKeys));
+        }
+    }
 };
 
   const columns: ColumnsType<Task> = [
@@ -560,31 +677,73 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       key: 'reportingTo',
       fixed: 'left',
     },
+    // {
+    //   title: 'Actions',
+    //   dataIndex: 'actions',
+    //   key: 'actions',
+    //   render: (_, record, index) => {
+    //     const isDateSelected = selectedKeysToHide.includes(record.date); // Assuming record.date represents the date of the task
+    //     return (
+    //       <div>
+    //         <EditOutlined
+    //           onClick={() => handleEditTask(record.idx)}
+    //           style={{
+    //             marginRight: '8px',
+    //             cursor: isDateSelected ? 'not-allowed' : 'pointer',
+    //             color: isDateSelected ? 'grey' : 'blue',
+    //             fontSize: '20px',
+    //           }}
+    //           disabled={isDateSelected}
+    //         />
+    //         <DeleteOutlined
+    //           onClick={() => handleDeleteTask(record.idx)}
+    //           style={{
+    //             cursor: isDateSelected ? 'not-allowed' : 'pointer',
+    //             color: isDateSelected ? 'grey' : 'red',
+    //             fontSize: '20px',
+    //           }}
+    //           disabled={isDateSelected}
+    //         />
+    //       </div>
+    //     );
+    //   },
+    // }    
     {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
-      render: (_, record, index) => (
-        <div>
-          <EditOutlined
-            onClick={() => handleEditTask(record.idx)}
-            style={{
-              marginRight: '8px',
-              cursor: 'pointer',
-              color: 'blue',
-              fontSize: '20px',
-            }}
-          />
-          <DeleteOutlined
-            onClick={() => handleDeleteTask(record.idx)}
-             style={{
-              cursor: 'pointer',
-              color:  'red',
-              fontSize: '20px',
-            }}
-          />
-        </div>
-    )}
+      render: (_, record, index) => {
+        const isExistingTask = taskList.some(task => task.idx === record.idx);
+        console.log("isExistingTask", isExistingTask);
+        const isDateSelected = selectedKeysToHide.includes(record.date); // Assuming record.date represents the date of the task
+        //const isNewTask = record.isNew; // Assuming 'isNew' is a property of the task representing whether it's newly added
+    
+        return (
+          <div>
+            <EditOutlined
+              onClick={() => handleEditTask(record.idx)}
+              style={{
+                marginRight: '8px',
+                cursor: (isDateSelected) ? 'not-allowed' : 'pointer', //( !isNewTask  && isDateSelected)
+                color: ( isDateSelected) ? 'grey' : 'blue', 
+                fontSize: '20px',
+              }}
+              disabled={( isDateSelected)}
+            />
+            <DeleteOutlined
+              onClick={() => handleDeleteTask(record.idx)}
+              style={{
+                cursor: ( isDateSelected)? 'not-allowed' : 'pointer',
+                color: (  isDateSelected) ? 'grey' : 'red',
+                fontSize: '20px',
+              }}
+              disabled={( isDateSelected)}
+            />
+          </div>
+        );
+      },
+    }
+       
   ]
 
   return (
