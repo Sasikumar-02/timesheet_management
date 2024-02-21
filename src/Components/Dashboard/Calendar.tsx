@@ -48,70 +48,160 @@
 //   return <Calendar events={events} components={components} />;
 // }
 
+// import React from "react";
+// import FullCalendar from "@fullcalendar/react";
+// import dayGridPlugin from "@fullcalendar/daygrid";
+// import timeGridPlugin from "@fullcalendar/timegrid";
+// import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
+// import { useNavigate } from "react-router-dom";
+// import DashboardLayout from "./Layout";
+// import dayjs from "dayjs";
+// import { notification } from "antd";
+// const Calendar=() =>{
+//   const navigate = useNavigate();
 
-import React, { useState, useEffect } from "react";
+//   const handleDateClick = (arg: DateClickArg) => {
+//     // arg.date is the clicked date
+//     const clickedDate = dayjs(arg.date);
+  
+//     // Check if the clicked date is in the future
+//     if (clickedDate.isAfter(dayjs(), 'day')) {
+//       // Display a notification if the date is in the future
+//       notification.warning({
+//         message: 'Date Restriction',
+//         description: 'Restricted to open future dates.',
+//       });
+//     } else {
+//       // Format the date to the desired format (you may need to adjust the format)
+//       const formattedDate = clickedDate.format('YYYY-MM-DD');
+  
+//       // Navigate to the /addtask route with the date as a query parameter
+//       navigate(`/addtask?date=${formattedDate}`, {state: {formattedDate}});
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <DashboardLayout>
+//       <FullCalendar
+//         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+//         initialView={"dayGridMonth"}
+//         headerToolbar={{
+//           start: "today prev,next",
+//           center: "title",
+//           end: "dayGridMonth,timeGridWeek,timeGridDay",
+//         }}
+//         height={"90vh"}
+//         dateClick={handleDateClick}
+        
+//       />
+//       </DashboardLayout>
+//     </div>
+//   );
+// }
+
+// export default Calendar;
+
+import React, {useState, useEffect  } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { Calendar as BigCalendar, Views, momentLocalizer } from 'react-big-calendar';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import moment from 'moment';
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "./Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
-import { checkDomainOfScale } from "recharts/types/util/ChartUtils";
-
-function Calendar() {
+interface Event {
+  title: string;
+  start: string;
+  color: string;
+}
+const Calendar = () => {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
+  const [events, setEvents] = useState<Event[]>([]);
   useEffect(() => {
-    const storedMonth = localStorage.getItem("selectedMonth");
-    const storedYear = localStorage.getItem("selectedYear");
-    console.log("useeffect", storedMonth, storedYear);
-    if (storedMonth && storedYear) {
-      const monthYearString = `${storedMonth} ${storedYear}`;
-      const selectedDate = dayjs(monthYearString, "MMMM YYYY").toDate(); // Parse string to Date object
-      console.log("selectedDate-useeffect", selectedDate);
-      console.log("useeffect", selectedDate);
-      setSelectedDate(selectedDate);
-    } 
-  }, []);
+    // Fetch events from an API or any other source
+    // Here, I'm assuming you have an array of events with dates and colors
+    let fetchedEvents: Event[] = [];
 
+    // Get pendingTasks from localStorage
+    const pendingTasksString = localStorage.getItem("pendingTask");
+    if (pendingTasksString) {
+        const pendingTasks: string[] = JSON.parse(pendingTasksString);
+        // Iterate over pendingTasks and create a "Submitted" event for each date
+        pendingTasks.forEach((pendingDate) => {
+            fetchedEvents.push({
+                title: "Submitted",
+                start: pendingDate,
+                color: "orange",
+            });
+        });
+    }
 
-  console.log("selectedDate", selectedDate);
+    // Get rejectedKeys from localStorage
+    const rejectedKeysString = localStorage.getItem("rejectedKeys");
+    if (rejectedKeysString) {
+        const rejectedKeys: string[] = JSON.parse(rejectedKeysString);
+        // Iterate over rejectedKeys and create a "Rejected" event for each date
+        rejectedKeys.forEach((rejectedDate) => {
+            fetchedEvents.push({
+                title: "Rejected",
+                start: rejectedDate,
+                color: "red",
+            });
+        });
+    }
+
+    // Get selectedKeys from localStorage
+    const selectedKeysString = localStorage.getItem("selectedKeys");
+    if (selectedKeysString) {
+        const selectedKeys: string[] = JSON.parse(selectedKeysString);
+        // Iterate over selectedKeys and create an "Approved" event for each date
+        selectedKeys.forEach((selectedDate) => {
+            fetchedEvents.push({
+                title: "Approved",
+                start: selectedDate,
+                color: "green",
+            });
+        });
+    }
+
+    setEvents(fetchedEvents);
+}, []);
+
+  
+  
 
   const handleDateClick = (arg: DateClickArg) => {
+    // arg.date is the clicked date
     const clickedDate = dayjs(arg.date);
-
-    if (clickedDate.isAfter(dayjs(), "day")) {
+  
+    // Check if the clicked date is in the future
+    if (clickedDate.isAfter(dayjs(), 'day')) {
+      // Display a notification if the date is in the future
       notification.warning({
-        message: "Date Restriction",
-        description: "Restricted to open future dates.",
+        message: 'Date Restriction',
+        description: 'Restricted to open future dates.',
       });
     } else {
-      const formattedDate = clickedDate.format("YYYY-MM-DD");
-      navigate(`/addtask?date=${formattedDate}`);
+      // Format the date to the desired format (you may need to adjust the format)
+      const formattedDate = clickedDate.format('YYYY-MM-DD');
+  
+      // Navigate to the /addtask route with the date as a query parameter
+      navigate(`/addtask?date=${formattedDate}`, { state: { formattedDate } });
     }
   };
-  console.log("initialDate:", selectedDate);
-  // Format selectedDate as (Jan 1, 1970 UTC)
-  const formattedInitialDate = selectedDate?.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  console.log("formattedInitialDate",formattedInitialDate);
+  // Get the clickedDate from localStorage
+  const clickedDateFromLocalStorage = localStorage.getItem('clickedDate');
+  // Use clickedDate from localStorage if available, otherwise use the current year
+  const currentDate = clickedDateFromLocalStorage ? clickedDateFromLocalStorage : dayjs().startOf('year').format('YYYY-MM-DD');
   return (
     <div>
       <DashboardLayout>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView={"dayGridMonth"}
-          initialDate={formattedInitialDate}
+          initialDate={currentDate} // Set the initial date to January of the current year
           headerToolbar={{
             start: "today prev,next",
             center: "title",
@@ -119,6 +209,7 @@ function Calendar() {
           }}
           height={"90vh"}
           dateClick={handleDateClick}
+          events={events}
         />
       </DashboardLayout>
     </div>

@@ -24,6 +24,7 @@ import { CatchingPokemonSharp } from '@mui/icons-material';
 interface EmployeeTaskStatusProps{
     setSelectedMonth: React.Dispatch<React.SetStateAction<string>>;
     setSelectedYear: React.Dispatch<React.SetStateAction<string>>;
+    pendingTask: string[];
 }
 const EmployeeTaskStatus = () => {
     const navigate = useNavigate();
@@ -39,10 +40,13 @@ const EmployeeTaskStatus = () => {
     const [acceptCount, setAcceptCount]= useState(0);
     const [missedCount, setMissedCount]= useState(0);
     const [pendingCount, setPendingCount]= useState(0);
+    const [pendingTask, setPendingTask]= useState<string[]>([]);
     const [performanceData, setPerformanceData] = useState<{ date: string, percentage: number }[]>([]);
     const [chartWidth, setChartWidth] = useState(window.innerWidth * 0.7); // Set initial chart width to 90% of window width
     const [selectedMonth, setSelectedMonth]=useState<string>('');
     const [selectedYear, setSelectedYear]=useState<string>('');
+    const userName = localStorage.getItem("userName");
+    console.log("userName", userName);
     useEffect(() => {
         const handleResize = () => {
             setChartWidth(window.innerWidth * 0.2); // Update chart width when window is resized
@@ -110,7 +114,7 @@ const EmployeeTaskStatus = () => {
         let newAcceptCount = 0;
         let newRejectCount = 0;
         let newPendingCount = 0;
-    
+        let taskPending: string[] = [];
         filtered.forEach(task => {
             const date = dayjs(task.date).format('YYYY-MM-DD');
             // Check if the date has already been processed
@@ -121,11 +125,35 @@ const EmployeeTaskStatus = () => {
                 } else if (rejectedKeys.includes(task.date)) {
                     newRejectCount++;
                 } else {
-                    newPendingCount++;
+                    if (!approvedKeys.includes(task.date) && !taskPending.includes(task.date)) {
+                        taskPending.push(task.date);
+                        newPendingCount++;
+                    }
                 }
             }
         });
     
+        // Get stored pending tasks from localStorage
+        const storedPendingTasks = localStorage.getItem('pendingTask');
+        let storedPendingTasksArray: string[] = [];
+        if (storedPendingTasks) {
+            storedPendingTasksArray = JSON.parse(storedPendingTasks);
+        }
+    
+        // Remove any dates in stored pending tasks that are now in selectedKeys or rejectedKeys
+        storedPendingTasksArray = storedPendingTasksArray.filter(date => !approvedKeys.includes(date) && !rejectedKeys.includes(date));
+    
+        // Concatenate new pending tasks and stored pending tasks (without selected or rejected keys)
+        taskPending = [...taskPending, ...storedPendingTasksArray];
+    
+        // Remove duplicates from taskPending
+        taskPending = Array.from(new Set(taskPending));
+    
+        // Convert array to JSON string
+        const jsonString: string = JSON.stringify(taskPending);
+    
+        // Store the JSON string in localStorage
+        localStorage.setItem('pendingTask', jsonString);
         let newMissedCount = 0;
     
         if (filterOption === 'Month') {
@@ -152,7 +180,7 @@ const EmployeeTaskStatus = () => {
     
         setFilteredTasks(filtered);
     }, [filterOption, currentDate, currentMonth, currentWeek, taskList, approvedKeys, rejectedKeys]);
-
+    
     useEffect(() => {
         const calculatePerformanceData = () => {
             const performanceData = [];
@@ -339,17 +367,29 @@ const EmployeeTaskStatus = () => {
     };
     
     const handleCountClick = (status: string, filterOption: string, currentDate: string, currentMonth: string, currentWeek: any) => {
-        
+        // Determine the clickedDate based on the filterOption
+        let clickedDate;
+        if (filterOption === "Month") {
+            clickedDate = dayjs(currentMonth).startOf('month').format('YYYY-MM-DD');
+        } else if (filterOption === "Week") {
+            clickedDate = dayjs(currentWeek).startOf('week').format('YYYY-MM-DD');
+        } else {
+            clickedDate = dayjs(currentDate).format('YYYY-MM-DD');
+        }
         // Navigate to the calendar for the specific month based on the filter option
         const month = getCurrentMonth(filterOption, currentDate, currentMonth, currentWeek);
         const year = getCurrentYear(filterOption, currentDate, currentMonth, currentWeek);
+    
         console.log("handleCountClick", month, year);
         setSelectedYear(year);
         setSelectedMonth(month);
-        localStorage.setItem('selectedMonth', month);
-        localStorage.setItem('selectedYear', year);
+        
+        // Store the clickedDate in localStorage
+        localStorage.setItem('clickedDate', clickedDate);
+        
         navigate(`/calendar?month=${month}&year=${year}&status=${status}`);
     };
+    
     
     
     
@@ -480,12 +520,14 @@ const EmployeeTaskStatus = () => {
   return (
     <>
     <div style={{display:'flex', justifyContent:'space-between'}}>
-        <div style={{textAlign:'left', margin:'10px 20px'}}>
-            <h1 style={{fontSize:'34px'}}>Welcome</h1>
-            <h3 style={{ fontSize: '20px', marginBottom:'0px'}}>
-                Sasi
+        <div style={{textAlign:'left', margin:'10px 20px 0px 20px'}}>
+            <h1 style={{fontSize:'34px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
                 <span className="wave" role="img" aria-label="Waving hand">👋</span>
-            </h3>
+            </h1>
+            {/* <h3 style={{ fontSize: '20px', marginBottom:'0px'}}>
+                {userName}
+                <span className="wave" role="img" aria-label="Waving hand">👋</span>
+            </h3> */}
         </div>
         <div style={{display:'flex', justifyContent:'flex-end', height:'10%', margin:'40px 20px 10px 20px'}}>
             <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
@@ -540,23 +582,24 @@ const EmployeeTaskStatus = () => {
         </div>
     </div>  */}
     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <button className='cardStyle'onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none' }}>
+        <button className='cardStyle' onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Not Filled</p>
             <p style={{ color: 'red', fontSize: '54px', fontFamily: 'poppins' }}> {missedCount}</p>
         </button>
-        <button className='cardStyle' onClick={() => handleCountClick('Pending', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none' }}>
+        <button className='cardStyle' onClick={() => handleCountClick('Pending', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Pending</p>
             <p style={{ color: 'black', fontSize: '54px', fontFamily: 'poppins' }}> {pendingCount}</p>
         </button>
-        <button className='cardStyle' onClick={() => handleCountClick('Accepted',filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none' }}>
+        <button className='cardStyle' onClick={() => handleCountClick('Accepted',filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Accepted</p>
             <p style={{ color: 'green', fontSize: '54px', fontFamily: 'poppins' }}> {acceptCount}</p>
         </button>
-        <button className='cardStyle' onClick={() => handleCountClick('Rejected', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none' }}>
+        <button className='cardStyle' onClick={() => handleCountClick('Rejected', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Rejected</p>
             <p style={{ color: 'red', fontSize: '54px', fontFamily: 'poppins' }}> {rejectCount}</p>
         </button>
     </div>
+
     {/* <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <ApexCharts
             options={{
@@ -650,12 +693,6 @@ const EmployeeTaskStatus = () => {
             />
         </div>
     </div>
-    
-    
-
-   
-
-
     </>
   )
 }

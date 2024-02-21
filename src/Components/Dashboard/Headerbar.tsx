@@ -2,7 +2,7 @@ import React from 'react';
 import { Input, Button } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import '../Styles/Dashboard.css';
-
+import { Space, Avatar } from 'antd';
 const Headerbar: React.FC = () => {
   const handlePlusClick = () => {
     // Button action
@@ -37,9 +37,25 @@ const Headerbar: React.FC = () => {
         onClick={handlePlusClick}
       />
       <Button
-        type="text"
-        icon={<UserOutlined style={{ fontSize: 22 }} />}
-      />
+      style={{display:'flex'}}
+      type="text"
+      icon={<UserOutlined style={{ fontSize: 22 }} />}>
+        {/* <div>
+          <div>
+            <strong>Sasi Kumar</strong>
+          </div>
+          <div>MGIN10058</div>
+        </div> */}
+        </Button>
+        {/* <Avatar icon={<UserOutlined />} size={45}>
+        </Avatar> 
+        <div>
+            <h3>
+              <strong style={{fontFamily:'poppins'}}>Sasi Kumar</strong>
+              <p style={{fontFamily:'poppins'}}>MGIN10058</p>
+            </h3>
+            
+        </div>     */}
     </div>
   );
 };

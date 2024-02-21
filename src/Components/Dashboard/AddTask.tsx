@@ -34,12 +34,15 @@ type AddTaskProps = {
 
 const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsData }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
   const [deletedTask, setDeletedTask] = useState(false);
   const [formWidth, setFormWidth] = useState(800);
-  const [currentDate, setCurrentDate] = useState(dayjs());
+  const [currentDate, setCurrentDate] = useState(dayjs(formattedDate));
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf('month'));
   const [isFormEnabled, setIsFormEnabled] = useState(false);
+  
   const [addTask, setAddTask] = useState<Task>({
     idx: 1, // Set initial idx
     date: currentDate.format('YYYY-MM-DD'),
@@ -792,6 +795,12 @@ const handleDeleteTask = useCallback((idx: number) => {
                     value={currentDate.format('YYYY-MM-DD')} 
                     onChange={(e) => handleInputChange('date', e.target.value)}
                   />
+                  {/* <DatePicker
+                      value={dayjs(currentDate)} // Convert currentDate to Dayjs object
+                      format="YYYY-MM-DD" // Specify the date format
+                      onChange={(date, dateString) => handleInputChange('date', dateString)} // Use dateString to get the selected date
+                      style={{ width: '100%', height:'35%' }} // Adjust the width as needed
+                  /> */}
                 </div>
                 {/* <div className='create-layout-addtask-left  '>
                   <div style={{marginBottom:'10px'}}>

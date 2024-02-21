@@ -131,8 +131,7 @@ const Dashboard: React.FC<PieChartProps> = ({ data }) => {
   return (
   <DashboardLayout>
     <EmployeeTaskStatus/>
-    
-    <Pie data={chartData} />
+    {/* <Pie data={chartData} /> */}
   </DashboardLayout>
   
   );
