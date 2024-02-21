@@ -175,22 +175,42 @@ const Calendar = () => {
   const handleDateClick = (arg: DateClickArg) => {
     // arg.date is the clicked date
     const clickedDate = dayjs(arg.date);
-  
-    // Check if the clicked date is in the future
-    if (clickedDate.isAfter(dayjs(), 'day')) {
-      // Display a notification if the date is in the future
-      notification.warning({
-        message: 'Date Restriction',
-        description: 'Restricted to open future dates.',
-      });
+
+    // Check if the clicked date is in the future month
+    if (clickedDate.isAfter(dayjs(), 'month')) {
+        // Display a notification if the date is in the future month
+        notification.warning({
+            message: 'Month Restriction',
+            description: 'Cannot navigate to future months.',
+        });
+    } else if (clickedDate.isAfter(dayjs(), 'day')) {
+        // Display a notification if the date is in the future day
+        notification.warning({
+            message: 'Date Restriction',
+            description: 'Restricted to open future dates.',
+        });
     } else {
-      // Format the date to the desired format (you may need to adjust the format)
-      const formattedDate = clickedDate.format('YYYY-MM-DD');
-  
-      // Navigate to the /addtask route with the date as a query parameter
-      navigate(`/addtask?date=${formattedDate}`, { state: { formattedDate } });
+        // Format the date to the desired format (you may need to adjust the format)
+        const formattedDate = clickedDate.format('YYYY-MM-DD');
+
+        // Navigate to the /addtask route with the date as a query parameter
+        navigate(`/addtask?date=${formattedDate}`, { state: { formattedDate } });
     }
   };
+
+  const handleDatesSet = (arg: any) => {
+    const currentMonth = dayjs(arg.start);
+    const today = dayjs();
+
+    if (currentMonth.isAfter(today, 'month')) {
+        // If the displayed month is in the future, navigate back to the current month
+        const calendarApi = arg.view.calendar;
+        calendarApi.gotoDate(today.toDate());
+    }
+  };
+
+
+
   // Get the clickedDate from localStorage
   const clickedDateFromLocalStorage = localStorage.getItem('clickedDate');
   // Use clickedDate from localStorage if available, otherwise use the current year
@@ -210,6 +230,7 @@ const Calendar = () => {
           height={"90vh"}
           dateClick={handleDateClick}
           events={events}
+          datesSet={handleDatesSet}
         />
       </DashboardLayout>
     </div>
