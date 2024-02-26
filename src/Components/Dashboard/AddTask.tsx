@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Input, TimePicker, Select, notification, DatePicker} from 'antd';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { Input, TimePicker, Select, notification, DatePicker, Button} from 'antd';
 import { SearchOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -12,6 +12,18 @@ import { ColumnsType } from "antd/es/table";
 import ApprovalRequest from './ApprovalRequest';
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
 import Dashboard from './Dashboard';
+import {Modal} from 'antd';
+import { RecentRejected } from './MonthTasks';
+export interface DateTask{
+  key: string;
+  task: Task[];
+}
+
+export interface RequestedOn {
+  [key: string]: string[]; // Each key represents a month (e.g., "February 2024") with an array of dates
+}
+
+
 export interface Task {
   key?:string;
   idx: number; // Add this line
@@ -33,7 +45,9 @@ type AddTaskProps = {
 };
 
 const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsData }) => {
+  const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
+  const {confirm}= Modal;
   const location = useLocation();
   const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
   const [deletedTask, setDeletedTask] = useState(false);
@@ -95,6 +109,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     margin: '10px 20px',
    // padding: '10px 20px',
     width: formWidth + 'px',
+    height:'540px'
   };
 
   useEffect(()=>{
@@ -292,7 +307,6 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 
   const handleToggleForm = () => {
     setIsFormEnabled((prevIsFormEnabled) => !prevIsFormEnabled);
-  
     // If you want to reset the form when disabling it, you can reset the form state here
     if (!isFormEnabled) {
       setAddTask({
@@ -483,45 +497,125 @@ const handleEditTask = (idx: number) => {
   }
 };
 
-
-
 const handleDeleteTask = useCallback((idx: number) => {
-  // Check if the date is included in selectedKeysToHide
-  const isDateIncluded = selectedKeysToHide.some(date => {
-      // Assuming taskList contains tasks with a 'date' property
-      const task = taskList.find(task => task.idx === idx);
-      return task && task.date === date;
-  });
-
-  // Toggle the deletedTask flag based on the presence of the date in selectedKeysToHide
-  setDeletedTask(!isDateIncluded);
-
-  // Save idx in state
-  setDeletedTaskIdx(idx);
-}, [selectedKeysToHide, taskList]);
-
-
-  useEffect(() => {
-    if (deletedTask) {
-      // Implement the logic to delete the task based on idx
-      const updatedTaskList = taskList.filter(task => {
-        // Check if the task date is not included in selectedKeysToHide and isNew is true
-        return !selectedKeysToHide.includes(task.date);
-      });
+  const taskToDelete = taskList.find(task => task.idx === idx);
   
-      // Reindex the idx starting from 1 and use deletedTask flag
-      const reindexedTaskList = updateSlNo(updatedTaskList, deletedTask);
+  if (!taskToDelete || selectedKeysToHide.includes(taskToDelete.date)) {
+    // Task not found or its date is in selectedKeysToHide, do not delete
+    return;
+  }
+
+  // Display confirmation modal before deleting the task
+  confirm({
+    title: 'Delete Task',
+    content: 'Are you sure you want to delete the task?',
+    okText: 'Yes',
+    okButtonProps: {
+      style: {
+        width: '80px', backgroundColor: '#0B4266', color: 'white'
+      },
+    },
+    cancelText: 'No',
+    cancelButtonProps: {
+      style: {
+        width: '80px', backgroundColor: '#0B4266', color: 'white'
+      },
+    },
+    onOk() {
+      // Logic to delete the task if user confirms
+      const updatedTaskList = taskList.filter(task => task.idx !== idx);
+  
+      // Reindex the idx starting from 1
+      const reindexedTaskList = updateSlNo(updatedTaskList, true);
   
       setTaskList(reindexedTaskList);
       setFilteredTasks(reindexedTaskList);
   
       // Update localStorage
       localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
+    },
+    onCancel() {
+      // Logic if user cancels deletion
+    },
+  });
+}, [taskList, selectedKeysToHide]);
+
+
+// const handleDeleteTask = useCallback((idx: number) => {
+//   // Check if the date is included in selectedKeysToHide
+//   const isDateIncluded = selectedKeysToHide.some(date => {
+//       // Assuming taskList contains tasks with a 'date' property
+//       const task = taskList.find(task => task.idx === idx);
+//       return task && task.date === date;
+//   });
+
+//   // Toggle the deletedTask flag based on the presence of the date in selectedKeysToHide
+//   setDeletedTask(!isDateIncluded);
+
+//   // Save idx in state
+//   setDeletedTaskIdx(idx);
+// }, [selectedKeysToHide, taskList]);
+
+
+//   useEffect(() => {
+//     if (deletedTask) {
+//       // Implement the logic to delete the task based on idx
+//       const updatedTaskList = taskList.filter(task => {
+//         // Check if the task date is not included in selectedKeysToHide and isNew is true
+//         return !selectedKeysToHide.includes(task.date);
+//       });
   
-      // Reset the deletedTask flag after updating
-      setDeletedTask(false);
-    }
-  }, [deletedTask, deletedTaskIdx, selectedKeysToHide, taskList]);
+//       // Reindex the idx starting from 1 and use deletedTask flag
+//       const reindexedTaskList = updateSlNo(updatedTaskList, deletedTask);
+  
+//       setTaskList(reindexedTaskList);
+//       setFilteredTasks(reindexedTaskList);
+  
+//       // Update localStorage
+//       localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
+  
+//       // Reset the deletedTask flag after updating
+//       setDeletedTask(false);
+//     }
+//   }, [deletedTask, deletedTaskIdx, selectedKeysToHide, taskList]);
+
+  // const handleDeleteTask = useCallback((idx: number) => {
+  //   // Display confirmation modal before deleting the task
+  //   confirm({
+  //     title: 'Delete Task',
+  //     content: 'Are you sure you want to delete the task?',
+  //     okText: 'Yes',
+  //     okButtonProps: {
+  //       style: {
+  //         width: '80px', backgroundColor: '#0B4266', color: 'white'
+  //       },
+  //     },
+  //     cancelText: 'No',
+  //     cancelButtonProps: {
+  //       style: {
+  //         width: '80px', backgroundColor: '#0B4266', color: 'white'
+  //       },
+  //     },
+  //     onOk() {
+  //       // Logic to delete the task if user confirms
+  //       const updatedTaskList = taskList.filter(task => task.idx !== idx);
+    
+  //       // Reindex the idx starting from 1
+  //       const reindexedTaskList = updateSlNo(updatedTaskList);
+    
+  //       setTaskList(reindexedTaskList);
+  //       setFilteredTasks(reindexedTaskList);
+    
+  //       // Update localStorage
+  //       localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
+  //     },
+  //     onCancel() {
+  //       // Logic if user cancels deletion
+  //     },
+  //   });
+  // }, [taskList]);
+
+  
   
   // const handleOverallSubmit = () => {
   //   // Assuming you have an API endpoint for approval requests
@@ -579,7 +673,54 @@ const handleDeleteTask = useCallback((idx: number) => {
   //   //   });
   // };
 
-  const handleOverallSubmit = () => {
+//   const handleOverallSubmit = () => {
+//     // Prepare the data to be sent
+//     const requestData: Task[] = filteredTasks.map(task => ({
+//         date: task.date,
+//         userId: task.userId,
+//         task: task.task,
+//         startTime: task.startTime,
+//         endTime: task.endTime,
+//         totalHours: task.totalHours,
+//         description: task.description,
+//         reportingTo: task.reportingTo,
+//         idx: task.idx,
+//     }));
+
+//     // Set the success notification
+//     notification.success({
+//         message: 'Submission Successful',
+//         description: 'Task details submitted successfully!',
+//     });
+//     navigate('/approvalrequests')
+//     // Set the approvalRequestsData state
+//     console.log("handleOverAllsubmit", requestData);
+//     setApprovalRequestsData(requestData);
+//     localStorage.setItem('requestedOn', addTask.date);
+//     // Store the approvalRequestsData in local storage
+//     localStorage.setItem('approvalRequestsData', JSON.stringify(requestData));
+
+//     // Retrieve rejectedKeys from local storage
+//     const rejectedKeysString = localStorage.getItem('rejectedKeys');
+//     console.log("rejectedKeysString",rejectedKeysString);
+//     if (rejectedKeysString) {
+//       let parsedRejectedKeys: RecentRejected[] = JSON.parse(rejectedKeysString);
+//       console.log("rejectedKeys", parsedRejectedKeys);
+//       // Check if 'submit' exists in rejectedKeys
+//       const date = requestData.length > 0 ? requestData[0].date : '';
+//       if (parsedRejectedKeys.some((key) => key.date === date)) {
+//         // Remove 'date' from rejectedKeys
+//         const updatedRejectedKeys = parsedRejectedKeys.filter((key) => key.date !== date);
+
+//         // Update rejectedKeys in local storage
+//         localStorage.setItem('rejectedKeys', JSON.stringify(updatedRejectedKeys));
+//     }
+//     }
+// };
+
+
+
+const handleOverallSubmit = () => {
     // Prepare the data to be sent
     const requestData: Task[] = filteredTasks.map(task => ({
         date: task.date,
@@ -593,89 +734,136 @@ const handleDeleteTask = useCallback((idx: number) => {
         idx: task.idx,
     }));
 
+    // Group tasks by date
+    const groupedTasks: { [date: string]: Task[] } = {};
+    requestData.forEach(task => {
+        if (groupedTasks.hasOwnProperty(task.date)) {
+            groupedTasks[task.date].push(task);
+        } else {
+            groupedTasks[task.date] = [task];
+        }
+    });
+
+        // Determine the key based on the filterOption
+    let key: string;
+    if (filterOption === "Date") {
+        key = currentDate.format("MMMM YYYY"); // Format Dayjs object to "February 2024"
+    } else if (filterOption === 'Week') {
+        key = currentWeek.startOf('week').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
+    } else {
+        key = currentMonth.startOf('month').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
+    }
+
+    let date: string[] = [];
+    if (filterOption === "Date") {
+        date.push(currentDate.format('YYYY-MM-DD')); // Format Dayjs object to "February 2024"
+    } else if (filterOption === 'Week') {
+        const fromDate = currentWeek.startOf('week').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
+        const toDate = currentWeek.endOf('week').format("YYYY-MM-DD");
+        date.push(fromDate);
+        date.push(toDate);
+    } else {
+        const fromDate = currentMonth.startOf('month').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
+        const toDate = currentMonth.endOf('month').format("YYYY-MM-DD");
+        date.push(fromDate);
+        date.push(toDate);
+    }
+
+    // Retrieve requestedOn from local storage
+    const requestedOnString = localStorage.getItem('requestedOn');
+    const requestedOn: RequestedOn = requestedOnString ? JSON.parse(requestedOnString) : {};
+
+    // Update requestedOn with the new date
+    requestedOn[key] = date;
+
+    // Update requestedOn in local storage
+    localStorage.setItem('requestedOn', JSON.stringify(requestedOn));
+
+
+    // Store the approvalRequestsData in local storage as an object
+    const approvalRequestedData: { [date: string]: Task[] } = groupedTasks;
+    localStorage.setItem('approvalRequestedData', JSON.stringify(approvalRequestedData));
+
+    // Retrieve rejectedKeys from local storage
+    const rejectedKeysString = localStorage.getItem('rejectedKeys');
+    console.log("rejectedKeysString", rejectedKeysString);
+    if (rejectedKeysString) {
+        let parsedRejectedKeys: RecentRejected[] = JSON.parse(rejectedKeysString);
+        console.log("rejectedKeys", parsedRejectedKeys);
+        // Check if 'submit' exists in rejectedKeys
+        const date = requestData.length > 0 ? requestData[0].date : '';
+        if (parsedRejectedKeys.some((key) => key.date === date)) {
+            // Remove 'date' from rejectedKeys
+            const updatedRejectedKeys = parsedRejectedKeys.filter((key) => key.date !== date);
+
+            // Update rejectedKeys in local storage
+            localStorage.setItem('rejectedKeys', JSON.stringify(updatedRejectedKeys));
+        }
+    }
+
     // Set the success notification
     notification.success({
         message: 'Submission Successful',
         description: 'Task details submitted successfully!',
     });
-    navigate('/approvalrequests')
-    // Set the approvalRequestsData state
-    console.log("handleOverAllsubmit", requestData);
-    setApprovalRequestsData(requestData);
 
-    // Store the approvalRequestsData in local storage
-    localStorage.setItem('approvalRequestsData', JSON.stringify(requestData));
-
-    // Retrieve rejectedKeys from local storage
-    const rejectedKeysString = localStorage.getItem('rejectedKeys');
-    console.log("rejectedKeysString",rejectedKeysString);
-    if (rejectedKeysString) {
-        let rejectedKeys = JSON.parse(rejectedKeysString);
-        console.log("rejectedKeys",rejectedKeys);
-        // Check if 'submit' exists in rejectedKeys
-        const date = requestData.length>0?requestData[0].date:'';
-        if (rejectedKeys.includes(date)) {
-            // Remove 'date' from rejectedKey
-            rejectedKeys = rejectedKeys.filter((key:any) => key !== date);
-            // Update rejectedKeys in local storage
-            localStorage.setItem('rejectedKeys', JSON.stringify(rejectedKeys));
-        }
-    }
+    // Navigate to approval requests page
+    navigate('/approvalrequests');
 };
 
   const columns: ColumnsType<Task> = [
     {
       title: 'Sl.no',
-      sorter: (a: Task, b: Task) => (a.slNo && b.slNo ? a.slNo - b.slNo : 0),
+      //sorter: (a: Task, b: Task) => (a.slNo && b.slNo ? a.slNo - b.slNo : 0),
       dataIndex: 'slNo',
       key: 'slNo',
       fixed: 'left',
     },
     {
       title: 'Task',
-      sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+      //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'task',
       key: 'task',
       fixed: 'left',
     },
     {
       title: 'Date',
-      sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
+      //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
       dataIndex: 'date',
       key: 'date',
       fixed: 'left',
     },
     {
       title: 'Start Time',
-      sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
+      //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
       dataIndex: 'startTime',
       key: 'startTime',
       fixed: 'left',
     },
     {
       title: 'End Time',
-      sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
+      //sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
       dataIndex: 'endTime',
       key: 'endTime',
       fixed: 'left',
     },
     {
       title: 'Total Hours',
-      sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+      //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'totalHours',
       key: 'totalHours',
       fixed: 'left',
     },
     {
       title: 'Description',
-      sorter: (a: Task, b: Task) => a.description.localeCompare(b.description),
+      //sorter: (a: Task, b: Task) => a.description.localeCompare(b.description),
       dataIndex: 'description',
       key: 'description',
       fixed: 'left',
     },
     {
       title: 'Reporting To',
-      sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+      //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
       dataIndex: 'reportingTo',
       key: 'reportingTo',
       fixed: 'left',
@@ -782,7 +970,7 @@ const handleDeleteTask = useCallback((idx: number) => {
               <div className='section-addtask'>
               <div className='create-layout-addtask-left  '>
                   <div style={{marginBottom:'10px'}}>
-                    <label htmlFor='addTaskID'>Date</label>
+                    <label style={{color:'#0B4266'}} htmlFor='addTaskID'>Date</label>
                   </div>
                   {/* <input
                     type="date"
@@ -814,7 +1002,7 @@ const handleDeleteTask = useCallback((idx: number) => {
                 </div> */}
                  <div className='create-layout-addtask'>
                   <div>
-                    <label htmlFor='task'>Task</label>
+                    <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
                   </div>
                   <div>
                     <select
@@ -851,7 +1039,7 @@ const handleDeleteTask = useCallback((idx: number) => {
                 </div>
                 <div className='create-layout-addtask'>
                   <div>
-                    <label htmlFor='endTime'>End Time</label>
+                    <label style={{color:'#0B4266'}} htmlFor='endTime'>End Time</label>
                   </div>
                   <TimePicker
                     value={
@@ -872,7 +1060,7 @@ const handleDeleteTask = useCallback((idx: number) => {
                 
               <div className='create-layout-addtask-left  '>
                   <div style={{marginBottom:'10px'}}>
-                    <label htmlFor='totalHours'>Total Hours</label>
+                    <label style={{color:'#0B4266'}} htmlFor='totalHours'>Total Hours</label>
                   </div>
                   <Input
                     placeholder='Enter your Total Hours'
@@ -883,7 +1071,7 @@ const handleDeleteTask = useCallback((idx: number) => {
                 </div>
                 <div className='create-layout-addtask-reportingTo  '>
                   <div className='create-layout-reportingTo'>
-                    <label htmlFor='reportingTo'>Reporting To</label>
+                    <label style={{color:'#0B4266'}} htmlFor='reportingTo'>Reporting To</label>
                   </div>
                   <select
                     id='reportingTo-addtask'
@@ -902,7 +1090,7 @@ const handleDeleteTask = useCallback((idx: number) => {
               <div>
                 <div className='create-layout-description'>
                   <div>
-                    <label>Description</label>
+                    <label style={{color:'#0B4266'}}>Description</label>
                   </div>
                   <textarea
                     value={addTask.description}
@@ -914,18 +1102,18 @@ const handleDeleteTask = useCallback((idx: number) => {
             </div>
               
             
-            <div className='button'>
-              <button type='button' id='cancel-addtask' onClick={handleClearSubmit}>
+            <div className='button' style={{marginBottom:'10px'}}>
+              <Button  id='cancel-addtask' onClick={handleClearSubmit}>
                 Clear
-              </button>
+              </Button>
               {isEdited ? (
-              <button type='button' id='submit-addtask' onClick={handleFormSubmit}>
+              <Button id={addTask.totalHours? 'submit-addtask-active':'submit-addtask'} onClick={handleFormSubmit}>
                 Save
-              </button>
+              </Button>
             ):(
-              <button type='button' id='submit-addtask' onClick={handleFormSubmit}>
+              <Button  id={addTask.totalHours? 'submit-addtask-active':'submit-addtask'} onClick={handleFormSubmit}>
                 Add Task
-              </button>
+              </Button>
             )}
             </div>
 
@@ -933,7 +1121,26 @@ const handleDeleteTask = useCallback((idx: number) => {
         <>
         <div>
           <div style={{ display:'flex', justifyContent:'space-between', margin:'10px 20px' }}>
-            <Input
+            <div style={{display:'flex'}}>
+              <Button id='submit-less' onClick={handleLeftArrowClick}> 
+                      <LeftOutlined />
+                  </Button>
+                  {/* <select 
+                      id='submit' 
+                      style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
+                      onChange={(e) => handleFilterChange(e.target.value)} value={filterOption}
+                  >
+                      <option style={{textAlign:'center'}} value='Date'>Date</option>
+                      <option style={{textAlign:'center'}} value='Week'>Week</option>
+                      <option style={{textAlign:'center'}} value='Month'>Month</option>
+                  </select> */}
+                  <Button id='submit-less' onClick={handleRightArrowClick}>
+                      <RightOutlined />
+                  </Button>
+
+            </div>
+            
+            {/* <Input
             className="search-addtask"
             placeholder="Search by Date"
             allowClear
@@ -942,20 +1149,20 @@ const handleDeleteTask = useCallback((idx: number) => {
             //  console.log("Search input value:", e.target.value);
               setSearchInput(e.target.value);
             }}
-          />
+          /> */}
          {!(filterOption === 'Date' && !isFormEnabled) && (
-            <button
-              id='cancel'
+            <Button
+              id='cancel-new'
               onClick={handleToggleForm}
               disabled={isFormEnabled} // Disable the button when the form is enabled
             >
               Add Task
-            </button>
+            </Button>
           )}
           <div style={{display:'flex', justifyContent:'flex-end'}}>
-          <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
+          {/* <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
             <LeftOutlined />
-          </button>
+          </button> */}
 
         {/* <Select
            
@@ -983,29 +1190,33 @@ const handleDeleteTask = useCallback((idx: number) => {
           <Select.Option value="Week">Week</Select.Option>
           <Select.Option value="Month">Month</Select.Option>
         </Select> */}
-          <select 
-            id='submit' 
-            style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
-            onChange={(e) => handleFilterChange(e.target.value)} value={filterOption}
-          >
-            <option style={{textAlign:'center'}} value='Date'>Date</option>
-            <option style={{textAlign:'center'}} value='Week'>Week</option>
-            <option style={{textAlign:'center'}} value='Month'>Month</option>
-          </select>
-          <button type='button' id='submit-less' onClick={handleRightArrowClick}>
+          <Select 
+                    id='submit' 
+                    style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', marginTop:'10px', height:'95%', width:'120px' }} 
+                    onChange={(value) => handleFilterChange(value)} 
+                    value={filterOption}
+                    dropdownStyle={{ textAlign: 'center' }} // Style the dropdown menu
+                >
+                    <Option value='Date'>Date</Option>
+                    <Option value='Week'>Week</Option>
+                    <Option value='Month'>Month</Option>
+                </Select>
+          {/* <button type='button' id='submit-less' onClick={handleRightArrowClick}>
             <RightOutlined />
-          </button>
+          </button> */}
           </div>
         </div>
       </div>
         <Table
+            style={{fontSize:'12px', fontFamily:'poppins', fontWeight:'normal', color: '#0B4266'}}
+            className='addtask-table'
             columns={columns}
             dataSource={filteredTasks}
             pagination={false}
           />
-            <button type='button' id='submit-overall' onClick={handleOverallSubmit}>
+            <Button id='submit-overall' onClick={handleOverallSubmit}>
               Submit
-            </button>
+            </Button>
         </>
       </div>
     </DashboardLayout>

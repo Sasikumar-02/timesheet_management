@@ -14,7 +14,7 @@ const headerStyle: React.CSSProperties = {
     backgroundColor: '#E7ECF0',
     position:'fixed',
     right:0,
-    left:0,
+    left:200,
 };
 
 const contentStyle: React.CSSProperties = {
@@ -31,7 +31,8 @@ const contentStyle: React.CSSProperties = {
 };
 
 const siderStyle: React.CSSProperties = {
-    marginTop:50,
+    width:'100px',
+    marginTop:'5px',
     position:'fixed',
     textAlign: 'center',
     lineHeight: '70px',

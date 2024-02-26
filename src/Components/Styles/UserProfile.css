@@ -4,17 +4,18 @@
     text-align: left;
     font-family: poppins;
     font-size: medium;
-    font-weight: bold;
+    /* font-weight: bold; */
   }
   .userprofile-main>h2{
     color: #0B4266;
     text-align: left;
     font-family: poppins;
-    font-size: 24px;
+    font-size: 16px;
+    /* 24 */
   }
   .label-div{
     color: #7191A6;
-    font-weight: bold;
+    /* font-weight: bold; */
   }
   .desingation-style{
     color:#00000080;
@@ -39,16 +40,49 @@
     text-align: left;
 }
 .calendar{   
-    color: black;
+    color: #0B4266;
     text-decoration: none;
     background-color: transparent;
+    font-family: poppins;
     outline: none;
     cursor: pointer;
     transition: color 0.3s;
 }
 
+/* Custom styles to change FullCalendar date, month, and week colors */
+#calendar-main .fc-day-header {
+  color: #0B4266; /* Change day names color */
+  font-family: poppins;
+  font-weight: normal;
+}
+
+#calendar-main .fc-daygrid-day.fc-day-today {
+  color: white; /* Change today's date text color */
+  font-family: poppins;
+  font-weight: normal;
+}
+
+#calendar-main .fc-daygrid-day {
+  color: #0B4266; /* Change dates color */
+  font-family: poppins;
+  font-weight: normal;
+}
+
+#calendar-main .fc-toolbar-title {
+  color: #0B4266; /* Change month title color */
+  font-family: poppins;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#calendar-main .fc-daygrid-week-number {
+  color: #0B4266; /* Change week number color */
+  font-family: poppins;
+}
+
 :where(.css-dev-only-do-not-override-1qhpsh8) a {
-    color: black;
+    color: #0B4266; /* Change week number color */
+    font-family: poppins;
     text-decoration: none;
     background-color: transparent;
     outline: none;

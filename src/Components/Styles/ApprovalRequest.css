@@ -14,44 +14,83 @@
   color: active #0B4266;
   text-align: center;
   font-family: poppins;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 14px;
+  /* font-weight: bold; */
 }
+
+.table-striped-rows tr:nth-child(2n) td {
+  background-color: #fbfbfb;
+}
+.table-striped-rows thead {
+  background-color: #f1f1f1;
+}
+
+
 .rowstyle{
     border: 1px solid grey;
-}
-
-.odd-row {
-    background-color: #E8E8E9;
-}
-
-.even-row {
-    background-color: white;
-}
-
-.white-row{
-    background-color: white ;
 }
   
 .ant-table-column-title{
     background-color: white;
     color:#0B4266;
-    font-size: 16px;
+    font-size: 14px;
     font-family: poppins;
 }
 
 .ant-table-column-title>title{
     color:#0B4266;
-    font-size: 16px;
+    font-size: 14px;
     font-family: poppins;
 }
-
-.ant-table-cell{
+ 
+.ant-table-cell > td {
     color:#0B4266;
-    font-size: 16px;
+    font-size: 14px;
     font-family: poppins;
 }
 
+/* Custom styles to change Ant Design table header background color */
+    .custom-table .ant-table-thead > tr > th {
+        background-color: white; /* Change to your desired color */
+    }
+  
+  .custom-table:hover{
+    background-color: white;
+  }
+
+  .custom-table .ant-table-cell .ant-table-row-expand-icon-cell > td{
+    background-color: white; 
+  }
+
+
+  .approvalrequests-table .ant-table-thead > tr > th:hover {
+      background-color: white !important;
+  }
+  
+
+  .approvalrequests-table .ant-table-thead > tr > th{
+    background-color: white !important;
+    color: #0B4266 !important;
+    font-family: poppins !important;
+  
+  }
+
+  .approvalrequests-table .ant-table-thead:hover > tr > th{
+    background-color: white !important;
+    color: #0B4266 !important;
+    font-family: poppins !important;
+  
+  }
+
+  .approvalrequests-table .ant-table-row-expand-icon-cell {
+    background-color: white !important; 
+}
+
+.approvalrequests-table .ant-table-row:nth-child(even) .ant-table-row-expand-icon-cell {
+    background-color: #fbfbfb !important; 
+}
+
+  
 .ant-table-wrapper .ant-table-thead >div, :where(.css-dev-only-do-not-override-1qhpsh8).ant-table-wrapper .ant-table-thead >div {
     position: relative;
     /* color: rgba(0, 0, 0, 0.88); */

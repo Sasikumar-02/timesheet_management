@@ -33,7 +33,7 @@ import Error404 from "../Components/Error/Error-404";
 import Dashboard from "../Components/Dashboard/Dashboard";
 import CreateBranchAdmin from "../Components/Dashboard/CreateBranchAdmin";
 import OnboardForm from "../Components/Dashboard/OnboardForm";
-import ControlCalendar from '../Components/Dashboard/Calendar';
+import Calendar from '../Components/Dashboard/Calendar';
 import CreateUser from '../Components/Dashboard/CreateUser';
 import EmployeeList from '../Components/Dashboard/Employee-list';
 import UserDetails from '../Components/Dashboard/UserDetails';
@@ -42,6 +42,7 @@ import UserProfile from '../Components/Dashboard/UserProfile';
 import ApprovalRequest from '../Components/Dashboard/ApprovalRequest';
 import { Task } from '../Components/Dashboard/AddTask';
 import MonthTasks from '../Components/Dashboard/MonthTasks';
+import { AdminLayout } from '../Components/Dashboard/AdminLayout';
 
 const AppRoutes: React.FC = () => {
   const userEmail = localStorage.getItem('email');
@@ -65,8 +66,8 @@ const AppRoutes: React.FC = () => {
       <Route element={<PrivateRoutes />}>
         <Route path="/dashboard" element={<Dashboard data={pieChartData}/>} />
         <Route path="/create-branch-admin" element={<CreateBranchAdmin />} />
-        <Route path='/calendar' element={<ControlCalendar />} />
-        <Route path="/onboardform" element={<OnboardForm />} />
+        <Route path='/calendar' element={<Calendar />} />
+        {/* <Route path="/onboardform" element={<OnboardForm />} /> */}
         {/* ... (other routes) */}
         <Route path="/createuser" element={userEmail === 'sasikumarmurugan02@gmail.com' ? <CreateUser /> : <Navigate to="/dashboard" />} />
         <Route path='/userdetails' element={userEmail === 'sasikumarmurugan02@gmail.com' ? <UserDetails /> : <Navigate to="/dashboard" />} />
@@ -85,6 +86,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/createuser/:userId" element={userEmail === 'sasikumarmurugan02@gmail.com' ? <CreateUser /> : <Navigate to="/dashboard" />} />
         <Route path='/approvalrequests' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <ApprovalRequest/> : <Navigate to="/dashboard" />} />
         <Route path='/monthTasks' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <MonthTasks setSelectedKeys ={setSelectedKeys} /> : <Navigate to="/dashboard" />} />
+        <Route path='/adminlayout' element={<AdminLayout/>}/>
       </Route>
     </Routes>
   );

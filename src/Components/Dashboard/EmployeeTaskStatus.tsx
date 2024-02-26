@@ -15,18 +15,41 @@ import ApexCharts from 'react-apexcharts';
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ResponsiveContainer, Brush, ReferenceLine, Label } from 'recharts';
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
-import { notification } from 'antd';
+import { notification, Card , ConfigProvider, Button} from 'antd';
 import { Task } from './AddTask';
-
 import { set } from 'lodash';
 import { CatchingPokemonSharp } from '@mui/icons-material';
+import asset from '../../assets/images/asset.svg'
+import { Select } from 'antd'; // Import the Select component from Ant Design
+import { RecentRejected } from './MonthTasks';
+import type { ThemeConfig } from "antd";
+import { theme } from "antd";
 
+const config: ThemeConfig = {
+    token: {
+      colorPrimary: "#0b4266",
+   
+      colorPrimaryBg: "rgba(155, 178, 192, 0.2)",
+   
+      colorFillAlter: "rgba(231, 236, 240, 0.3)",
+   
+      colorPrimaryBgHover: "rgba(155, 178, 192, 0.2)",
+   
+      borderRadiusLG: 4,
+   
+      colorFill: "#0b4266",
+   
+      colorBgContainerDisabled: "rgba(0, 0, 0, 0.04)",
+    },
+  };
 interface EmployeeTaskStatusProps{
     setSelectedMonth: React.Dispatch<React.SetStateAction<string>>;
     setSelectedYear: React.Dispatch<React.SetStateAction<string>>;
     pendingTask: string[];
 }
+
 const EmployeeTaskStatus = () => {
+    const { Option } = Select; // Destructure the Option component from Select
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
     const [currentDate, setCurrentDate] = useState(dayjs());
@@ -35,7 +58,7 @@ const EmployeeTaskStatus = () => {
     const [taskList, setTaskList] = useState<Task[]>([]);
     const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
     const [approvedKeys, setApprovedKeys]= useState<string[]>([]);
-    const [rejectedKeys, setrejectedKeys]= useState<string[]>([]);
+    const [rejectedKeys, setRejectedKeys]= useState<RecentRejected[]>([]);
     const [rejectCount, setRejectCount]= useState(0);
     const [acceptCount, setAcceptCount]= useState(0);
     const [missedCount, setMissedCount]= useState(0);
@@ -47,6 +70,26 @@ const EmployeeTaskStatus = () => {
     const [selectedYear, setSelectedYear]=useState<string>('');
     const userName = localStorage.getItem("userName");
     console.log("userName", userName);
+    const [recentApproved, setRecentApproved] = useState([]);
+    const [recentRejected, setRecentRejected] = useState<RecentRejected[]>([]);
+
+    useEffect(() => {
+        // Fetch recentApproved dates from localStorage
+        const recentApprovedFromStorage = JSON.parse(localStorage.getItem("recentApproved") || "[]");
+        setRecentApproved(recentApprovedFromStorage);
+    }, []);
+
+    useEffect(() => {
+        // Fetch data from localStorage
+        const storedData = localStorage.getItem('recentRejected');
+        if (storedData) {
+            // Parse the stored data
+            const parsedData: RecentRejected[] = JSON.parse(storedData);
+            // Update the state
+            setRecentRejected(parsedData);
+        }
+    }, []); // Empty dependency array to run this effect only once on component mount
+
     useEffect(() => {
         const handleResize = () => {
             setChartWidth(window.innerWidth * 0.2); // Update chart width when window is resized
@@ -78,9 +121,9 @@ const EmployeeTaskStatus = () => {
     useEffect(() => {
         const storedData = localStorage.getItem('rejectedKeys');
         if (storedData) {
-            setrejectedKeys(JSON.parse(storedData));
+            setRejectedKeys(JSON.parse(storedData));
         }
-        console.log("storedData", storedData);
+        console.log("storedData-rejected", storedData);
     }, []);
 
     function getDaysInMonth(month: number, year: number) {
@@ -122,9 +165,12 @@ const EmployeeTaskStatus = () => {
                 processedDates.add(date); // Add date to processed dates set
                 if (approvedKeys.includes(task.date)) {
                     newAcceptCount++;
-                } else if (rejectedKeys.includes(task.date)) {
+                } else if (rejectedKeys.some(rejected => rejected.date === task.date)) {
+                    console.log("rejectedKeys", rejectedKeys);
+                    console.log("logkey", task.date);
                     newRejectCount++;
-                } else {
+                }
+                 else {
                     if (!approvedKeys.includes(task.date) && !taskPending.includes(task.date)) {
                         taskPending.push(task.date);
                         newPendingCount++;
@@ -141,7 +187,10 @@ const EmployeeTaskStatus = () => {
         }
     
         // Remove any dates in stored pending tasks that are now in selectedKeys or rejectedKeys
-        storedPendingTasksArray = storedPendingTasksArray.filter(date => !approvedKeys.includes(date) && !rejectedKeys.includes(date));
+        storedPendingTasksArray = storedPendingTasksArray.filter(date => {
+            // Check if the date is not included in approvedKeys or rejectedKeys
+            return !approvedKeys.includes(date) && !rejectedKeys.some(rejected => rejected.date === date);
+        });
     
         // Concatenate new pending tasks and stored pending tasks (without selected or rejected keys)
         taskPending = [...taskPending, ...storedPendingTasksArray];
@@ -519,50 +568,132 @@ const EmployeeTaskStatus = () => {
       };
   return (
     <>
-    <div style={{display:'flex', justifyContent:'space-between'}}>
-        <div style={{textAlign:'left', margin:'10px 20px 0px 20px'}}>
-            <h1 style={{fontSize:'34px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
+    {/* <div style={{display:'flex', justifyContent:'space-between'}}>
+        <div style={{textAlign:'left', margin:'40px 20px 0px 20px'}}>
+            <h3 style={{fontSize:'20px', marginBottom:'0px',fontWeight:'bold', fontFamily:'poppins'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
                 <span className="wave" role="img" aria-label="Waving hand">👋</span>
-            </h1>
+            </h3>
             {/* <h3 style={{ fontSize: '20px', marginBottom:'0px'}}>
                 {userName}
                 <span className="wave" role="img" aria-label="Waving hand">👋</span>
-            </h3> */}
+            </h3> 
         </div>
-        <div style={{display:'flex', justifyContent:'flex-end', height:'10%', margin:'40px 20px 10px 20px'}}>
-            <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
-                <LeftOutlined />
-            </button>
-            <select 
-                id='submit' 
-                style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
-                onChange={(e) => handleFilterChange(e.target.value)} value={filterOption}
-            >
-                <option style={{textAlign:'center'}} value='Date'>Date</option>
-                <option style={{textAlign:'center'}} value='Week'>Week</option>
-                <option style={{textAlign:'center'}} value='Month'>Month</option>
-            </select>
-            <button type='button' id='submit-less' onClick={handleRightArrowClick}>
-                <RightOutlined />
-            </button>
-        </div>
-    </div>
-    <div className='employeetask'>
-        { filterOption === 'Month' ? (
-        <div style={{display:'flex', justifyContent:'flex-start'}}>
-            <div style={{margin: '10px 20px', fontSize:'20px'}}>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
-            <div style={{ margin: '10px 20px', fontSize:'20px'}}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
-        </div>
-        ) : filterOption === 'Week' ? (
-            <div style={{display:'flex', justifyContent:'flex-start'}}>
-                <div style={{margin: '10px 20px', fontSize:'20px'}}>From: {dayjs(currentWeek).format('YYYY-MM-DD')}</div>
-                <div style={{margin: '10px 20px', fontSize:'20px' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
+    </div> */}
+
+    <div style={{margin:'30px 0px 0px 0px'}}>
+            <Card className="main-card">
+            <div style={{ display: "flex", height:'55px' }}>
+                <div>
+                <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
+                <span className="wave" role="img" aria-label="Waving hand">👋</span></h3>
+                <p>
+                    All of us do not have equal talent, but all of us have an equal
+                    opportunities to improve our <strong>Talent</strong>
+                </p>
+                </div>
+                <img
+                src={asset}
+                alt="..."
+                style={{ marginLeft: "auto", marginTop: "-5px" }}
+                />
             </div>
-        )  : (
-            <div style={{margin: '10px 20px', fontSize:'20px'}}>Date: {currentDate.format('YYYY-MM-DD')}</div>
-        )
-        }
+            </Card>
     </div>
+
+    <div style={{display:'flex', justifyContent:'space-between'}}>
+        <div style={{display:'flex', justifyContent:'flex-end', height:'47px', margin:'0px 20px 10px 20px'}}>
+        {/* id='submit-less' */}
+            <ConfigProvider theme={config}>
+                <Button id='submit-less' onClick={handleLeftArrowClick}> 
+                    <LeftOutlined />
+                </Button>
+                {/* <select 
+                    id='submit' 
+                    style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
+                    onChange={(e) => handleFilterChange(e.target.value)} value={filterOption}
+                >
+                    <option style={{textAlign:'center'}} value='Date'>Date</option>
+                    <option style={{textAlign:'center'}} value='Week'>Week</option>
+                    <option style={{textAlign:'center'}} value='Month'>Month</option>
+                </select> */}
+                <Button id='submit-less' onClick={handleRightArrowClick}>
+                    <RightOutlined />
+                </Button>
+            </ConfigProvider>
+                <div className='employeetask'>
+                    { filterOption === 'Month' ? (
+                    <div style={{display:'flex', justifyContent:'flex-start'}}>
+                        <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
+                        <div style={{ margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
+                    </div>
+                    ) : filterOption === 'Week' ? (
+                        <div style={{display:'flex', justifyContent:'flex-start'}}>
+                            <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentWeek).format('YYYY-MM-DD')}</div>
+                            <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
+                        </div>
+                    )  : (
+                        <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>Date: {currentDate.format('YYYY-MM-DD')}</div>
+                    )
+                    }
+                </div>
+        </div>
+        
+        <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
+                {/* <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
+                    <LeftOutlined />
+                </button> */}
+                <ConfigProvider theme={config}>
+                <Select 
+                    id='submit' 
+                    style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
+                    onChange={(value) => handleFilterChange(value)} 
+                    value={filterOption}
+                    dropdownStyle={{ textAlign: 'center' }} // Style the dropdown menu
+                >
+                    <Option value='Date'>Date</Option>
+                    <Option value='Week'>Week</Option>
+                    <Option value='Month'>Month</Option>
+                </Select>
+                </ConfigProvider>
+
+                {/* <button type='button' id='submit-less' onClick={handleRightArrowClick}>
+                    <RightOutlined />
+                </button> */}
+        </div>
+    </div>
+    
+    {/* <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+    <Card className="main-card" style={{ overflow: "hidden" }}>
+        <div id="scroll-container" style={{ display: "flex" }}>
+            <div id="scroll-text">
+                <p style={{ fontSize: '16px', fontFamily: 'poppins', marginBottom: 0}}>
+                    {/* {recentApproved && recentApproved.length > 0 && (
+                        <div style={{padding:'20px', color:'green'}}>
+                            <strong>{recentApproved.join(", ")}</strong>
+                            <span> have been Approved</span>
+                        </div>
+                    )}
+                    {recentRejected && recentRejected.length > 0 && (
+                        recentRejected.map((item, index) => (
+                            <div key={index} style={{color: 'red'}}>
+                                <strong>{item.date}</strong>
+                                <span> have been Rejected</span>
+                                <div style={{padding:'10px',textAlign:'left', margin:'0px 0px 0px 10px'}}><strong>Reason:</strong>{item.comment}</div>
+                            </div>
+                        ))
+                    )} 
+                    Welcome 
+                </p>
+            </div>
+            <img
+                src={asset}
+                alt="..."
+                style={{ marginLeft: "auto", marginTop: "-22px" }}
+            />
+        </div>
+    </Card>
+    </div> */}
+
     {/* <div style={{display:'flex', justifyContent:'space-between'}}>
         <div className='cardStyle'>
             <p style={{fontFamily:'poppins', fontSize:'20px', color:'#0B4266', fontWeight:'bold'}}>Missing</p>
@@ -582,21 +713,29 @@ const EmployeeTaskStatus = () => {
         </div>
     </div>  */}
     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <button className='cardStyle' onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
-            <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Not Filled</p>
-            <p style={{ color: 'red', fontSize: '54px', fontFamily: 'poppins' }}> {missedCount}</p>
+        <button className='box' onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', textAlign:'center', fontWeight:'bold' }}>Not Filled</p>
+                <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {missedCount}</p>
+            </div>
         </button>
-        <button className='cardStyle' onClick={() => handleCountClick('Pending', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
-            <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Pending</p>
-            <p style={{ color: 'black', fontSize: '54px', fontFamily: 'poppins' }}> {pendingCount}</p>
+        <button className='box' onClick={() => handleCountClick('Pending', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold'}}>Pending</p>    
+                <p style={{ color: 'black', fontSize: '34px', fontFamily: 'poppins' }}> {pendingCount}</p>
+            </div>
         </button>
-        <button className='cardStyle' onClick={() => handleCountClick('Accepted',filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
-            <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Accepted</p>
-            <p style={{ color: 'green', fontSize: '54px', fontFamily: 'poppins' }}> {acceptCount}</p>
+        <button className='box' onClick={() => handleCountClick('Accepted',filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266' , fontWeight:'bold'}}>Accepted</p>
+                <p style={{ color: 'green', fontSize: '34px', fontFamily: 'poppins' }}> {acceptCount}</p>
+            </div>
         </button>
-        <button className='cardStyle' onClick={() => handleCountClick('Rejected', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
-            <p style={{ fontFamily: 'poppins', fontSize: '20px', color: '#0B4266', fontWeight: 'bold' }}>Rejected</p>
-            <p style={{ color: 'red', fontSize: '54px', fontFamily: 'poppins' }}> {rejectCount}</p>
+        <button className='box' onClick={() => handleCountClick('Rejected', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold' }}>Rejected</p>
+                <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {rejectCount}</p>
+            </div>
         </button>
     </div>
 
@@ -675,10 +814,10 @@ const EmployeeTaskStatus = () => {
                 series={calculateTaskPercentages().map(task => task.value)}
                 type="pie"
                 width={600}
-                height={400}
+                height={300}
             />
         </div>
-        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%' }}>
+        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
             <ApexCharts
                 options={{
                     chart: {
@@ -689,7 +828,7 @@ const EmployeeTaskStatus = () => {
                 series={calculateOverallPercentages().map(task => task.value)}
                 type="pie"
                 width={600}
-                height={400}
+                height={300}
             />
         </div>
     </div>

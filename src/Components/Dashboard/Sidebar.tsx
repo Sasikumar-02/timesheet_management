@@ -39,7 +39,7 @@ const Sidebar: React.FC = () => {
     const userEmail = localStorage.getItem('email');
     const renderMenuItems = () => {
       switch (userEmail) {
-        case 'sasikumarmurugan232@gmail.com':
+        case 'sasikumarmurugan202@gmail.com':
           return (
             <>
               <Menu.Item
@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
                 icon={<HomeFilled />}
                 className={Location.pathname === "/dashboard" ? "active" : ""}
               >
-                <Link to="/dashboard">DASHBOARD</Link>
+                <Link to="/dashboard">Dashboard</Link>
               </Menu.Item>
               <Menu.Item
                 id="menu"
@@ -68,12 +68,12 @@ const Sidebar: React.FC = () => {
               </Menu.Item>
             </>
           );
-        case 'sasikumarmurugan02@gmail.com':
+        case 'sasikumarmurugan232@gmail.com':
           return (
             <>
                <Menu.Item id="menu" key="1" icon={<HomeFilled />}
                 className={Location.pathname === "/dashboard" ? "active" : ""}>
-                <Link to="/dashboard">DASHBOARD</Link>
+                <Link to="/dashboard">Dashboard</Link>
               </Menu.Item>
               <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/calendar" ? "active" : ""}>
@@ -93,12 +93,12 @@ const Sidebar: React.FC = () => {
               </Menu.Item> */}
             </>
           );
-        case 'sasikumarashok2006@gmail.com':
+        case 'sasikumarmurugan02@gmail.com':
           return (
             <>
               <Menu.Item id="menu" key="1" icon={<HomeFilled />}
                 className={Location.pathname === "/dashboard" ? "active" : ""}>
-                <Link to="/dashboard">DASHBOARD</Link>
+                <Link to="/dashboard">Dashboard</Link>
               </Menu.Item>
               <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/calendar" ? "active" : ""}>
@@ -106,7 +106,7 @@ const Sidebar: React.FC = () => {
               </Menu.Item>
               <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/approvalrequests" ? "active" : ""}>
-                <Link to="/approvalrequests">Approval Requests</Link>
+                <Link to="/approvalrequests">Requests  </Link>
               </Menu.Item>
             </>
           );
@@ -119,12 +119,12 @@ const Sidebar: React.FC = () => {
   return (
     <div>
       <div id="img">
-        <img src={mindgraph} alt="mindgraph" />
+        <img style={{width:'150px'}} src={mindgraph} alt="mindgraph" />
       </div>
       <Menu id="side" mode="inline">
         {renderMenuItems()}
         <Menu.Item id="signout" key="3" danger icon={<PoweroffOutlined />} onClick={handleSignout}>
-          SIGNOUT
+          Signout
         </Menu.Item>
       </Menu>
     </div>

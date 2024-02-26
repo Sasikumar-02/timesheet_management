@@ -111,6 +111,8 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "./Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
+import { RecentRejected } from "./MonthTasks";
+import '../Styles/UserProfile.css';
 interface Event {
   title: string;
   start: string;
@@ -141,16 +143,22 @@ const Calendar = () => {
     // Get rejectedKeys from localStorage
     const rejectedKeysString = localStorage.getItem("rejectedKeys");
     if (rejectedKeysString) {
-        const rejectedKeys: string[] = JSON.parse(rejectedKeysString);
-        // Iterate over rejectedKeys and create a "Rejected" event for each date
-        rejectedKeys.forEach((rejectedDate) => {
-            fetchedEvents.push({
-                title: "Rejected",
-                start: rejectedDate,
-                color: "red",
-            });
-        });
-    }
+      // Parse JSON string into an array of RecentRejected objects
+      const rejectedKeysData: RecentRejected[] = JSON.parse(rejectedKeysString);
+  
+      // Iterate over each RecentRejected object
+      rejectedKeysData.forEach((rejectedKey) => {
+          // Extract date from the RecentRejected object
+          const { date, comment } = rejectedKey;
+          
+          // Push "Rejected" event into fetchedEvents array
+          fetchedEvents.push({
+              title: `Rejected - ${comment}`, // You can customize the title as needed
+              start: date,
+              color: "red",
+          });
+      });
+  }
 
     // Get selectedKeys from localStorage
     const selectedKeysString = localStorage.getItem("selectedKeys");
@@ -167,15 +175,13 @@ const Calendar = () => {
     }
 
     setEvents(fetchedEvents);
-}, []);
+  }, []);
 
-  
   
 
   const handleDateClick = (arg: DateClickArg) => {
     // arg.date is the clicked date
     const clickedDate = dayjs(arg.date);
-
     // Check if the clicked date is in the future month
     if (clickedDate.isAfter(dayjs(), 'month')) {
         // Display a notification if the date is in the future month
@@ -201,15 +207,12 @@ const Calendar = () => {
   const handleDatesSet = (arg: any) => {
     const currentMonth = dayjs(arg.start);
     const today = dayjs();
-
     if (currentMonth.isAfter(today, 'month')) {
         // If the displayed month is in the future, navigate back to the current month
         const calendarApi = arg.view.calendar;
         calendarApi.gotoDate(today.toDate());
     }
   };
-
-
 
   // Get the clickedDate from localStorage
   const clickedDateFromLocalStorage = localStorage.getItem('clickedDate');
@@ -218,20 +221,23 @@ const Calendar = () => {
   return (
     <div>
       <DashboardLayout>
+      <div id="calendar-main" style={{width:'97%', margin:'30px 20px 20px 20px', fontFamily:'poppins', fontSize:'14px', cursor:'pointer'}}>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView={"dayGridMonth"}
           initialDate={currentDate} // Set the initial date to January of the current year
           headerToolbar={{
-            start: "today prev,next",
-            center: "title",
-            end: "dayGridMonth,timeGridWeek,timeGridDay",
+            start: "title",
+            //center: " ", //,timeGridWeek,timeGridDay
+            end: "prev,next",
           }}
-          height={"90vh"}
+          height={"80vh"}
           dateClick={handleDateClick}
           events={events}
           datesSet={handleDatesSet}
+          eventClassNames="calendar"
         />
+        </div>
       </DashboardLayout>
     </div>
   );

@@ -5,7 +5,20 @@
     transform-origin: 70% 70%;       /* Pivot around the bottom-left palm */
     display: inline-block;
   }
+
+  .main-card {
+    border-radius: 15px;
+    padding: 0px;
+    font-size: 16px;
+    height: 100px;
+    background-color: #f3d7cc;
+    margin: 10px 20px;
+  }
+
   
+.ant-card-body{
+  padding-top: 0px;
+} 
   @keyframes wave-animation {
       0% { transform: rotate( 0.0deg) }
      10% { transform: rotate(14.0deg) }  /* The following five values can be played with to make the waving more or less extreme */
@@ -18,29 +31,55 @@
   }
 
   .cardStyle {
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 2px; /*0 2 4*/
-    width: 15%;
+    box-shadow: 0 0 10px rgba(14, 2, 103, 0.833); /* Horizontal offset, Vertical offset, Blur radius, Spread radius */
+    width: 25%;
     margin: 10px 20px;
     color: #0B4266;
     text-align: center;
     font-family: poppins;
     font-size: medium;
-    font-weight: bold;;
+}
+
+.box {
+  transition: box-shadow .3s;
+  box-shadow: 0 0 4px rgba(33,33,33,.2); 
+  width: 25%;
+  margin: 10px 20px;
+  border-radius:10px;
+  border: 4px solid grey;
+  background: #fff;
+  float: left;
+  
+}
+.box:hover {
+  box-shadow: 0 0 11px rgba(33,33,33,.2); 
+}
+
+/* .ant-select-selector{
+  background-color: #0B4266 !important;
+  color: #fff !important;
+}
+
+.ant-select-arrow{
+  color: #fff !important;
+} */
+
+  .cardStyle:hover{
     
-  };
+    width: 25%;
+  }
 
   .label-style{
     color: #0B4266;
     text-align: center;
     font-family: poppins;
     font-size: medium;
-    font-weight: bold;;
     
   }
 
   .dates{
     margin: 10px 20px;
-    font-size: 20px;
+    font-size: 16px;
     display: flex;
 }
 
@@ -49,5 +88,71 @@
   text-align: left;
   font-family: poppins;
   font-size: medium;
-  font-weight: bold;
+  margin-top: 1px;
+  /* font-weight: bold; */
+}
+
+.ant-select .ant-select-outlined .css-dev-only-do-not-override-1qhpsh8 .ant-select-single .ant-select-show-arrow{
+  color: white
+}
+
+#scroll-container {
+  height: 100px;
+  overflow: hidden;
+}
+
+#scroll-text {
+  height: 100%;
+  text-align: center;
+  
+  /* animation properties */
+  -moz-transform: translateY(100%);
+  -webkit-transform: translateY(100%);
+  transform: translateY(100%);
+  
+  -moz-animation: my-animation 5s linear infinite;
+  -webkit-animation: my-animation 5s linear infinite;
+  animation: my-animation 5s linear infinite;
+}
+
+/* for Firefox */
+@-moz-keyframes my-animation {
+  from { -moz-transform: translateY(100%); }
+  to { -moz-transform: translateY(-100%); }
+}
+
+/* for Chrome */
+@-webkit-keyframes my-animation {
+  from { -webkit-transform: translateY(100%); }
+  to { -webkit-transform: translateY(-100%); }
+}
+
+@keyframes my-animation {
+  from {
+    -moz-transform: translateY(100%);
+    -webkit-transform: translateY(100%);
+    transform: translateY(100%);
+  }
+  to {
+    -moz-transform: translateY(-100%);
+    -webkit-transform: translateY(-100%);
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.scrolling-item {
+  animation: scroll 5s linear infinite;
+}
+
+.hidden-item {
+  display: none;
 }
