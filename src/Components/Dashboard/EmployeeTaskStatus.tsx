@@ -105,7 +105,9 @@ const EmployeeTaskStatus = () => {
     useEffect(() => {
         const storedData = localStorage.getItem('taskList');
         if (storedData) {
-            setTaskList(JSON.parse(storedData));
+            const parsedData: Task[] = JSON.parse(storedData);
+            const filteredTasks = parsedData.filter((task: Task) => task.userId === '1234');
+            setTaskList(filteredTasks);
         }
         console.log("storedData", storedData);
     }, []);

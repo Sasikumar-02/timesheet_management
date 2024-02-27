@@ -14,6 +14,7 @@ import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOut
 import Dashboard from './Dashboard';
 import {Modal} from 'antd';
 import { RecentRejected } from './MonthTasks';
+import asset from '../../assets/images/asset.svg';
 export interface DateTask{
   key: string;
   task: Task[];
@@ -56,7 +57,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf('month'));
   const [isFormEnabled, setIsFormEnabled] = useState(false);
-  
+  const [cancelButton, setCancelButton] = useState(false);
   const [addTask, setAddTask] = useState<Task>({
     idx: 1, // Set initial idx
     date: currentDate.format('YYYY-MM-DD'),
@@ -108,7 +109,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', // Add box shadow
     margin: '10px 20px',
    // padding: '10px 20px',
-    width: formWidth + 'px',
+    //width: formWidth + 'px',
+    width: '1350px',
     height:'540px'
   };
 
@@ -164,6 +166,9 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     const storedTaskListString = localStorage.getItem('taskList');
     const storedTaskList = storedTaskListString ? JSON.parse(storedTaskListString) : [];
 
+    // Filter tasks based on the userId
+    //const userTaskList = storedTaskList.filter((task:Task)=> task.userId === '123');
+
     // Assuming deletedTask is a state variable
     const updatedTaskList = updateSlNo(storedTaskList, deletedTask);
 
@@ -172,15 +177,16 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   }, [deletedTask]); // Include deletedTask in the dependency array
 
   useEffect(() => {
-    // Filter tasks based on the addTask.date when it changes
+    // Filter tasks based on the addTask.date and userId when it changes
     if (addTask.date) {
-      const filtered = taskList.filter(task => task.date === addTask.date);
-      setFilteredTasks(updateSlNo(filtered, deletedTask)); // Update slNo when loading tasks
+        const filtered = taskList.filter(task => task.date === addTask.date && task.userId === '123');
+        setFilteredTasks(updateSlNo(filtered, deletedTask)); // Update slNo when loading tasks
     } else {
-      // If no date is selected, display all tasks
-      setFilteredTasks(updateSlNo(taskList, deletedTask)); // Update slNo when loading tasks
+        // If no date is selected, display all tasks
+        setFilteredTasks(updateSlNo(taskList, deletedTask)); // Update slNo when loading tasks
     }
-  }, [addTask.date, taskList]);
+}, [addTask.date, taskList]);
+
 
   useEffect(() => {
     // Update addTask with the current date
@@ -199,26 +205,28 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       // If there is a search input, filter tasks based on date or month
       const searchDate = dayjs(searchInput);
       filtered = taskList.filter((task) => {
-        if (filterOption === 'Date') {
-          return dayjs(task.date).isSame(searchDate, 'day');
-        } else if (filterOption === 'Week') {
-          const startOfWeek = currentWeek.startOf('week');
-          const endOfWeek = currentWeek.endOf('week');
-          return (
-            (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-            (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
-          );
-        } else if (filterOption === 'Month') {
-          // Format the searchInput in the same way as the task date
-          const formattedSearchMonth = searchDate.format('MMMM');
-          return dayjs(task.date).format('MMMM') === formattedSearchMonth;
-        }
+          if (filterOption === 'Date') {
+            return ((dayjs(task.date).isSame(searchDate, 'day'))&&(task.userId==='123'));
+            } else if (filterOption === 'Week') {
+              const startOfWeek = currentWeek.startOf('week');
+              const endOfWeek = currentWeek.endOf('week');
+              return (
+                (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
+                (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) &&
+                task.userId==='123'
+              );
+            } else if (filterOption === 'Month') {
+              // Format the searchInput in the same way as the task date
+              const formattedSearchMonth = searchDate.format('MMMM');
+              return ((dayjs(task.date).format('MMMM') === formattedSearchMonth) && (task.userId==='123'));
+            }
         return false;
       });
     }  else {
       // If no search input, apply the regular filtering based on filterOption and currentDate
       if (filterOption === 'Date') {
-        filtered = taskList.filter((task) => task.date === dayjs(currentDate).format('YYYY-MM-DD'));
+        filtered = taskList.filter((task) => 
+          task.date === dayjs(currentDate).format('YYYY-MM-DD') && task.userId==='123');
         console.log("useEffect-date", filtered)
       } else if (filterOption === 'Week') {
         const startOfWeek = currentWeek.startOf('week');
@@ -226,7 +234,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
         filtered = taskList.filter(
           (task) =>
             (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-            (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
+            (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) &&
+            task.userId ==='123'
         );
         console.log("useeffect-week", filtered);
       } else if (filterOption === 'Month') {
@@ -235,7 +244,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
         filtered = taskList.filter(
           (task) =>
             (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
-            (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
+            (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth)) && 
+            (task.userId === '123')
         );
         console.log("useeffect", filtered);
       }
@@ -307,6 +317,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 
   const handleToggleForm = () => {
     setIsFormEnabled((prevIsFormEnabled) => !prevIsFormEnabled);
+    setCancelButton((prevIsFormEnabled) => !prevIsFormEnabled);
     // If you want to reset the form when disabling it, you can reset the form state here
     if (!isFormEnabled) {
       setAddTask({
@@ -336,6 +347,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 
     // Check for overlapping tasks in the specified time range
     const overlappingTask = taskList.find(task => {
+      if(task.userId !== addTask.userId) return false;
       const newTaskStartTime = dayjs(addTask.startTime, 'hh:mm A');
       const newTaskEndTime = dayjs(addTask.endTime, 'hh:mm A');
       const taskStartTime = dayjs(task.startTime, 'hh:mm A');
@@ -363,7 +375,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     if (isEdited) {
       // If editing, update the existing task
       const updatedTaskList = taskList.map(task =>
-        task.idx === addTask.idx ? { ...addTask } : task
+        (task.idx === addTask.idx) && (task.userId === addTask.userId)
+         ? { ...addTask } : task
       );
       setTaskList(updatedTaskList);
       setFilteredTasks(updateSlNo(updatedTaskList, deletedTask));
@@ -395,8 +408,6 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     setIsEdited(false);
     setIsFormSubmitted(true);
 };
-
-
 
   const handleClearSubmit = () => {
     // Clear the form with the default date and set idx
@@ -469,7 +480,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 // };
 
 const handleEditTask = (idx: number) => {
-  const taskToEdit = taskList.find((task) => task.idx === idx);
+  const taskToEdit = taskList.find((task) => (task.idx === idx) && (task.userId === addTask.userId));
   if (taskToEdit) {
     // Check if the date is included in selectedKeysToHide
     if (selectedKeysToHide.includes(taskToEdit.date)) {
@@ -498,7 +509,7 @@ const handleEditTask = (idx: number) => {
 };
 
 const handleDeleteTask = useCallback((idx: number) => {
-  const taskToDelete = taskList.find(task => task.idx === idx);
+  const taskToDelete = taskList.find(task => (task.idx === idx));  //&&(task.userId === addTask.userId)
   
   if (!taskToDelete || selectedKeysToHide.includes(taskToDelete.date)) {
     // Task not found or its date is in selectedKeysToHide, do not delete
@@ -523,7 +534,7 @@ const handleDeleteTask = useCallback((idx: number) => {
     },
     onOk() {
       // Logic to delete the task if user confirms
-      const updatedTaskList = taskList.filter(task => task.idx !== idx);
+      const updatedTaskList = taskList.filter(task => (task.idx !== idx)); //&&(task.userId==addTask.userId)
   
       // Reindex the idx starting from 1
       const reindexedTaskList = updateSlNo(updatedTaskList, true);
@@ -721,8 +732,11 @@ const handleDeleteTask = useCallback((idx: number) => {
 
 
 const handleOverallSubmit = () => {
+
+  // Filter tasks where userId matches addTask.userId
+  const tasksToSend: Task[] = filteredTasks.filter(task => task.userId === addTask.userId);
     // Prepare the data to be sent
-    const requestData: Task[] = filteredTasks.map(task => ({
+    const requestData: Task[] = tasksToSend.map(task => ({
         date: task.date,
         userId: task.userId,
         task: task.task,
@@ -905,9 +919,13 @@ const handleOverallSubmit = () => {
       key: 'actions',
       render: (_, record, index) => {
         const isExistingTask = taskList.some(task => task.idx === record.idx);
-        console.log("isExistingTask", isExistingTask);
-        const isDateSelected = selectedKeysToHide.includes(record.date); // Assuming record.date represents the date of the task
-        //const isNewTask = record.isNew; // Assuming 'isNew' is a property of the task representing whether it's newly added
+        const isDateSelected = selectedKeysToHide.includes(record.date);
+        
+        // Filter tasks by userId
+        const userTasks = taskList.filter(task => task.userId === record.userId);
+        
+        // Check if the user has tasks for the selected date
+        const hasUserTasksForDate = userTasks.some(task => task.date === record.date);
     
         return (
           <div>
@@ -915,25 +933,26 @@ const handleOverallSubmit = () => {
               onClick={() => handleEditTask(record.idx)}
               style={{
                 marginRight: '8px',
-                cursor: (isDateSelected) ? 'not-allowed' : 'pointer', //( !isNewTask  && isDateSelected)
-                color: ( isDateSelected) ? 'grey' : 'blue', 
+                cursor: (isDateSelected || !hasUserTasksForDate) ? 'not-allowed' : 'pointer',
+                color: (isDateSelected || !hasUserTasksForDate) ? 'grey' : 'blue', 
                 fontSize: '20px',
               }}
-              disabled={( isDateSelected)}
+              disabled={isDateSelected || !hasUserTasksForDate}
             />
             <DeleteOutlined
               onClick={() => handleDeleteTask(record.idx)}
               style={{
-                cursor: ( isDateSelected)? 'not-allowed' : 'pointer',
-                color: (  isDateSelected) ? 'grey' : 'red',
+                cursor: (isDateSelected || !hasUserTasksForDate) ? 'not-allowed' : 'pointer',
+                color: (isDateSelected || !hasUserTasksForDate) ? 'grey' : 'red',
                 fontSize: '20px',
               }}
-              disabled={( isDateSelected)}
+              disabled={isDateSelected || !hasUserTasksForDate}
             />
           </div>
         );
       },
-    }
+    }    
+    
        
   ]
 
@@ -961,14 +980,14 @@ const handleOverallSubmit = () => {
         </div>
         {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( <form id="myForm" style={borderStyle}>
             <div>
-            {isFormEnabled && (
-              <CloseCircleOutlined
-                style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'red' }}
-                onClick={handleToggleForm} // Call the handleToggleForm function on click
-              />
-            )}
-              <div className='section-addtask'>
-              <div className='create-layout-addtask-left  '>
+              {isFormEnabled && (
+                <CloseCircleOutlined
+                  style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'red' }}
+                  onClick={handleToggleForm} // Call the handleToggleForm function on click
+                />
+              )}
+              <div className='section-addtask' style={{width:'70%'}}>
+                <div className='create-layout-addtask-left  '>
                   <div style={{marginBottom:'10px'}}>
                     <label style={{color:'#0B4266'}} htmlFor='addTaskID'>Date</label>
                   </div>
@@ -979,6 +998,7 @@ const handleOverallSubmit = () => {
                   /> */}
                   <Input
                     type='date'
+                    
                     placeholder='Enter your Employee ID'
                     value={currentDate.format('YYYY-MM-DD')} 
                     onChange={(e) => handleInputChange('date', e.target.value)}
@@ -1017,85 +1037,117 @@ const handleOverallSubmit = () => {
                         ))}
                     </select>
                   </div>
-                </div>
-              </div>
-              <div className='section-addtask'>
-                <div className='create-layout-addtask-left'>
-                  <div>
-                    <label htmlFor='startTime'>Start Time</label>
-                  </div>
-                  <TimePicker
-                    value={
-                      addTask.startTime
-                        ? dayjs(addTask.startTime, 'hh:mm A') // Convert to dayjs here
-                        : null
-                    }
-                    onChange={(time, timeString) =>
-                      handleInputChange('startTime', timeString)
-                    }
-                    className='timepicker'
-                    format='hh:mm A' // Set the format to include AM/PM
-                  />
+                  
                 </div>
                 <div className='create-layout-addtask'>
                   <div>
-                    <label style={{color:'#0B4266'}} htmlFor='endTime'>End Time</label>
+                    <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
                   </div>
-                  <TimePicker
-                    value={
-                      addTask.endTime
-                        ? dayjs(addTask.endTime, 'HH:mm A') // Convert to dayjs here
-                        : null
-                    }
-                    onChange={(time, timeString) =>
-                      handleInputChange('endTime', timeString)
-                    }
-                    className='timepicker'
-                    format='hh:mm A' 
-                    rootClassName='timer'
-                  />
+                  <div>
+                    <select
+                      id='task'
+                      value={addTask.task}
+                      onChange={(e) => handleInputChange('task', e.target.value)}
+                    >
+                      {taskOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  
                 </div>
               </div>
-              <div className='section-addtask'>
-                
-              <div className='create-layout-addtask-left  '>
-                  <div style={{marginBottom:'10px'}}>
-                    <label style={{color:'#0B4266'}} htmlFor='totalHours'>Total Hours</label>
+              <div style={{display:'flex', alignItems:'flex-end'}}>
+                <div>
+                  <div className='section-addtask' style={{width:'140%'}}>
+                    <div className='create-layout-addtask-left'>
+                      <div>
+                        <label htmlFor='startTime'>Start Time</label>
+                      </div>
+                      <TimePicker
+                        value={
+                          addTask.startTime
+                            ? dayjs(addTask.startTime, 'hh:mm A') // Convert to dayjs here
+                            : null
+                        }
+                        onChange={(time, timeString) =>
+                          handleInputChange('startTime', timeString)
+                        }
+                        className='timepicker'
+                        format='hh:mm A' // Set the format to include AM/PM
+                      />
+                    </div>
+                    <div className='create-layout-addtask'>
+                      <div>
+                        <label style={{color:'#0B4266'}} htmlFor='endTime'>End Time</label>
+                      </div>
+                      <TimePicker
+                        value={
+                          addTask.endTime
+                            ? dayjs(addTask.endTime, 'HH:mm A') // Convert to dayjs here
+                            : null
+                        }
+                        onChange={(time, timeString) =>
+                          handleInputChange('endTime', timeString)
+                        }
+                        className='timepicker'
+                        format='hh:mm A' 
+                        rootClassName='timer'
+                      />
+                    </div>
                   </div>
-                  <Input
-                    placeholder='Enter your Total Hours'
-                    value={addTask.totalHours}
-                    onChange={(e) => handleInputChange('totalHours', e.target.value)}
+                  <div className='section-addtask' style={{width:'140%'}}>
                     
-                  />
-                </div>
-                <div className='create-layout-addtask-reportingTo  '>
-                  <div className='create-layout-reportingTo'>
-                    <label style={{color:'#0B4266'}} htmlFor='reportingTo'>Reporting To</label>
-                  </div>
-                  <select
-                    id='reportingTo-addtask'
-                    value={addTask.reportingTo}
-                    onChange={(e) => handleInputChange('reportingTo', e.target.value)}
-                  >
-                    <option value=''>Select Reporting To</option>
-                    {reportingOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div> 
-              </div>  
-              <div>
-                <div className='create-layout-description'>
+                  <div className='create-layout-addtask-left  '>
+                      <div style={{marginBottom:'10px'}}>
+                        <label style={{color:'#0B4266'}} htmlFor='totalHours'>Total Hours</label>
+                      </div>
+                      <Input
+                        placeholder='Enter your Total Hours'
+                        value={addTask.totalHours}
+                        onChange={(e) => handleInputChange('totalHours', e.target.value)}
+                        
+                      />
+                    </div>
+                    <div className='create-layout-addtask-reportingTo  '>
+                      <div className='create-layout-reportingTo'>
+                        <label style={{color:'#0B4266'}} htmlFor='reportingTo'>Reporting To</label>
+                      </div>
+                      <select
+                        id='reportingTo-addtask'
+                        value={addTask.reportingTo}
+                        onChange={(e) => handleInputChange('reportingTo', e.target.value)}
+                      >
+                        <option value=''>Select Reporting To</option>
+                        {reportingOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div> 
+                  </div>  
                   <div>
-                    <label style={{color:'#0B4266'}}>Description</label>
+                    <div className='create-layout-description'>
+                      <div>
+                        <label style={{color:'#0B4266'}}>Description</label>
+                      </div>
+                      <textarea
+                        value={addTask.description}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        className='description-input'
+                        style={{width:'265%'}}
+                      />
+                    </div>
                   </div>
-                  <textarea
-                    value={addTask.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className='description-input'
+                </div>
+                <div>
+                  <img
+                  src={asset}
+                  alt="..."
+                  style={{ marginLeft: "auto",width:'750px', height:'200px'}}
                   />
                 </div>
               </div>
@@ -1103,7 +1155,7 @@ const handleOverallSubmit = () => {
               
             
             <div className='button' style={{marginBottom:'10px'}}>
-              <Button  id='cancel-addtask' onClick={handleClearSubmit}>
+              <Button  id='cancel-addtask' onClick={handleClearSubmit} style={{width:'10%'}}>
                 Clear
               </Button>
               {isEdited ? (
@@ -1150,15 +1202,7 @@ const handleOverallSubmit = () => {
               setSearchInput(e.target.value);
             }}
           /> */}
-         {!(filterOption === 'Date' && !isFormEnabled) && (
-            <Button
-              id='cancel-new'
-              onClick={handleToggleForm}
-              disabled={isFormEnabled} // Disable the button when the form is enabled
-            >
-              Add Task
-            </Button>
-          )}
+         
           <div style={{display:'flex', justifyContent:'flex-end'}}>
           {/* <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
             <LeftOutlined />
@@ -1190,6 +1234,15 @@ const handleOverallSubmit = () => {
           <Select.Option value="Week">Week</Select.Option>
           <Select.Option value="Month">Month</Select.Option>
         </Select> */}
+        {!cancelButton && !(filterOption === 'Date' && !isFormEnabled) && (
+            <Button
+              id='cancel-new'
+              onClick={handleToggleForm}
+              disabled={isFormEnabled} // Disable the button when the form is enabled
+            >
+              Add Task
+            </Button>
+          )}
           <Select 
                     id='submit' 
                     style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', marginTop:'10px', height:'95%', width:'120px' }} 
