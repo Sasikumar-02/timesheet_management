@@ -164,21 +164,32 @@ const Notification: React.FC = () => {
     // Update taskRequestedOn
     const updatedTaskRequestedOn = { ...taskRequestedOn };
     if (!updatedTaskRequestedOn[userId]) {
-      updatedTaskRequestedOn[userId] = {};
+        updatedTaskRequestedOn[userId] = {};
     }
     if (!updatedTaskRequestedOn[userId][month]) {
-      updatedTaskRequestedOn[userId][month] = [];
+        updatedTaskRequestedOn[userId][month] = [];
     }
     updatedTaskRequestedOn[userId][month] = updatedTaskRequestedOn[userId][month].filter(d => d !== date);
+
+    // Delete month if it becomes empty
+    if (updatedTaskRequestedOn[userId][month].length === 0) {
+        delete updatedTaskRequestedOn[userId][month];
+    }
+
+    // Delete userId if it becomes empty
+    if (Object.keys(updatedTaskRequestedOn[userId]).length === 0) {
+        delete updatedTaskRequestedOn[userId];
+    }
+
     setTaskRequestedOn(updatedTaskRequestedOn);
 
     // Update approveTaskRequestedOn
     const updatedApproveTaskRequestedOn = { ...approveTaskRequestedOn };
     if (!updatedApproveTaskRequestedOn[userId]) {
-      updatedApproveTaskRequestedOn[userId] = {};
+        updatedApproveTaskRequestedOn[userId] = {};
     }
     if (!updatedApproveTaskRequestedOn[userId][month]) {
-      updatedApproveTaskRequestedOn[userId][month] = [];
+        updatedApproveTaskRequestedOn[userId][month] = [];
     }
     updatedApproveTaskRequestedOn[userId][month] = [...updatedApproveTaskRequestedOn[userId][month], date];
     setApproveTaskRequestedOn(updatedApproveTaskRequestedOn);
@@ -186,7 +197,8 @@ const Notification: React.FC = () => {
     // Store updated data in localStorage
     localStorage.setItem('taskRequestedOn', JSON.stringify(updatedTaskRequestedOn));
     localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApproveTaskRequestedOn));
-  };
+};
+
 
   const notificationCount = Object.keys(taskRequestedOn).length;
 
