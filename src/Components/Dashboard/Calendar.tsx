@@ -111,7 +111,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "./Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
-import { RecentRejected } from "./MonthTasks";
+import { RecentRejected , RejectedKeys, SelectedKeys} from "./MonthTasks";
 import '../Styles/UserProfile.css';
 interface Event {
   title: string;
@@ -119,6 +119,7 @@ interface Event {
   color: string;
 }
 const Calendar = () => {
+  const userId = '123';
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   useEffect(() => {
@@ -140,39 +141,41 @@ const Calendar = () => {
         });
     }
 
-    // Get rejectedKeys from localStorage
     const rejectedKeysString = localStorage.getItem("rejectedKeys");
     if (rejectedKeysString) {
-      // Parse JSON string into an array of RecentRejected objects
-      const rejectedKeysData: RecentRejected[] = JSON.parse(rejectedKeysString);
-  
-      // Iterate over each RecentRejected object
-      rejectedKeysData.forEach((rejectedKey) => {
-          // Extract date from the RecentRejected object
-          const { date, comment } = rejectedKey;
-          
-          // Push "Rejected" event into fetchedEvents array
-          fetchedEvents.push({
-              title: `Rejected - ${comment}`, // You can customize the title as needed
-              start: date,
-              color: "red",
-          });
-      });
-  }
+        const rejectedKeysData: RejectedKeys = JSON.parse(rejectedKeysString);
 
-    // Get selectedKeys from localStorage
-    const selectedKeysString = localStorage.getItem("selectedKeys");
-    if (selectedKeysString) {
-        const selectedKeys: string[] = JSON.parse(selectedKeysString);
-        // Iterate over selectedKeys and create an "Approved" event for each date
-        selectedKeys.forEach((selectedDate) => {
-            fetchedEvents.push({
-                title: "Approved",
-                start: selectedDate,
-                color: "green",
+        // Check if the userId matches the storedKeysString
+        if (rejectedKeysData.hasOwnProperty(userId)) {
+            // Iterate over each RecentRejected object for the specific userId
+            rejectedKeysData[userId].forEach((rejectedKey) => {
+                const { date, comment } = rejectedKey;
+
+                fetchedEvents.push({
+                    title: `Rejected - ${comment}`,
+                    start: date,
+                    color: "red",
+                });
             });
-        });
+        }
     }
+
+    const selectedKeysString = localStorage.getItem("selectedKeys");
+        if (selectedKeysString) {
+            const selectedKeys: SelectedKeys = JSON.parse(selectedKeysString);
+
+            // Check if the user ID exists in selectedKeys
+            if (selectedKeys.hasOwnProperty(userId)) {
+                const userSelectedKeys: string[] = selectedKeys[userId];
+                userSelectedKeys.forEach((selectedDate) => {
+                    fetchedEvents.push({
+                        title: "Approved",
+                        start: selectedDate,
+                        color: "green",
+                    });
+                });
+            }
+        }
 
     setEvents(fetchedEvents);
   }, []);

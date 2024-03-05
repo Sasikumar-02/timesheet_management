@@ -97,8 +97,8 @@ const Sidebar: React.FC = () => {
           return (
             <>
               <Menu.Item id="menu" key="1" icon={<HomeFilled />}
-                className={Location.pathname === "/dashboard" ? "active" : ""}>
-                <Link to="/dashboard">Dashboard</Link>
+                className={Location.pathname === "/managerdashboard" ? "active" : ""}>
+                <Link to="/managerdashboard">Dashboard</Link>
               </Menu.Item>
               <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/calendar" ? "active" : ""}>

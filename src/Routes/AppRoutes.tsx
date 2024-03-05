@@ -43,6 +43,7 @@ import ApprovalRequest from '../Components/Dashboard/ApprovalRequest';
 import { Task } from '../Components/Dashboard/AddTask';
 import MonthTasks from '../Components/Dashboard/MonthTasks';
 import { AdminLayout } from '../Components/Dashboard/AdminLayout';
+import ManagerDashboard from '../Components/Dashboard/ManagerDashboard';
 
 const AppRoutes: React.FC = () => {
   const userEmail = localStorage.getItem('email');
@@ -85,8 +86,9 @@ const AppRoutes: React.FC = () => {
         <Route path="/userprofile/:userId" element={userEmail === 'sasikumarmurugan02@gmail.com' ? <UserProfile /> : <Navigate to="/dashboard" />} />
         <Route path="/createuser/:userId" element={userEmail === 'sasikumarmurugan02@gmail.com' ? <CreateUser /> : <Navigate to="/dashboard" />} />
         <Route path='/approvalrequests' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <ApprovalRequest/> : <Navigate to="/dashboard" />} />
-        <Route path='/monthTasks' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <MonthTasks setSelectedKeys ={setSelectedKeys} /> : <Navigate to="/dashboard" />} />
+        <Route path='/monthTasks' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <MonthTasks /> : <Navigate to="/dashboard" />} />
         <Route path='/adminlayout' element={<AdminLayout/>}/>
+        <Route path='/managerdashboard' element={<ManagerDashboard/>}/>
       </Route>
     </Routes>
   );

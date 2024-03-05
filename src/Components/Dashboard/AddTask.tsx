@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
-import { Input, TimePicker, Select, notification, DatePicker, Button} from 'antd';
+import { Input, TimePicker, Select, notification, DatePicker, Button, Modal} from 'antd';
 import { SearchOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import '../Styles/CreateUser.css';
 import DashboardLayout from './Layout';
+import Chart from 'react-apexcharts';
 import '../Styles/AddTask.css';
 import {Table} from 'antd';
 import { ColumnsType } from "antd/es/table";
 import ApprovalRequest from './ApprovalRequest';
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
 import Dashboard from './Dashboard';
-import {Modal} from 'antd';
-import { RecentRejected } from './MonthTasks';
+import { RecentRejected, SelectedKeys, RejectedKeys } from './MonthTasks';
 import asset from '../../assets/images/asset.svg';
 export interface DateTask{
   key: string;
@@ -24,6 +24,10 @@ export interface RequestedOn {
   [key: string]: string[]; // Each key represents a month (e.g., "February 2024") with an array of dates
 }
 
+export interface TaskRequestedOn {
+  [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
+}
+
 
 export interface Task {
   key?:string;
@@ -31,12 +35,20 @@ export interface Task {
   date: string;
   userId: string;
   task: string;
+  title: string;
   startTime: string;
   endTime: string;
   totalHours: string;
   description: string;
   reportingTo: string;
   slNo?: number;
+}
+
+interface PieChartData {
+  options: {
+    labels: string[];
+  };
+  series: number[];
 }
 
 type AddTaskProps = {
@@ -46,6 +58,7 @@ type AddTaskProps = {
 };
 
 const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsData }) => {
+  const userId = '123';
   const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
   const {confirm}= Modal;
@@ -61,8 +74,9 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   const [addTask, setAddTask] = useState<Task>({
     idx: 1, // Set initial idx
     date: currentDate.format('YYYY-MM-DD'),
-    userId: '123',
+    userId: userId,
     task: '',
+    title: '',
     startTime: '',
     endTime: '',
     totalHours: '',
@@ -80,6 +94,25 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   const [searchInput, setSearchInput] = useState('');
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const [selectedKeysToHide, setSelectedKeysToHide]=useState<string[]>([]);
+  const [pieChartDataInForm, setPieChartDataInForm] = useState<PieChartData>({ options: { labels: [] }, series: [] });
+
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  useEffect(() => {
+    const userId = addTask.userId;
+    const currentDate = dayjs(addTask.date);
+    const month = currentDate.format('YYYY-MM');
+    const currentDateFormatted = currentDate.format('YYYY-MM-DD');
+    const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
+    const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
+  
+    // Check if the date is in the taskList or approvedTaskRequestedOn
+    if (taskList.find(task => task.userId === userId && task.date === addTask.date)|| approvedRequestedOn[userId]?.[month]?.includes(addTask.date)|| dayjs(addTask.date).isSame(dayjs().format('YYYY-MM-DD'))) {
+      setIsButtonDisabled(true);
+    } else {
+      setIsButtonDisabled(false);
+    }
+  }, [addTask.date, addTask.userId, taskList]); // Update dependencies as per your requirement
+
  const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
   return tasks.map((task, index) => ({
     ...task,
@@ -87,7 +120,8 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     idx: deleteTask ? index + 1 : task.idx
   }));
 };
-
+const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
+const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
   useEffect(() => {
     const updateFormWidth = () => {
       const formElement = document.getElementById('myForm');
@@ -114,19 +148,76 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     height:'540px'
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     const storedKeysString: string | null = localStorage.getItem('selectedKeys');
     if (storedKeysString !== null) {
-        const storedKeys: string[] = JSON.parse(storedKeysString);
-        console.log("storedKeys", storedKeys);
-        setSelectedKeysToHide(storedKeys);
+        const storedKeys: SelectedKeys = JSON.parse(storedKeysString);
+        if (storedKeys.hasOwnProperty(userId)) {
+            setSelectedKeysToHide(storedKeys[userId]);
+        } else {
+            console.log("User ID not found in stored keys");
+        }
     } else {
-       console.log("else-useEffect", storedKeysString);
+        console.log("else-useEffect", storedKeysString);
     }
-  },[])
+}, []);
+
+useEffect(() => {
+  // Calculate data for the pie chart
+  const taskHours: { [key: string]: number } = {};
+  
+  // Calculate total hours worked
+  let totalHours = 0;
+  filteredTasks.forEach(task => {
+    // Convert totalHours to a number before adding
+    totalHours += parseFloat(task.totalHours) || 0;
+  });
+
+  // Calculate hours for each task and add to the taskHours object
+  filteredTasks.forEach(task => {
+    // Convert totalHours to a number before calculating percentage
+    const taskHoursValue = parseFloat(task.totalHours) || 0;
+    // Check if the task name exists in the taskHours object
+    if (taskHours[task.task]) {
+      // If it exists, add the hours to the existing value
+      taskHours[task.task] += taskHoursValue;
+    } else {
+      // If it doesn't exist, initialize the value with the hours
+      taskHours[task.task] = taskHoursValue;
+    }
+  });
+
+  // Calculate percentage for each task
+  const taskPercentage: { [key: string]: number } = {};
+  Object.keys(taskHours).forEach(taskName => {
+    taskPercentage[taskName] = (taskHours[taskName] / totalHours) * 100;
+  });
+
+  const labels = Object.keys(taskHours);
+  const data = Object.values(taskPercentage);
+
+  // Update pie chart data
+  setPieChartDataInForm({
+    options: {
+      labels: labels,
+    },
+    series: data,
+  });
+}, [filteredTasks]);
+
+<Chart
+  options={pieChartDataInForm.options}
+  series={pieChartDataInForm.series}
+  type="pie"
+  width="380"
+/>
+
   
   const handleInputChange = (field: keyof Task, value: string) => {
     if (field === 'date') {
+      if(filterOption==='Month'){
+        
+      }
       const selectedDate = dayjs(value);
       if (selectedDate.isAfter(dayjs(), 'day')) {
         // Display a notification
@@ -167,7 +258,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     const storedTaskList = storedTaskListString ? JSON.parse(storedTaskListString) : [];
 
     // Filter tasks based on the userId
-    //const userTaskList = storedTaskList.filter((task:Task)=> task.userId === '123');
+    //const userTaskList = storedTaskList.filter((task:Task)=> task.userId === userId);
 
     // Assuming deletedTask is a state variable
     const updatedTaskList = updateSlNo(storedTaskList, deletedTask);
@@ -179,7 +270,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   useEffect(() => {
     // Filter tasks based on the addTask.date and userId when it changes
     if (addTask.date) {
-        const filtered = taskList.filter(task => task.date === addTask.date && task.userId === '123');
+        const filtered = taskList.filter(task => task.date === addTask.date && task.userId === userId);
         setFilteredTasks(updateSlNo(filtered, deletedTask)); // Update slNo when loading tasks
     } else {
         // If no date is selected, display all tasks
@@ -206,19 +297,19 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       const searchDate = dayjs(searchInput);
       filtered = taskList.filter((task) => {
           if (filterOption === 'Date') {
-            return ((dayjs(task.date).isSame(searchDate, 'day'))&&(task.userId==='123'));
+            return ((dayjs(task.date).isSame(searchDate, 'day'))&&(task.userId===userId));
             } else if (filterOption === 'Week') {
               const startOfWeek = currentWeek.startOf('week');
               const endOfWeek = currentWeek.endOf('week');
               return (
                 (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
                 (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) &&
-                task.userId==='123'
+                task.userId===userId
               );
             } else if (filterOption === 'Month') {
               // Format the searchInput in the same way as the task date
               const formattedSearchMonth = searchDate.format('MMMM');
-              return ((dayjs(task.date).format('MMMM') === formattedSearchMonth) && (task.userId==='123'));
+              return ((dayjs(task.date).format('MMMM') === formattedSearchMonth) && (task.userId===userId));
             }
         return false;
       });
@@ -226,7 +317,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       // If no search input, apply the regular filtering based on filterOption and currentDate
       if (filterOption === 'Date') {
         filtered = taskList.filter((task) => 
-          task.date === dayjs(currentDate).format('YYYY-MM-DD') && task.userId==='123');
+          task.date === dayjs(currentDate).format('YYYY-MM-DD') && task.userId===userId);
         console.log("useEffect-date", filtered)
       } else if (filterOption === 'Week') {
         const startOfWeek = currentWeek.startOf('week');
@@ -235,7 +326,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
           (task) =>
             (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
             (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) &&
-            task.userId ==='123'
+            task.userId ===userId
         );
         console.log("useeffect-week", filtered);
       } else if (filterOption === 'Month') {
@@ -245,7 +336,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
           (task) =>
             (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
             (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth)) && 
-            (task.userId === '123')
+            (task.userId === userId)
         );
         console.log("useeffect", filtered);
       }
@@ -322,8 +413,9 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     if (!isFormEnabled) {
       setAddTask({
         date: dayjs(currentDate).format('YYYY-MM-DD'),
-        userId: '123',
+        userId:userId,
         task: '',
+        title:'',
         startTime: '',
         endTime: '',
         totalHours:'',
@@ -335,6 +427,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   };
 
   const handleFormSubmit = () => {
+    const userId = addTask.userId;
 
     // Check if the addTask date is included in selectedKeysToHide
     if (selectedKeysToHide.includes(addTask.date)) {
@@ -344,6 +437,39 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       });
       return;
   }
+
+  const taskRequestedOn = localStorage.getItem('taskRequestedOn');
+  const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
+const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
+console.log("approvedRequestedOn", approvedRequestedOn);  
+    // Check if the date is not in the taskList and it's before the currentDate
+    // const currentDateFormatted = dayjs().format('YYYY-MM-DD');
+    // if (
+    //     (!taskList.find(task => (task.userId===addTask.userId) && (task.date === addTask.date)) && dayjs(addTask.date).isBefore(currentDateFormatted))
+    // ) {
+    //     notification.warning({
+    //         message: 'Restricted',
+    //         description: 'Cannot add task for a date before the current date and not present in the task list.',
+    //     });
+    //     return;
+    // }
+
+    const currentDateFormatted = dayjs().format('YYYY-MM-DD');
+    // Check if the date is not present in the approvedRequestedOn and satisfies the condition
+    console.log("approvedRequestedOn", approvedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date));
+    if (
+      (!approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) &&
+      (!taskList.find(task => task.userId === addTask.userId && task.date === addTask.date) &&
+      dayjs(addTask.date).isBefore(currentDateFormatted))
+  ) {
+      notification.warning({
+          message: 'Restricted',
+          description: 'Cannot add task for a date before the current date and not present in the task list.',
+      });
+      return;
+  }
+  
+  
 
     // Check for overlapping tasks in the specified time range
     const overlappingTask = taskList.find(task => {
@@ -392,13 +518,22 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
       setFilteredTasks(updateSlNo(updatedTaskList, deletedTask));
       localStorage.setItem('taskList', JSON.stringify(updatedTaskList));
     }
+
+    // After successful submission, remove the date from approvedRequestedOn
+  // if (approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) {
+  //   const updatedApprovedRequestedOn = { ...approvedRequestedOn };
+  //   const index = updatedApprovedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')].indexOf(addTask.date);
+  //   updatedApprovedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')].splice(index, 1);
+  //   localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApprovedRequestedOn));
+  // }
   
     // Clear the form with the default date and reset idx
     setAddTask({
       idx: taskList.length + 2, // Set a new idx
       date: dayjs(currentDate).format('YYYY-MM-DD'),
-      userId: '123',
+      userId: userId,
       task: '',
+      title:'',
       startTime: '',
       endTime: '',
       totalHours: '',
@@ -409,12 +544,110 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     setIsFormSubmitted(true);
 };
 
+const handleRequestForm = () => {
+  const userId = addTask.userId;
+  const month = dayjs(addTask.date).format('YYYY-MM');
+  const currentDateFormatted = dayjs().format('YYYY-MM-DD');
+  const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
+  const approvedTaskRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
+  if (
+    !taskList.find(task => task.userId === userId && task.date === addTask.date) &&
+    dayjs(addTask.date).isBefore(currentDateFormatted) && !(approvedTaskRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date))
+  ) {
+    const taskRequestedOn: TaskRequestedOn = JSON.parse(localStorage.getItem('taskRequestedOn') || '{}');
+    
+
+    if (!taskRequestedOn[userId]) {
+      taskRequestedOn[userId] = {};
+    }
+
+    if (!taskRequestedOn[userId][month]) {
+      taskRequestedOn[userId][month] = [];
+    }
+
+    let datesToRequest: string[] = [];
+
+    if (filterOption === 'Month') {
+      // Get the first and last dates of the month
+      const firstDayOfMonth = dayjs(addTask.date).startOf('month');
+      const lastDayOfMonth = dayjs(addTask.date).endOf('month');
+      const presentDate = dayjs().format('YYYY-MM-DD');
+      // Generate all dates in the month
+      let currentDate = firstDayOfMonth;
+      while (
+        (currentDate.isSame(lastDayOfMonth, 'day') || currentDate.isBefore(lastDayOfMonth, 'day')) &&
+        !currentDate.isAfter(presentDate)
+      ) {
+        const currentDateFormatted = currentDate.format('YYYY-MM-DD');
+        if (
+          !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
+          !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
+        ) {
+          // Check if the date is not already present in both approvedTaskRequestedOn and taskList
+          if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
+            datesToRequest.push(currentDateFormatted);
+          }
+        }
+        currentDate = currentDate.add(1, 'day');
+      }
+    } else if (filterOption === 'Week') {
+      // Get the first and last dates of the week
+      const startOfWeek = dayjs(addTask.date).startOf('week');
+      const endOfWeek = dayjs(addTask.date).endOf('week');
+      const presentDate = dayjs().format('YYYY-MM-DD');
+      // Generate all dates in the week
+      let currentDate = startOfWeek;
+      while (
+        (currentDate.isSame(endOfWeek, 'day') || currentDate.isBefore(endOfWeek, 'day')) &&
+        !currentDate.isAfter(presentDate)
+      ) {
+        const currentDateFormatted = currentDate.format('YYYY-MM-DD');
+        if (
+          !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
+          !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
+        ) {
+          // Check if the date is not already present in both approvedTaskRequestedOn and taskList
+          if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
+            datesToRequest.push(currentDateFormatted);
+          }
+        }
+        currentDate = currentDate.add(1, 'day');
+      }
+    } else if (filterOption === 'Date') {
+      // Generate dates for the specific date option
+      const currentDate = dayjs(addTask.date).format('YYYY-MM-DD');
+      if (
+        !taskList.some(task => task.userId === userId && task.date === currentDate) &&
+        !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDate)
+      ) {
+        // Check if the date is not already present in both approvedTaskRequestedOn and taskList
+        if (!taskRequestedOn[userId][month].includes(currentDate)) {
+          datesToRequest.push(currentDate);
+        }
+      }
+    }
+
+    taskRequestedOn[userId][month] = taskRequestedOn[userId][month].concat(datesToRequest);
+
+    localStorage.setItem('taskRequestedOn', JSON.stringify(taskRequestedOn));
+
+    // Display notification
+    notification.success({
+      message: `The request for ${addTask.date} has been sent.`,
+      placement: 'topRight',
+    });
+  } 
+};
+
+
+
   const handleClearSubmit = () => {
     // Clear the form with the default date and set idx
     setAddTask({
       date: dayjs(addTask.date).format('YYYY-MM-DD'),
-      userId: '123',
+      userId: userId,
       task: '',
+      title:'',
       startTime: '',
       endTime: '',
       totalHours:'',
@@ -495,6 +728,7 @@ const handleEditTask = (idx: number) => {
         date: taskToEdit.date,
         userId: taskToEdit.userId,
         task: taskToEdit.task,
+        title:taskToEdit.title,
         startTime: taskToEdit.startTime,
         endTime: taskToEdit.endTime,
         totalHours: taskToEdit.totalHours,
@@ -740,6 +974,7 @@ const handleOverallSubmit = () => {
         date: task.date,
         userId: task.userId,
         task: task.task,
+        title:task.title,
         startTime: task.startTime,
         endTime: task.endTime,
         totalHours: task.totalHours,
@@ -798,20 +1033,31 @@ const handleOverallSubmit = () => {
     const approvalRequestedData: { [date: string]: Task[] } = groupedTasks;
     localStorage.setItem('approvalRequestedData', JSON.stringify(approvalRequestedData));
 
-    // Retrieve rejectedKeys from local storage
+    // Assuming userId is available in your component's scope
+
+    // Retrieve rejectedKeys from local storage for the specific userId
     const rejectedKeysString = localStorage.getItem('rejectedKeys');
     console.log("rejectedKeysString", rejectedKeysString);
-    if (rejectedKeysString) {
-        let parsedRejectedKeys: RecentRejected[] = JSON.parse(rejectedKeysString);
-        console.log("rejectedKeys", parsedRejectedKeys);
-        // Check if 'submit' exists in rejectedKeys
-        const date = requestData.length > 0 ? requestData[0].date : '';
-        if (parsedRejectedKeys.some((key) => key.date === date)) {
-            // Remove 'date' from rejectedKeys
-            const updatedRejectedKeys = parsedRejectedKeys.filter((key) => key.date !== date);
 
-            // Update rejectedKeys in local storage
-            localStorage.setItem('rejectedKeys', JSON.stringify(updatedRejectedKeys));
+    if (rejectedKeysString) {
+        const parsedRejectedKeys: RejectedKeys = JSON.parse(rejectedKeysString);
+        console.log("rejectedKeys", parsedRejectedKeys);
+
+        // Check if userId exists in rejectedKeys
+        if (parsedRejectedKeys.hasOwnProperty(userId)) {
+            // Get the rejectedKeys for the specific userId
+            const userRejectedKeys = parsedRejectedKeys[userId];
+
+            // Check if 'submit' exists in rejectedKeys for the specific user
+            const date = requestData.length > 0 ? requestData[0].date : '';
+            if (userRejectedKeys.some((key) => key.date === date)) {
+                // Remove 'date' from rejectedKeys for the specific user
+                const updatedRejectedKeys = userRejectedKeys.filter((key) => key.date !== date);
+
+                // Update rejectedKeys in local storage for the specific user
+                parsedRejectedKeys[userId] = updatedRejectedKeys;
+                localStorage.setItem('rejectedKeys', JSON.stringify(parsedRejectedKeys));
+            }
         }
     }
 
@@ -838,6 +1084,13 @@ const handleOverallSubmit = () => {
       //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'task',
       key: 'task',
+      fixed: 'left',
+    },
+    {
+      title: 'Title',
+      //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+      dataIndex: 'title',
+      key: 'title',
       fixed: 'left',
     },
     {
@@ -978,15 +1231,15 @@ const handleOverallSubmit = () => {
             )
           }
         </div>
-        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( <form id="myForm" style={borderStyle}>
+        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( <form>
             <div>
               {isFormEnabled && (
                 <CloseCircleOutlined
-                  style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'red' }}
+                  style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'900px' }}
                   onClick={handleToggleForm} // Call the handleToggleForm function on click
                 />
               )}
-              <div className='section-addtask' style={{width:'70%'}}>
+              <div className='section-addtask' style={{width:'50%'}}>
                 <div className='create-layout-addtask-left  '>
                   <div style={{marginBottom:'10px'}}>
                     <label style={{color:'#0B4266'}} htmlFor='addTaskID'>Date</label>
@@ -998,9 +1251,15 @@ const handleOverallSubmit = () => {
                   /> */}
                   <Input
                     type='date'
-                    
                     placeholder='Enter your Employee ID'
                     value={currentDate.format('YYYY-MM-DD')} 
+                    // value={
+                    //   filterOption === 'Month'
+                    //     ? currentMonth.startOf('month').format('YYYY-MM-DD')
+                    //     : filterOption === 'Week'
+                    //     ? currentWeek.startOf('week').format('YYYY-MM-DD')
+                    //     : currentDate.format('YYYY-MM-DD')
+                    // }
                     onChange={(e) => handleInputChange('date', e.target.value)}
                   />
                   {/* <DatePicker
@@ -1040,28 +1299,52 @@ const handleOverallSubmit = () => {
                   
                 </div>
                 <div className='create-layout-addtask'>
-                  <div>
-                    <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
-                  </div>
-                  <div>
-                    <select
-                      id='task'
-                      value={addTask.task}
-                      onChange={(e) => handleInputChange('task', e.target.value)}
-                    >
-                      {taskOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  
+                  {addTask.task === 'Meeting' && (
+                    <>
+                      <div>
+                        <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
+                      </div>
+                      <div>
+                        <select
+                          id='task'
+                          value={addTask.title}
+                          onChange={(e) => handleInputChange('title', e.target.value)}
+                        >
+                          {meetingTitle.map((option, index) => (  // Use 'index' as the key
+                            <option key={index} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+                  {(addTask.task === 'Project'|| addTask.task==='Learning' || addTask.task==='Training') && (
+                    <>
+                      <div>
+                        <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
+                      </div>
+                      <div>
+                        <select
+                          id='task'
+                          value={addTask.title}
+                          onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
+                        >
+                          {projectTitle.map((option, index) => (  // Use 'index' as the key
+                            <option key={index} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
                 </div>
+
               </div>
-              <div style={{display:'flex', alignItems:'flex-end'}}>
+              <div style={{display:'flex', alignItems:'center'}}>
                 <div>
-                  <div className='section-addtask' style={{width:'140%'}}>
+                  <div className='section-addtask' style={{width:'125%'}}>
                     <div className='create-layout-addtask-left'>
                       <div>
                         <label htmlFor='startTime'>Start Time</label>
@@ -1098,7 +1381,7 @@ const handleOverallSubmit = () => {
                       />
                     </div>
                   </div>
-                  <div className='section-addtask' style={{width:'140%'}}>
+                  <div className='section-addtask' style={{width:'125%'}}>
                     
                   <div className='create-layout-addtask-left  '>
                       <div style={{marginBottom:'10px'}}>
@@ -1138,24 +1421,31 @@ const handleOverallSubmit = () => {
                         value={addTask.description}
                         onChange={(e) => handleInputChange('description', e.target.value)}
                         className='description-input'
-                        style={{width:'265%'}}
+                        style={{width:'230%'}}
                       />
                     </div>
                   </div>
                 </div>
-                <div>
-                  <img
+                <div className='chart-container' style={{ marginLeft: "150px",width:'750px'}}>
+                  {/* <img
                   src={asset}
                   alt="..."
                   style={{ marginLeft: "auto",width:'750px', height:'200px'}}
+                  /> */}
+                  <Chart
+                      options={pieChartDataInForm.options}
+                      series={pieChartDataInForm.series}
+                      type="pie"
+                      width="380"
+      
+                      
                   />
+
                 </div>
               </div>
             </div>
-              
-            
             <div className='button' style={{marginBottom:'10px'}}>
-              <Button  id='cancel-addtask' onClick={handleClearSubmit} style={{width:'10%'}}>
+              <Button  id='cancel-addtask' onClick={handleClearSubmit} style={{width:'7%'}}>
                 Clear
               </Button>
               {isEdited ? (
@@ -1234,6 +1524,19 @@ const handleOverallSubmit = () => {
           <Select.Option value="Week">Week</Select.Option>
           <Select.Option value="Month">Month</Select.Option>
         </Select> */}
+        { !isButtonDisabled && (
+        <Button
+          id='submit-addtask-active'
+          style={{marginRight:'10px'}}
+          onClick={handleRequestForm}
+          disabled={isButtonDisabled}
+        >
+          Request
+        </Button>
+        )
+
+        }
+        
         {!cancelButton && !(filterOption === 'Date' && !isFormEnabled) && (
             <Button
               id='cancel-new'

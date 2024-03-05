@@ -1,17 +1,140 @@
-import React from 'react';
+import React,{useEffect, useState} from 'react';
 import { Input, Button } from 'antd';
-import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined , LoginOutlined, LogoutOutlined} from '@ant-design/icons';
+import { Link, useNavigate,useLocation } from "react-router-dom";
+import { useMsal } from '@azure/msal-react';
 import '../Styles/Dashboard.css';
-import { Space, Avatar } from 'antd';
+import Notification from './Notification';
+import { NavLink } from 'react-router-dom';
+import { Space, Avatar, Dropdown, Menu,Modal } from 'antd';
 const Headerbar: React.FC = () => {
+  const { instance } = useMsal();
+    const navigate = useNavigate();
+    const Location = useLocation();
+    const { confirm } = Modal;
   const handlePlusClick = () => {
     // Button action
   };
+  // const handleLogout = () => {
+  //   localStorage.removeItem("authToken");
+  //   localStorage.removeItem("role");
+  //   navigate("/login");
+  //   window.location.reload();
+  // };
+
+  
+    const handleLogout = () => {
+      confirm({
+        title: 'Sign Out',
+        content: 'Do you want to sign out?',
+        okButtonProps: {
+          style: {
+            width: '80px', backgroundColor: '#0B4266',color:'white'
+          },
+        },
+        cancelButtonProps: {
+          style: {
+            width: '80px', backgroundColor: '#0B4266',color:'white'
+          },
+        },
+        onOk() {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          instance.logout();
+          navigate("/");
+          window.location.reload();
+        },
+        onCancel() {
+        },
+      });
+    };
+
+ 
+  // const handleMenuClick = (e: any) => {
+  //   if (e.key === "profile") {
+  //   } else if (e.key === "logout") {
+  //   }
+  // };
+ 
+  useEffect(() => {
+    const fetchManagerInfo = async () => {
+      try {
+        // const response = await api.get("/api/v1/admin/fetch-user-info");
+        // const manager = response.data.response.data;
+        // setManagerDetails({
+        //   firstName: manager?.firstName,
+        //   lastName: manager?.lastName,
+        //   email: manager?.email,
+        //   profileUrl: manager?.profileUrl,
+        //   lastLogin: manager?.lastLogin,
+        //   role: manager?.role,
+      }
+       catch (error: any) {
+      //   if (error.response && error.response.status === 403) {
+      //     localStorage.removeItem("authToken");
+      //     localStorage.removeItem("role");
+      //     navigate("/");
+      //     window.location.reload();
+      //   message.error(error)
+      //   }
+       }
+    };
+ 
+    fetchManagerInfo();
+  }, []);
+ 
+  const handleMenuMouseEnter = async () => {
+    try {
+      //const response = await api.get("/api/v1/admin/fetch-user-info");
+     // const manager = response?.data?.response?.data;
+      // setManagerDetails({
+      //   firstName: manager?.firstName,
+      //   lastName: manager?.lastName,
+      //   email: manager?.email,
+      //   profileUrl: manager?.profileUrl,
+      //   lastLogin: manager?.lastLogin,
+      //   role: manager?.role,
+      // });
+    } catch (error: any) {
+    //   if (error.response.status === 403) {
+    //     localStorage.removeItem("authToken");
+    //     localStorage.removeItem("role");
+    //     navigate("/");
+    //     window.location.reload();
+    //   }
+     }
+  };
+
+  const menu = (
+    <Menu
+    // onClick={handleMenuClick}
+     onMouseEnter={handleMenuMouseEnter} style={{marginTop:'-25px',marginRight:'6px'}}>
+      <Menu.Item key="name">
+        {/* {managerDetails?.firstName} {managerDetails?.lastName} */}
+        Sasi Kumar
+      </Menu.Item>
+      <Menu.Item key="email">
+        {/* {managerDetails?.email} */}
+        sasikumarmurugan02@gmail.com
+      </Menu.Item>
+      <Menu.Item key="lastLoginDate">
+        {/* Last Login: {managerDetails?.lastLogin} */}
+        Last Login: 2024-02-01
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="profile" icon={<UserOutlined />}>
+        <NavLink to="/dashboard">Profile</NavLink>
+      </Menu.Item>
+      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <div className='headerstyle'>
-      <Input className='search' placeholder="Search Here" suffix={<SearchOutlined />} />
-      <Button
+      {/* <Input className='search' placeholder="Search Here" suffix={<SearchOutlined />} /> */}
+      {/* <Button
        type="text"
         icon={
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="23" viewBox="0 0 16 16" fill="none">
@@ -26,8 +149,8 @@ const Headerbar: React.FC = () => {
           </svg>
         }
         onClick={handlePlusClick}
-      />
-      <Button
+      /> */}
+      {/* <Button
          type="text"
         icon={
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 32 32" fill="none">
@@ -35,27 +158,51 @@ const Headerbar: React.FC = () => {
           </svg>
         }
         onClick={handlePlusClick}
+      /> */}
+      <Notification/>
+      <Dropdown overlay={menu}>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "row", // Adjusted to display items vertically
+      alignItems: "center",
+      gap: "10px",
+      marginTop: "-25px",
+      cursor:'pointer'
+    }}
+  >
+    <div>
+      <Avatar
+        size={42}
+        //src={`${managerDetails?.profileUrl}#${Date.now()}`}                
+        icon={<UserOutlined />}
       />
-      <Button
-      style={{display:'flex'}}
-      type="text"
-      icon={<UserOutlined style={{ fontSize: 22 }} />}>
-        {/* <div>
-          <div>
-            <strong>Sasi Kumar</strong>
-          </div>
-          <div>MGIN10058</div>
-        </div> */}
-        </Button>
-        {/* <Avatar icon={<UserOutlined />} size={45}>
-        </Avatar> 
-        <div>
-            <h3>
-              <strong style={{fontFamily:'poppins'}}>Sasi Kumar</strong>
-              <p style={{fontFamily:'poppins'}}>MGIN10058</p>
-            </h3>
-            
-        </div>     */}
+    </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        fontWeight: "bolder",
+      }}
+    >
+      <div
+        style={{ color: "#0B4266", fontSize: "18px", marginTop: "5px", height:'20px' }}
+      >
+        Sasi Kumar
+      </div>
+      <div
+        style={{
+          fontSize: "12px",
+          color: "rgba(0,0,0,.45)",
+        }}
+      >
+        MGIN10058
+      </div>
+    </div>
+  </div>
+</Dropdown>
+   
     </div>
   );
 };
@@ -98,88 +245,88 @@ export default Headerbar;
 //     role: "",
 //   });
  
-//   const handleLogout = () => {
-//     localStorage.removeItem("authToken");
-//     localStorage.removeItem("role");
-//     navigate("/login");
-//     window.location.reload();
-//   };
+  // const handleLogout = () => {
+  //   localStorage.removeItem("authToken");
+  //   localStorage.removeItem("role");
+  //   navigate("/login");
+  //   window.location.reload();
+  // };
  
-//   // const handleMenuClick = (e: any) => {
-//   //   if (e.key === "profile") {
-//   //   } else if (e.key === "logout") {
-//   //   }
-//   // };
+  // // const handleMenuClick = (e: any) => {
+  // //   if (e.key === "profile") {
+  // //   } else if (e.key === "logout") {
+  // //   }
+  // // };
  
-//   useEffect(() => {
-//     const fetchManagerInfo = async () => {
-//       try {
-//         const response = await api.get("/api/v1/admin/fetch-user-info");
-//         const manager = response.data.response.data;
-//         setManagerDetails({
-//           firstName: manager?.firstName,
-//           lastName: manager?.lastName,
-//           email: manager?.email,
-//           profileUrl: manager?.profileUrl,
-//           lastLogin: manager?.lastLogin,
-//           role: manager?.role,
-//         });
-//       } catch (error: any) {
-//       //   if (error.response && error.response.status === 403) {
-//       //     localStorage.removeItem("authToken");
-//       //     localStorage.removeItem("role");
-//       //     navigate("/");
-//       //     window.location.reload();
-//       //   message.error(error)
-//       //   }
-//        }
-//     };
+  // useEffect(() => {
+  //   const fetchManagerInfo = async () => {
+  //     try {
+  //       const response = await api.get("/api/v1/admin/fetch-user-info");
+  //       const manager = response.data.response.data;
+  //       setManagerDetails({
+  //         firstName: manager?.firstName,
+  //         lastName: manager?.lastName,
+  //         email: manager?.email,
+  //         profileUrl: manager?.profileUrl,
+  //         lastLogin: manager?.lastLogin,
+  //         role: manager?.role,
+  //       });
+  //     } catch (error: any) {
+  //     //   if (error.response && error.response.status === 403) {
+  //     //     localStorage.removeItem("authToken");
+  //     //     localStorage.removeItem("role");
+  //     //     navigate("/");
+  //     //     window.location.reload();
+  //     //   message.error(error)
+  //     //   }
+  //      }
+  //   };
  
-//     fetchManagerInfo();
-//   }, []);
+  //   fetchManagerInfo();
+  // }, []);
  
-//   const handleMenuMouseEnter = async () => {
-//     try {
-//       const response = await api.get("/api/v1/admin/fetch-user-info");
-//       const manager = response?.data?.response?.data;
-//       setManagerDetails({
-//         firstName: manager?.firstName,
-//         lastName: manager?.lastName,
-//         email: manager?.email,
-//         profileUrl: manager?.profileUrl,
-//         lastLogin: manager?.lastLogin,
-//         role: manager?.role,
-//       });
-//     } catch (error: any) {
-//     //   if (error.response.status === 403) {
-//     //     localStorage.removeItem("authToken");
-//     //     localStorage.removeItem("role");
-//     //     navigate("/");
-//     //     window.location.reload();
-//     //   }
-//      }
-//   };
+  // const handleMenuMouseEnter = async () => {
+  //   try {
+  //     const response = await api.get("/api/v1/admin/fetch-user-info");
+  //     const manager = response?.data?.response?.data;
+  //     setManagerDetails({
+  //       firstName: manager?.firstName,
+  //       lastName: manager?.lastName,
+  //       email: manager?.email,
+  //       profileUrl: manager?.profileUrl,
+  //       lastLogin: manager?.lastLogin,
+  //       role: manager?.role,
+  //     });
+  //   } catch (error: any) {
+  //   //   if (error.response.status === 403) {
+  //   //     localStorage.removeItem("authToken");
+  //   //     localStorage.removeItem("role");
+  //   //     navigate("/");
+  //   //     window.location.reload();
+  //   //   }
+  //    }
+  // };
  
-//   const menu = (
-//     <Menu
-//     // onClick={handleMenuClick}
-//      onMouseEnter={handleMenuMouseEnter} style={{marginTop:'-25px',marginRight:'6px'}}>
-//       <Menu.Item key="name">
-//         {managerDetails?.firstName} {managerDetails?.lastName}
-//       </Menu.Item>
-//       <Menu.Item key="email">{managerDetails?.email}</Menu.Item>
-//       <Menu.Item key="lastLoginDate">
-//         Last Login: {managerDetails?.lastLogin}
-//       </Menu.Item>
-//       <Menu.Divider />
-//       <Menu.Item key="profile" icon={<UserOutlined />}>
-//         <NavLink to="/hr/profile">Profile</NavLink>
-//       </Menu.Item>
-//       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-//         Logout
-//       </Menu.Item>
-//     </Menu>
-//   );
+  // const menu = (
+  //   <Menu
+  //   // onClick={handleMenuClick}
+  //    onMouseEnter={handleMenuMouseEnter} style={{marginTop:'-25px',marginRight:'6px'}}>
+  //     <Menu.Item key="name">
+  //       {managerDetails?.firstName} {managerDetails?.lastName}
+  //     </Menu.Item>
+  //     <Menu.Item key="email">{managerDetails?.email}</Menu.Item>
+  //     <Menu.Item key="lastLoginDate">
+  //       Last Login: {managerDetails?.lastLogin}
+  //     </Menu.Item>
+  //     <Menu.Divider />
+  //     <Menu.Item key="profile" icon={<UserOutlined />}>
+  //       <NavLink to="/hr/profile">Profile</NavLink>
+  //     </Menu.Item>
+  //     <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+  //       Logout
+  //     </Menu.Item>
+  //   </Menu>
+  // );
  
 //   return (
 //     <div
@@ -224,47 +371,47 @@ export default Headerbar;
 //         >
 //           {/* <Notification/> */}
 //         </div>
-//         <Dropdown overlay={menu}>
-//           <div
-//             style={{
-//               display: "flex",
-//               alignItems: "center",
-//               gap: "10px",
-//               marginTop: "-45px",
-//             }}
-//           >
-//             <div>
-//               <Avatar
-//                 size={42}
-//                 src={`${managerDetails?.profileUrl}#${Date.now()}`}                
-//                 icon={<UserOutlined />}
-//               />
-//             </div>
-//             <div
-//               style={{
-//                 display: "flex",
-//                 flexDirection: "column",
-//                 alignItems: "flex-start",
-//                 fontWeight: "bolder",
-//               }}
-//             >
-//               <span
-//                 style={{ color: "#0B4266", fontSize: "18px", marginTop: "5px" }}
-//               >
-//                 {managerDetails?.firstName} {managerDetails?.lastName}
-//               </span>
-//               <span
-//                 style={{
-//                   marginTop: "-70px",
-//                   fontSize: "12px",
-//                   color: "rgba(0,0,0,.45)",
-//                 }}
-//               >
-//                 {managerDetails?.role}
-//               </span>
-//             </div>
-//           </div>
-//         </Dropdown>
+        // <Dropdown overlay={menu}>
+        //   <div
+        //     style={{
+        //       display: "flex",
+        //       alignItems: "center",
+        //       gap: "10px",
+        //       marginTop: "-45px",
+        //     }}
+        //   >
+        //     <div>
+        //       <Avatar
+        //         size={42}
+        //         src={`${managerDetails?.profileUrl}#${Date.now()}`}                
+        //         icon={<UserOutlined />}
+        //       />
+        //     </div>
+        //     <div
+        //       style={{
+        //         display: "flex",
+        //         flexDirection: "column",
+        //         alignItems: "flex-start",
+        //         fontWeight: "bolder",
+        //       }}
+        //     >
+        //       <span
+        //         style={{ color: "#0B4266", fontSize: "18px", marginTop: "5px" }}
+        //       >
+        //         {managerDetails?.firstName} {managerDetails?.lastName}
+        //       </span>
+        //       <span
+        //         style={{
+        //           marginTop: "-70px",
+        //           fontSize: "12px",
+        //           color: "rgba(0,0,0,.45)",
+        //         }}
+        //       >
+        //         {managerDetails?.role}
+        //       </span>
+        //     </div>
+        //   </div>
+        // </Dropdown>
 //       </ConfigProvider>
 //     </div>
 //   );

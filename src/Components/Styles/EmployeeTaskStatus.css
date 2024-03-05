@@ -19,6 +19,13 @@
 .ant-card-body{
   padding-top: 0px;
 } 
+
+.ant-select-selector .ant-select-selection-placeholder {
+  text-align: left;
+  color: white;
+
+}
+
   @keyframes wave-animation {
       0% { transform: rotate( 0.0deg) }
      10% { transform: rotate(14.0deg) }  /* The following five values can be played with to make the waving more or less extreme */

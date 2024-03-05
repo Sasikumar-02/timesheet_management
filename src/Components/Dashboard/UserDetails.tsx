@@ -197,10 +197,6 @@ const UserDetails:React.FC = () => {
     }
   };
   
-  
-  
-
-
   // useEffect(() => {
   //   if (searchText.trim() !== "") {
   //       const filteredEmployees = users.filter(

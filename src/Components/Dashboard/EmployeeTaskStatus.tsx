@@ -24,7 +24,7 @@ import { Select } from 'antd'; // Import the Select component from Ant Design
 import { RecentRejected } from './MonthTasks';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
-
+import { RejectedKeys, SelectedKeys } from './MonthTasks';
 const config: ThemeConfig = {
     token: {
       colorPrimary: "#0b4266",
@@ -49,6 +49,7 @@ interface EmployeeTaskStatusProps{
 }
 
 const EmployeeTaskStatus = () => {
+    const userId = '123'; // Assuming you have a function to get the current user's ID
     const { Option } = Select; // Destructure the Option component from Select
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
@@ -106,27 +107,40 @@ const EmployeeTaskStatus = () => {
         const storedData = localStorage.getItem('taskList');
         if (storedData) {
             const parsedData: Task[] = JSON.parse(storedData);
-            const filteredTasks = parsedData.filter((task: Task) => task.userId === '1234');
+            const filteredTasks = parsedData.filter((task: Task) => task.userId === userId);
             setTaskList(filteredTasks);
         }
         console.log("storedData", storedData);
     }, []);
 
     useEffect(() => {
-        const storedData = localStorage.getItem('selectedKeys');
-        if (storedData) {
-            setApprovedKeys(JSON.parse(storedData));
+        const storedKeysString: string | null = localStorage.getItem('selectedKeys');
+        if (storedKeysString !== null) {
+            const storedKeys: SelectedKeys = JSON.parse(storedKeysString);
+            if (storedKeys.hasOwnProperty(userId)) {
+                setApprovedKeys(storedKeys[userId]);
+            } else {
+                console.log("User ID not found in stored keys");
+            }
+        } else {
+            console.log("else-useEffect", storedKeysString);
         }
-        console.log("storedData", storedData);
     }, []);
 
     useEffect(() => {
-        const storedData = localStorage.getItem('rejectedKeys');
-        if (storedData) {
-            setRejectedKeys(JSON.parse(storedData));
-        }
-        console.log("storedData-rejected", storedData);
-    }, []);
+      const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
+      if (storedKeysString !== null) {
+          const storedKeys: RejectedKeys = JSON.parse(storedKeysString);
+          
+          const userRejectedKeys = storedKeys[userId];
+          if (userRejectedKeys) {
+              setRejectedKeys(userRejectedKeys);
+          }
+      } else {
+          console.log("else-useEffect", storedKeysString);
+      }
+  }, []);
+
 
     function getDaysInMonth(month: number, year: number) {
         // month is 0-based in JavaScript

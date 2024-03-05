@@ -38,10 +38,10 @@ import { Task } from './AddTask';
 import { groupBy } from 'lodash';
 import { ConstructionOutlined } from '@mui/icons-material';
 import { TableRowSelection } from 'antd/lib/table/interface';
-import { RecentRejected } from './MonthTasks';
 import { RequestedOn } from './AddTask';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
+import { SelectedKeys, RejectedKeys, RecentRejected } from './MonthTasks';
 // Define the type for RowSelectMethod
 type RowSelectMethod = 'checkbox' | 'radio';
 
@@ -78,7 +78,14 @@ export interface TaskObject {
   };
 }
 
-interface GroupedTasks {
+export interface SetGroupedTasks{
+  [key: string]: GroupedTasks
+}
+export interface UserGroupedTask {
+  [userId: string]: SetGroupedTasks;   
+  
+}
+export interface GroupedTasks {
   key: string;
   slNo?: number;
   month: string;
@@ -92,14 +99,15 @@ interface ApprovalRequestsProps {
 }
 
 const ApprovalRequest:React.FC = () => { 
-  const [selectedKeys, setSelectedKeys]= useState<string[]>([]);
-  const [rejectedKeys, setRejectedKeys]= useState<RecentRejected[]>([]);
+  const userId = '123'; // Replace 'YOUR_USER_ID' with the actual user id you want to check
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [rejectedKeys, setRejectedKeys] = useState<RecentRejected[]>([]);
   const navigate = useNavigate();
   //const [selectedRows, setSelectedRows] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedInnerRows, setSelectedInnerRows] = useState<string[]>([]);
   //const[daysInMonth, getDaysInMonth]=useState<string[]>([]);
-  const [groupedTasks, setGroupedTasks] = useState<{ [key: string]: GroupedTasks }>({});
+  const [groupedTasks, setGroupedTasks] = useState<UserGroupedTask>({});
   // State declaration with two keys
   //const [groupedTasks, setGroupedTasks] = useState<{ [month: string]: { [date: string]: GroupedTasks } }>({});
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
@@ -132,24 +140,32 @@ const ApprovalRequest:React.FC = () => {
 }, []); // Fetch data only once on component mount
 
   useEffect(() => {
-    const storedKeysString: string | null = localStorage.getItem('selectedKeys');
-    if (storedKeysString !== null) {
-        const storedKeys: string[] = JSON.parse(storedKeysString);
-        setSelectedKeys(storedKeys);
-    } else {
-       console.log("else-useEffect", storedKeysString);
-    }
-}, []);
+        const storedKeysString: string | null = localStorage.getItem('selectedKeys');
+        if (storedKeysString !== null) {
+            const storedKeys: SelectedKeys = JSON.parse(storedKeysString);
+           
+            if (storedKeys.hasOwnProperty(userId)) {
+                setSelectedKeys(storedKeys[userId]);
+            } else {
+                console.log("User ID not found in stored keys");
+            }
+        } else {
+            console.log("else-useEffect", storedKeysString);
+        }
+    }, []);
 
-  useEffect(() => {
-    const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
-    if (storedKeysString !== null) {
-        const storedKeys: RecentRejected[] = JSON.parse(storedKeysString);
-        console.log("useeffect- storedKeys", storedKeys);
-        setRejectedKeys(storedKeys);
-    } else {
-        console.log("else-useEffect", storedKeysString);
-    }
+    useEffect(() => {
+      const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
+      if (storedKeysString !== null) {
+          const storedKeys: RejectedKeys = JSON.parse(storedKeysString);
+          const userRejectedKeys = storedKeys[userId];
+          if (userRejectedKeys) {
+            console.log("userRejectedKeys", userRejectedKeys);
+              setRejectedKeys(userRejectedKeys);
+          }
+      } else {
+          console.log("else-useEffect", storedKeysString);
+      }
   }, []);
 
 
@@ -161,30 +177,39 @@ const ApprovalRequest:React.FC = () => {
     }
 }, [approvalRequests]);
 
-
-  useEffect(() => {
-    const storedData = localStorage.getItem('groupedTasks');
-    if (storedData && selectedKeys.length > 0   ) { //&& rejectedKeys.length>0
-        const parsedData: { [key: string]: GroupedTasks } = JSON.parse(storedData);
-        const updatedData = Object.keys(parsedData).reduce((acc: { [key: string]: GroupedTasks }, monthKey: string) => {
-            const monthData = parsedData[monthKey];
-            const filteredTasks: TaskObject = {};
-            Object.keys(monthData.tasks).forEach(dateKey => {
-                // Check if the dateKey is not included in selectedKeys
-                if (!selectedKeys.includes(dateKey) && !selectedKeys.includes(dateKey)) {
-                    filteredTasks[dateKey] = monthData.tasks[dateKey];
-                }
-            });
-            // Check if there are tasks left for the month after filtering
-            if (Object.keys(filteredTasks).length > 0) {
-                acc[monthKey] = { ...monthData, tasks: filteredTasks };
+useEffect(() => {
+  const storedData = localStorage.getItem('groupedTasks');
+  if (storedData && (selectedKeys.length > 0 || rejectedKeys.length>0)) {
+    const parsedData: UserGroupedTask = JSON.parse(storedData);
+    const updatedData = Object.keys(parsedData).reduce((acc: UserGroupedTask, userId: string) => {
+      const userData = parsedData[userId];
+      
+      // Check if userData is not null or undefined
+      if (userData) {
+        const filteredSetGroupedTasks: SetGroupedTasks = {};
+        Object.keys(userData).forEach((monthKey: string) => {
+          const monthData = userData[monthKey];
+          const filteredTasks: TaskObject = {};
+          Object.keys(monthData.tasks).forEach((dateKey: string) => {
+            if (!selectedKeys.includes(dateKey) && !rejectedKeys.some((rejected) => rejected.date === dateKey)) {
+              filteredTasks[dateKey] = monthData.tasks[dateKey];
             }
-            return acc;
-        }, {});
-        // Update the state with the filtered data
-        setGroupedTasks(updatedData);
-    }
-}, [selectedKeys]);
+          });
+          if (Object.keys(filteredTasks).length > 0) {
+            filteredSetGroupedTasks[monthKey] = { ...monthData, tasks: filteredTasks };
+          }
+        });
+        if (Object.keys(filteredSetGroupedTasks).length > 0) {
+          acc[userId] = filteredSetGroupedTasks;
+        }
+      }
+
+      return acc;
+    }, {});
+    setGroupedTasks(updatedData);
+  }
+}, [selectedKeys, rejectedKeys]);
+
 
   const handleReject = () => {
     setCommentVisible(true);
@@ -239,9 +264,6 @@ const ApprovalRequest:React.FC = () => {
     // month is 0-based in JavaScript
     return new Date(year, month + 1, 0).getDate();
   }
-
-  
-
   
   const handleGroupedTasks = (requestData: DateTask[]) => {
     // Group tasks by month
@@ -250,99 +272,104 @@ const ApprovalRequest:React.FC = () => {
     console.log("handleGroupedTasks-grouped", grouped);
     // Retrieve existing data from local storage
     const existingDataJSON = localStorage.getItem('groupedTasks');
-    const existingData: { [key: string]: GroupedTasks } = existingDataJSON ? JSON.parse(existingDataJSON) : {};
+    const existingData: UserGroupedTask = existingDataJSON ? JSON.parse(existingDataJSON) : {};
+  
     // Process each month's tasks
     for (const monthKey in grouped) {
-        console.log("monthKey", monthKey);
-        const tasksArray = grouped[monthKey] as DateTask[];
-        console.log("tasksArray", tasksArray);
-        const firstTaskDate = dayjs(tasksArray[0].key, 'YYYY-MM-DD');
-        const formattedMonth = firstTaskDate.format("MMMM YYYY");
-        const totalDaysInMonth = getDaysInMonth(firstTaskDate.month(), firstTaskDate.year());
-
-        let daysFilled = 0;
-        const tasks: { [key: string]: { key: string; tasks: Task[] } } = {};
-        tasksArray.forEach(taskObj => {
-            console.log("taskObj", taskObj);
-            const dateKey = dayjs(taskObj.key, 'YYYY-MM-DD').format('YYYY-MM-DD');
-            if (existingData.hasOwnProperty(monthKey)) {
-                if (!existingData[monthKey].tasks.hasOwnProperty(dateKey)) {
-                    // Create a new date key entry with all tasks from the tasksArray
-                    existingData[monthKey].tasks[dateKey] = { key: uuidv4(), tasks: taskObj.task };
-                    daysFilled++;
-                } else {
-                    console.log("else");
-                    console.log("else-handleGorupedTasks", selectedKeys.includes(dateKey));
-                    console.log("else-handleGorupedTasks", rejectedKeys.some(item => item.date === dateKey));
-                    if (selectedKeys.includes(dateKey) || rejectedKeys.some(item => item.date === dateKey)) {
-                        console.log("sasi", dateKey);
-                        return;
-                    }
-                    existingData[monthKey].tasks[dateKey].tasks = [...taskObj.task];
-                }
-            } else {
-                const dateUUID = uuidv4(); // Generate unique key for the date
-                tasks[dateKey] = { key: dateUUID, tasks: taskObj.task };
-                daysFilled++;
+      console.log("monthKey", monthKey);
+      const tasksArray = grouped[monthKey] as DateTask[];
+      console.log("tasksArray", tasksArray);
+      const firstTaskDate = dayjs(tasksArray[0].key, 'YYYY-MM-DD');
+      const formattedMonth = firstTaskDate.format("MMMM YYYY");
+      const totalDaysInMonth = getDaysInMonth(firstTaskDate.month(), firstTaskDate.year());
+  
+      let daysFilled = 0;
+      const tasks: TaskObject = {};
+      tasksArray.forEach(taskObj => {
+        console.log("taskObj", taskObj);
+        const dateKey = dayjs(taskObj.key, 'YYYY-MM-DD').format('YYYY-MM-DD');
+        if (existingData[userId]?.hasOwnProperty(monthKey)) {
+          if (!existingData[userId][monthKey]?.tasks.hasOwnProperty(dateKey)) {
+            // Create a new date key entry with all tasks from the tasksArray
+            existingData[userId][monthKey].tasks[dateKey] = { key: uuidv4(), tasks: taskObj.task };
+            daysFilled++;
+          } else {
+            if (existingData[userId][monthKey]?.tasks[dateKey].tasks.length === 0) {
+              console.log("sasi", dateKey);
+              return;
             }
-        });
-
-        if (!existingData.hasOwnProperty(monthKey)) {
-            const monthUUID = uuidv4(); // Generate unique key for the month
-            existingData[monthKey] = {
-                key: monthUUID,
-                month: formattedMonth,
-                daysFilled,
-                totalDaysInMonth,
-                tasks
-            };
+            existingData[userId][monthKey].tasks[dateKey].tasks = [...taskObj.task];
+          }
         } else {
-            existingData[monthKey].daysFilled = daysFilled; // Update daysFilled
+          const dateUUID = uuidv4(); // Generate unique key for the date
+          tasks[dateKey] = { key: dateUUID, tasks: taskObj.task };
+          daysFilled++;
         }
+      });
+  
+      if (!existingData[userId]?.hasOwnProperty(monthKey)) {
+        const monthUUID = uuidv4(); // Generate unique key for the month
+        existingData[userId] = existingData[userId] || {};
+        existingData[userId][monthKey] = {
+          key: monthUUID,
+          month: formattedMonth,
+          daysFilled,
+          totalDaysInMonth,
+          tasks
+        };
+      } else {
+        existingData[userId][monthKey].daysFilled = daysFilled; // Update daysFilled
+      }
     }
-
+  
     // Set the updated data to local storage
     localStorage.setItem('groupedTasks', JSON.stringify(existingData));
-
+  
     // Update the state with the combined data
+    // You'll need to manage the state accordingly as per your application's structure
     setGroupedTasks(existingData);
     setApprovalRequests([]);
-};
+  };
+  
 
 
-  useEffect(() => {
+  //   useEffect(() => {
+  //     const storedData = localStorage.getItem('groupedTasks');
     
-    const storedData = localStorage.getItem('groupedTasks');
-    //console.log("useEffect-selectedKeys", storedData);
-   
-if (storedData && selectedKeys.length > 0) {
-    const parsedData: { [key: string]: GroupedTasks } = JSON.parse(storedData);
-    console.log("useEffect-parsedData", parsedData);
-    // Filter out the data based on selectedKeys
-    const updatedData = Object.keys(parsedData).reduce((acc: { [key: string]: GroupedTasks }, monthKey: string) => {
-        const monthData = parsedData[monthKey];
-        console.log("useEffect-monthData", monthData);
-        const filteredTasks: TaskObject = {};
-        Object.keys(monthData.tasks).forEach(dateKey => {
-            console.log("useEffect-dateKey", dateKey);
-            console.log("storing-handleGorupedTasks", selectedKeys.includes(dateKey));
-            console.log("storing-handleGorupedTasks", rejectedKeys.some(rejected => rejected.date === dateKey));
-            if (!selectedKeys.includes(dateKey) && !rejectedKeys.some(rejected => rejected.date === dateKey)) {
-                console.log("sasi", dateKey);
-                filteredTasks[dateKey] = monthData.tasks[dateKey];
-            }            
-        });
-        // Check if there are tasks left for the month after filtering
-        if (Object.keys(filteredTasks).length > 0) {
-            acc[monthKey] = { ...monthData, tasks: filteredTasks };
-        }
-        return acc;
-    }, {});
-    // Update the state with the filtered data
-    console.log("useEffect-updatedData", updatedData);
-    setGroupedTasks(updatedData);
-}
-  }, [selectedKeys, rejectedKeys]);
+  //     if (storedData && selectedKeys.length > 0) {
+  //         const parsedData: UserGroupedTask = JSON.parse(storedData);
+          
+  //         const updatedData = Object.keys(parsedData).reduce((acc: UserGroupedTask, userId: string) => {
+  //             const userGroupedTasks = parsedData[userId];
+              
+  //             const updatedUserGroupedTasks: SetGroupedTasks = Object.keys(userGroupedTasks).reduce((userAcc: SetGroupedTasks, monthKey: string) => {
+  //                 const monthData = userGroupedTasks[monthKey];
+  //                 const filteredTasks: TaskObject = {};
+
+  //                 Object.keys(monthData.tasks).forEach(dateKey => {
+  //                     if (!selectedKeys.includes(dateKey) && !rejectedKeys.some(rejected => rejected.date === dateKey)) {
+  //                         filteredTasks[dateKey] = monthData.tasks[dateKey];
+  //                     }
+  //                 });
+
+  //                 if (Object.keys(filteredTasks).length > 0) {
+  //                     userAcc[monthKey] = { ...monthData, tasks: filteredTasks };
+  //                 }
+                  
+  //                 return userAcc;
+  //             }, {});
+
+  //             if (Object.keys(updatedUserGroupedTasks).length > 0) {
+  //                 acc[userId] = updatedUserGroupedTasks;
+  //             }
+              
+  //             return acc;
+  //         }, {});
+
+  //         setGroupedTasks(updatedData);
+  //     }
+  // }, [selectedKeys, rejectedKeys]);
+
   
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
     console.log("handleRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
@@ -686,6 +713,15 @@ useEffect(() => {
         fixed: 'left',
       },
       {
+        title: 'Title',
+        sorter: (a: Task, b: Task) => {
+          return a.title.localeCompare(b.title);
+        },
+        dataIndex: 'task',
+        key: 'task',
+        fixed: 'left',
+      },
+      {
         title: 'Start Time',
         sorter: (a: Task, b: Task) => {
           return a.startTime.localeCompare(b.startTime);
@@ -884,27 +920,30 @@ useEffect(() => {
     };
     
     
-    const aggregatedData: GroupedTasks[] = Object.keys(groupedTasks).map((monthKey: string) => {
-      console.log("aggregatedData-monthKey",monthKey);
-      const monthData = groupedTasks[monthKey];
-      console.log("aggregatedData-monthData",monthData);
-      const monthTasks: { [date: string]: { key: string; tasks: Task[] } } = {};
-      let daysFilled = 0;
-      for (const dateKey in monthData.tasks) {
-        if (Object.keys(monthData.tasks[dateKey].tasks).length > 0) {
-          monthTasks[dateKey] = monthData.tasks[dateKey];
-          daysFilled++;
+    const aggregatedData: GroupedTasks[] = Object.keys(groupedTasks).flatMap((userId: string) => {
+      const userGroupedTasks = groupedTasks[userId];
+      return Object.keys(userGroupedTasks).map((monthKey: string) => {
+        console.log("aggregatedData-monthKey", monthKey);
+        const monthData = userGroupedTasks[monthKey];
+        console.log("aggregatedData-monthData", monthData);
+        const monthTasks: TaskObject = {};
+        let daysFilled = 0;
+        for (const dateKey in monthData.tasks) {
+          if (Object.keys(monthData.tasks[dateKey].tasks).length > 0) {
+            monthTasks[dateKey] = monthData.tasks[dateKey];
+            daysFilled++;
+          }
         }
-      }
-      const totalDaysInMonth = monthData.totalDaysInMonth;
-      console.log("aggregatedData", monthData);
-      return {
-        key: monthData.key,
-        month: monthData.month,
-        tasks: monthTasks,
-        daysFilled: daysFilled,
-        totalDaysInMonth: totalDaysInMonth
-      };
+        const totalDaysInMonth = monthData.totalDaysInMonth;
+        console.log("aggregatedData", monthData);
+        return {
+          key: monthData.key,
+          month: monthData.month,
+          tasks: monthTasks,
+          daysFilled: daysFilled,
+          totalDaysInMonth: totalDaysInMonth
+        };
+      });
     });
   
     const flattenedData = (groupedTasks: TaskObject) => {
@@ -1071,7 +1110,7 @@ useEffect(() => {
             }
             className='custom-table'
             columns={columns}
-            dataSource={aggregatedData}
+           dataSource={aggregatedData}
             pagination={false}
             //expandable={expandable}
             // expandable={{
