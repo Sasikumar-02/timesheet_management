@@ -5,15 +5,15 @@ import dayjs from 'dayjs';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import '../Styles/CreateUser.css';
-import DashboardLayout from './Layout';
+import DashboardLayout from '../Dashboard/Layout';
 import Chart from 'react-apexcharts';
 import '../Styles/AddTask.css';
 import {Table} from 'antd';
 import { ColumnsType } from "antd/es/table";
-import ApprovalRequest from './ApprovalRequest';
+import ApprovalRequest from '../Manager/ApprovalRequest';
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
 import Dashboard from './Dashboard';
-import { RecentRejected, SelectedKeys, RejectedKeys } from './MonthTasks';
+import { RecentRejected, SelectedKeys, RejectedKeys } from '../Manager/MonthTasks';
 import asset from '../../assets/images/asset.svg';
 export interface DateTask{
   key: string;
@@ -456,7 +456,7 @@ console.log("approvedRequestedOn", approvedRequestedOn);
 
     const currentDateFormatted = dayjs().format('YYYY-MM-DD');
     // Check if the date is not present in the approvedRequestedOn and satisfies the condition
-    console.log("approvedRequestedOn", approvedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date));
+    console.log("approvedRequestedOn", approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date));
     if (
       (!approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) &&
       (!taskList.find(task => task.userId === addTask.userId && task.date === addTask.date) &&

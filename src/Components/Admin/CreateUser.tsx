@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input, notification } from 'antd';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 // import { User } from './CreateUser';
-import DashboardLayout from './Layout';
+import DashboardLayout from '../Dashboard/Layout';
 export interface User {
     [key: string]: string | number | undefined;
     slNo?: number;

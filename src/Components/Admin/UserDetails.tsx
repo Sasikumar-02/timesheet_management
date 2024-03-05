@@ -34,7 +34,7 @@ import {
     ExclamationCircleFilled,
   } from "@ant-design/icons";
   import { ColumnsType } from "antd/es/table";
-import DashboardLayout from './Layout';
+import DashboardLayout from '../Dashboard/Layout';
   import '../Styles/Login.css';
   const { Option } = Select;
   moment.locale("en-in");

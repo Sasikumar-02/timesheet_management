@@ -10,12 +10,12 @@ import {
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
-import DashboardLayout from './Layout'
+import DashboardLayout from '../Dashboard/Layout'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'
-import { TaskObject } from './ApprovalRequest'
-import { Task } from './AddTask'
+import { TaskObject } from './ApprovalRequest';
+import { Task } from '../Employee/AddTask'
 import ApprovalRequest from './ApprovalRequest';
 import '../Styles/ApprovalRequest.css';
 import type { ThemeConfig } from "antd";
@@ -24,7 +24,7 @@ import Chart from 'react-apexcharts';
 //import { Chart } from 'chart.js/auto';
 import { ApexOptions } from 'apexcharts';
 import { theme } from "antd";
-import { DateTask } from './AddTask';
+import { DateTask } from '../Employee/AddTask';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';

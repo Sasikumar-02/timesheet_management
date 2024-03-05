@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import DashboardLayout from './Layout'
+import DashboardLayout from '../Dashboard/Layout'
 import {
     UserOutlined,
     DownOutlined,
@@ -21,10 +21,10 @@ import { set } from 'lodash';
 import { CatchingPokemonSharp } from '@mui/icons-material';
 import asset from '../../assets/images/asset.svg'
 import { Select } from 'antd'; // Import the Select component from Ant Design
-import { RecentRejected } from './MonthTasks';
+import { RecentRejected } from '../Manager/MonthTasks';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
-import { RejectedKeys, SelectedKeys } from './MonthTasks';
+import { RejectedKeys, SelectedKeys } from '../Manager/MonthTasks';
 const config: ThemeConfig = {
     token: {
       colorPrimary: "#0b4266",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import DashboardLayout from './Layout'
+import DashboardLayout from '../Dashboard/Layout'
 import {
     UserOutlined,
     DownOutlined,
@@ -9,7 +9,7 @@ import {
     UpOutlined,
   } from "@ant-design/icons";
 import dayjs from 'dayjs';
-import Calendar from './Calendar'; // Import your Calendar component
+import Calendar from '../Employee/Calendar'; // Import your Calendar component
 import { useNavigate } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
 //import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
@@ -17,7 +17,7 @@ import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Responsi
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
 import { notification, Card , ConfigProvider, Button} from 'antd';
-import { Task } from './AddTask';
+import { Task } from '../Employee/AddTask';
 import { UserGroupedTask } from './ApprovalRequest';
 import { set } from 'lodash';
 import { CatchingPokemonSharp } from '@mui/icons-material';
@@ -25,7 +25,7 @@ import asset from '../../assets/images/asset.svg'
 import { Select, Input } from 'antd'; // Import the Select component from Ant Design
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
-import { TaskRequestedOn } from './AddTask';
+import { TaskRequestedOn } from '../Employee/AddTask';
 interface PerformanceDatum {
     taskName: string;
     totalHours: number;

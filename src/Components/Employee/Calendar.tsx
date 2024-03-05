@@ -108,10 +108,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "./Layout";
+import DashboardLayout from "../Dashboard/Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
-import { RecentRejected , RejectedKeys, SelectedKeys} from "./MonthTasks";
+import { RecentRejected , RejectedKeys, SelectedKeys} from "../Manager/MonthTasks";
 import '../Styles/UserProfile.css';
 interface Event {
   title: string;

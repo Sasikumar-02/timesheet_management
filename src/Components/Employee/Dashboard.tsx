@@ -103,7 +103,7 @@
 import 'chart.js/auto';
 import React from 'react';
 import { Pie } from 'react-chartjs-2';
-import DashboardLayout from './Layout';
+import DashboardLayout from '../Dashboard/Layout';
 import EmployeeTaskStatus from './EmployeeTaskStatus';
 
 interface PieChartProps {

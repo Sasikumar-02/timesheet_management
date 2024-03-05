@@ -33,12 +33,12 @@ import {
   DownOutlined,
   UpOutlined,
 } from "@ant-design/icons";
-import DashboardLayout from './Layout';
-import { Task } from './AddTask';
+import DashboardLayout from '../Dashboard/Layout';
+import { Task } from '../Employee/AddTask';
 import { groupBy } from 'lodash';
 import { ConstructionOutlined } from '@mui/icons-material';
 import { TableRowSelection } from 'antd/lib/table/interface';
-import { RequestedOn } from './AddTask';
+import { RequestedOn } from '../Employee/AddTask';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
 import { SelectedKeys, RejectedKeys, RecentRejected } from './MonthTasks';
