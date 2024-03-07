@@ -192,7 +192,7 @@
   color: #0B4266;
 }
 
-
+/* 
 .ant-select-selector{
   background-color: #0B4266 !important;
   color: #fff !important;
@@ -200,7 +200,7 @@
 
 .ant-select-arrow{
   color: #fff !important;
-}
+} */
 
 #reportingTo-addtask{
   box-sizing: border-box;
@@ -235,6 +235,25 @@
   border: none;
   cursor: pointer;
   color: #ffffff; 
+
+}
+
+#submit-icon{
+  margin-top: 10px;
+  margin-left: 2px;
+  margin-right: 2px;
+  display: flex;
+  /* padding: 0.5em 2em; */
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  background:white; 
+  border: none;
+  cursor: pointer;
+  color:  #0B4266; 
 
 }
 #submit-addtask{
@@ -309,7 +328,7 @@
   color: #ffffff; 
 }
 
-.ant-select-selector{
+/* .ant-select-selector{
     margin-top: 10px;
     display: flex;
     padding: 0.5em 2em;
@@ -323,5 +342,5 @@
     border: none;
     cursor: pointer;
    
-}
+} */
 

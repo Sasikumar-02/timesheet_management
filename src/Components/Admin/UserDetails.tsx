@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link} from 'react-router-dom';
 import '../Styles/CreateUser.css'
 import { User } from './CreateUser';
 import '../Styles/UserDetails.css';
+import '../Styles/AddTask.css'
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import {
@@ -570,119 +571,127 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         style={{
           marginBottom: 16,
           marginTop: 15,
-          display: "flex",
-          justifyContent:'space-between'
+          display: "flex",  
+          flexDirection:'row',
+          justifyContent:'space-between',
+          marginRight:10
           
         }}
       >
-        <div
-            // style={{
-            //   marginTop: "-48px",
-            //   display: "flex",
-            //   alignItems: "center",
-            //   justifyContent: "flex-end",
-            //   marginLeft: "1110px",
-            // }}
-        >
-          <Input
-            className="search"
-            placeholder="Search by Name or ID"
-            allowClear
-            suffix={<SearchOutlined style={{ color: "#04172480" }} />}
-            onChange={(e: any) => handleSearchInputChange(e.target.value)}
-            style={{marginLeft:'20px'}}
-          />
-        </div>
-        <div>
-          <Select
-            showSearch
-            style={{ width: 200, marginRight: 8,height:40 }}
-            placeholder={placeholderValues.role}
-            onChange={(value) => {
-              handleFilterChange("role", value);
-              setSelectedRole(value);
-            }}
-            value={selectedRole !== null ? selectedRole : undefined}
-            virtual
-            listHeight={200}
+        <div style={{display:'flex'}}>
+          <div
+              style={{
+                marginRight:10,
+                display: "flex",
+                alignItems: "center",
+                
+              }}
           >
-            <Option value={null}>All Roles</Option>
-            {uniqueRoles.map((role) => (
-              <Option key={role} value={role}>
-                {role}
-              </Option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <Select
-            showSearch
-            style={{ width: 200, marginRight: 8, height:40}}
-            placeholder={placeholderValues.designation}
-            onChange={(value) => handleFilterChange("designation", value)}
-            value={filters.designation !== null ? filters.designation : []}
-            virtual
-            listHeight={150}
-          >
-            <Option value={null}>All Designations</Option>
-            {selectedRole
-              ? uniqueDesignations
-                  .filter((designation) =>
-                    employeeData.some(
-                      (employee) =>
-                        employee.role === selectedRole &&
-                        employee.designation === designation
+            <Input
+              className="search"
+              placeholder="Search by Name or ID"
+              allowClear
+              suffix={<SearchOutlined style={{ color: "#04172480" }} />}
+              onChange={(e: any) => handleSearchInputChange(e.target.value)}
+              style={{marginLeft:'20px'}}
+            />
+          </div>
+          <div>
+            <Select
+              showSearch
+              style={{ width: 200, marginRight: 8,height:40 }}
+              placeholder={placeholderValues.role}
+              onChange={(value) => {
+                handleFilterChange("role", value);
+                setSelectedRole(value);
+              }}
+              value={selectedRole !== null ? selectedRole : undefined}
+              virtual
+              listHeight={200}
+            >
+              <Option value={null}>All Roles</Option>
+              {uniqueRoles.map((role) => (
+                <Option key={role} value={role}>
+                  {role}
+                </Option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Select
+              showSearch
+              style={{ width: 200, marginRight: 8, height:40}}
+              placeholder={placeholderValues.designation}
+              onChange={(value) => handleFilterChange("designation", value)}
+              value={filters.designation !== null ? filters.designation : []}
+              virtual
+              listHeight={150}
+            >
+              <Option value={null}>All Designations</Option>
+              {selectedRole
+                ? uniqueDesignations
+                    .filter((designation) =>
+                      employeeData.some(
+                        (employee) =>
+                          employee.role === selectedRole &&
+                          employee.designation === designation
+                      )
                     )
-                  )
-                  .map((designation) => (
+                    .map((designation) => (
+                      <Option key={designation} value={designation}>
+                        {designation}
+                      </Option>
+                    ))
+                : uniqueDesignations.map((designation) => (
                     <Option key={designation} value={designation}>
                       {designation}
                     </Option>
-                  ))
-              : uniqueDesignations.map((designation) => (
-                  <Option key={designation} value={designation}>
-                    {designation}
-                  </Option>
-                ))}
-          </Select>
+                  ))}
+            </Select>
+          </div>
+          <div>
+            <Button
+              style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginTop:'0px', paddingTop:'8px', marginLeft:'5px'}}
+              className='regenerateactive'
+              onClick={handleClearFilters}
+            >
+            Clear
+            </Button>
+          </div>
         </div>
-        <div>
-          <Button
-            style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'0px', paddingTop:'8px'}}
-            className='regenerateactive'
-            onClick={handleClearFilters}
-          >
-          Clear
-          </Button>
-        </div>
-        <div style={{marginRight:'20px'}}>
-          <Dropdown overlay={exportMenu} placement="bottomLeft">
+        <div style={{display:'flex'}}>
+          <div style={{marginRight:'20px'}}>
+              <Dropdown overlay={exportMenu} placement="bottomLeft">
+                <Button
+                  type="primary"
+                  style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
+                >
+                  Export
+                </Button>
+              </Dropdown>
+            </div>
+            <div style={{ marginRight: '20px' }}>
+            <input
+              type="file"
+              id="fileInput"
+              style={{ display: 'none' }}
+              accept=".xlsx, .xls"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
             <Button
               type="primary"
-              style={{ marginLeft: "8px", height: "40px", width:'75px'}}
+              style={{ marginLeft: '8px', height: '40px', width: '75px', background:'#0B4266', color:'white' }}
+              onClick={handleImportOption}
             >
-              Export
+              Import
             </Button>
-          </Dropdown>
-        </div>
-        <div style={{ marginRight: '20px' }}>
-        <input
-          type="file"
-          id="fileInput"
-          style={{ display: 'none' }}
-          accept=".xlsx, .xls"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-        />
-        <Button
-          type="primary"
-          style={{ marginLeft: '8px', height: '40px', width: '75px' }}
-          onClick={handleImportOption}
-        >
-          Import
-        </Button>
+          </div>
       </div>
+        
+       
       </div>
+      
     </>
   );
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
@@ -845,20 +854,20 @@ const paginationOptions: any = {
       key: "designation",
       fixed: "left",
     },
-    {
-      title: "Actions",
-      dataIndex: "actions",
-      width: 150,
-      fixed: "right",
-      render: (_, user) => (
-        <Space>
-          {/* Add the "View" button with Link to navigate to /userprofile */}
-          <Link to={`/userprofile/${user.userId}`}>
-            <Button type="primary" icon={<InfoCircleOutlined />} title="View" />
-          </Link>
-        </Space>
-      ),
-    },
+    // {
+    //   title: "Actions",
+    //   dataIndex: "actions",
+    //   width: 150,
+    //   fixed: "right",
+    //   render: (_, user) => (
+    //     <Space>
+    //       {/* Add the "View" button with Link to navigate to /userprofile */}
+    //       <Link to={`/userprofile/${user.userId}`}>
+    //         <Button type="primary" icon={<InfoCircleOutlined />} title="View" />
+    //       </Link>
+    //     </Space>
+    //   ),
+    // },
   ];
   return (
     <DashboardLayout>
@@ -882,7 +891,7 @@ const paginationOptions: any = {
             selectedRowKeys: selectedRows,
             onChange: handleRowSelection,
           }}
-          
+          className='addtask-table'
           columns={columns}
           dataSource={filteredData}
           onRow={(record, index: any) => ({

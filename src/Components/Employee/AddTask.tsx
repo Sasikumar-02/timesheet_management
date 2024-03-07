@@ -58,7 +58,7 @@ type AddTaskProps = {
 };
 
 const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsData }) => {
-  const userId = '123';
+  const userId = '1234';
   const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
   const {confirm}= Modal;
@@ -71,6 +71,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf('month'));
   const [isFormEnabled, setIsFormEnabled] = useState(false);
   const [cancelButton, setCancelButton] = useState(false);
+  const [isDateChanged, setIsDateChanged] = useState(false);
   const [addTask, setAddTask] = useState<Task>({
     idx: 1, // Set initial idx
     date: currentDate.format('YYYY-MM-DD'),
@@ -267,17 +268,21 @@ useEffect(() => {
     setFilteredTasks(updatedTaskList);
   }, [deletedTask]); // Include deletedTask in the dependency array
 
-  useEffect(() => {
-    // Filter tasks based on the addTask.date and userId when it changes
-    if (addTask.date) {
-        const filtered = taskList.filter(task => task.date === addTask.date && task.userId === userId);
-        setFilteredTasks(updateSlNo(filtered, deletedTask)); // Update slNo when loading tasks
-    } else {
-        // If no date is selected, display all tasks
-        setFilteredTasks(updateSlNo(taskList, deletedTask)); // Update slNo when loading tasks
-    }
-}, [addTask.date, taskList]);
+//   useEffect(() => {
+//     // Filter tasks based on the addTask.date and userId when it changes
+//     if (addTask.date) {
+//         const filtered = taskList.filter(task => task.date === addTask.date && task.userId === userId);
+//         setFilteredTasks(updateSlNo(filtered, deletedTask)); // Update slNo when loading tasks
+//     } else {
+//         // If no date is selected, display all tasks
+//         setFilteredTasks(updateSlNo(taskList, deletedTask)); // Update slNo when loading tasks
+//     }
+// }, [addTask.date, taskList]);
 
+const handleFormOnSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  handleFormSubmit();
+};
 
   useEffect(() => {
     // Update addTask with the current date
@@ -290,6 +295,7 @@ useEffect(() => {
   }
     //setFilteredTasks(taskList);
     // Filter tasks based on the filterOption and currentDate when they change
+    if(!isDateChanged){
     let filtered: Task[] = [];
 
     if (searchInput) {
@@ -343,8 +349,10 @@ useEffect(() => {
     }
 
     setFilteredTasks(updateSlNo(filtered, deletedTask));
+  }
+  setIsDateChanged(false);
   //  console.log("useeffect filtered-task", filteredTasks);
-  }, [isEdited, filterOption, currentDate, currentMonth, currentWeek, taskList, searchInput]);
+  }, [isEdited, filterOption, currentDate, currentMonth, currentWeek, taskList, searchInput, isDateChanged]);
 
   const handleFilterChange = (value: any) => {
     setFilterOption(value);
@@ -542,6 +550,7 @@ console.log("approvedRequestedOn", approvedRequestedOn);
     });
     setIsEdited(false);
     setIsFormSubmitted(true);
+    setIsDateChanged(true);
 };
 
 const handleRequestForm = () => {
@@ -1074,6 +1083,7 @@ const handleOverallSubmit = () => {
   const columns: ColumnsType<Task> = [
     {
       title: 'Sl.no',
+      width:'132px',
       //sorter: (a: Task, b: Task) => (a.slNo && b.slNo ? a.slNo - b.slNo : 0),
       dataIndex: 'slNo',
       key: 'slNo',
@@ -1231,7 +1241,7 @@ const handleOverallSubmit = () => {
             )
           }
         </div>
-        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( <form>
+        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( <form onSubmit={handleFormOnSubmit}>
             <div>
               {isFormEnabled && (
                 <CloseCircleOutlined
@@ -1239,191 +1249,194 @@ const handleOverallSubmit = () => {
                   onClick={handleToggleForm} // Call the handleToggleForm function on click
                 />
               )}
-              <div className='section-addtask' style={{width:'50%'}}>
-                <div className='create-layout-addtask-left  '>
-                  <div style={{marginBottom:'10px'}}>
-                    <label style={{color:'#0B4266'}} htmlFor='addTaskID'>Date</label>
-                  </div>
-                  {/* <input
-                    type="date"
-                    style={{ width: '100%' }}
-                    className='timepicker'
-                  /> */}
-                  <Input
-                    type='date'
-                    placeholder='Enter your Employee ID'
-                    value={currentDate.format('YYYY-MM-DD')} 
-                    // value={
-                    //   filterOption === 'Month'
-                    //     ? currentMonth.startOf('month').format('YYYY-MM-DD')
-                    //     : filterOption === 'Week'
-                    //     ? currentWeek.startOf('week').format('YYYY-MM-DD')
-                    //     : currentDate.format('YYYY-MM-DD')
-                    // }
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                  />
-                  {/* <DatePicker
-                      value={dayjs(currentDate)} // Convert currentDate to Dayjs object
-                      format="YYYY-MM-DD" // Specify the date format
-                      onChange={(date, dateString) => handleInputChange('date', dateString)} // Use dateString to get the selected date
-                      style={{ width: '100%', height:'35%' }} // Adjust the width as needed
-                  /> */}
-                </div>
-                {/* <div className='create-layout-addtask-left  '>
-                  <div style={{marginBottom:'10px'}}>
-                    <label htmlFor='addTaskID'>User ID</label>
-                  </div>
-                  <Input
-                    placeholder='Enter your Employee ID'
-                    value={addTask.userId}
-                    onChange={(e) => handleInputChange('userId', e.target.value)}  
-                  />
-                </div> */}
-                 <div className='create-layout-addtask'>
-                  <div>
-                    <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
-                  </div>
-                  <div>
-                    <select
-                      id='task'
-                      value={addTask.task}
-                      onChange={(e) => handleInputChange('task', e.target.value)}
-                    >
-                      {taskOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  
-                </div>
-                <div className='create-layout-addtask'>
-                  {addTask.task === 'Meeting' && (
-                    <>
-                      <div>
-                        <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
-                      </div>
-                      <div>
-                        <select
-                          id='task'
-                          value={addTask.title}
-                          onChange={(e) => handleInputChange('title', e.target.value)}
-                        >
-                          {meetingTitle.map((option, index) => (  // Use 'index' as the key
-                            <option key={index} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </>
-                  )}
-                  {(addTask.task === 'Project'|| addTask.task==='Learning' || addTask.task==='Training') && (
-                    <>
-                      <div>
-                        <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
-                      </div>
-                      <div>
-                        <select
-                          id='task'
-                          value={addTask.title}
-                          onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
-                        >
-                          {projectTitle.map((option, index) => (  // Use 'index' as the key
-                            <option key={index} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-              </div>
               <div style={{display:'flex', alignItems:'center'}}>
                 <div>
                   <div className='section-addtask' style={{width:'125%'}}>
-                    <div className='create-layout-addtask-left'>
-                      <div>
-                        <label htmlFor='startTime'>Start Time</label>
-                      </div>
-                      <TimePicker
-                        value={
-                          addTask.startTime
-                            ? dayjs(addTask.startTime, 'hh:mm A') // Convert to dayjs here
-                            : null
-                        }
-                        onChange={(time, timeString) =>
-                          handleInputChange('startTime', timeString)
-                        }
-                        className='timepicker'
-                        format='hh:mm A' // Set the format to include AM/PM
-                      />
-                    </div>
-                    <div className='create-layout-addtask'>
-                      <div>
-                        <label style={{color:'#0B4266'}} htmlFor='endTime'>End Time</label>
-                      </div>
-                      <TimePicker
-                        value={
-                          addTask.endTime
-                            ? dayjs(addTask.endTime, 'HH:mm A') // Convert to dayjs here
-                            : null
-                        }
-                        onChange={(time, timeString) =>
-                          handleInputChange('endTime', timeString)
-                        }
-                        className='timepicker'
-                        format='hh:mm A' 
-                        rootClassName='timer'
-                      />
-                    </div>
-                  </div>
-                  <div className='section-addtask' style={{width:'125%'}}>
-                    
-                  <div className='create-layout-addtask-left  '>
+                    <div className='create-layout-addtask-left  '>
                       <div style={{marginBottom:'10px'}}>
-                        <label style={{color:'#0B4266'}} htmlFor='totalHours'>Total Hours</label>
+                        <label style={{color:'#0B4266'}} htmlFor='addTaskID'>Date</label>
+                      </div>
+                      {/* <input
+                        type="date"
+                        style={{ width: '100%' }}
+                        className='timepicker'
+                      /> */}
+                      <Input
+                        type='date'
+                        placeholder='Enter your Employee ID'
+                        value={currentDate.format('YYYY-MM-DD')} 
+                        // value={
+                        //   filterOption === 'Month'
+                        //     ? currentMonth.startOf('month').format('YYYY-MM-DD')
+                        //     : filterOption === 'Week'
+                        //     ? currentWeek.startOf('week').format('YYYY-MM-DD')
+                        //     : currentDate.format('YYYY-MM-DD')
+                        // }
+                        onChange={(e) => handleInputChange('date', e.target.value)}
+                      />
+                      {/* <DatePicker
+                          value={dayjs(currentDate)} // Convert currentDate to Dayjs object
+                          format="YYYY-MM-DD" // Specify the date format
+                          onChange={(date, dateString) => handleInputChange('date', dateString)} // Use dateString to get the selected date
+                          style={{ width: '100%', height:'35%' }} // Adjust the width as needed
+                      /> */}
+                    </div>
+                    {/* <div className='create-layout-addtask-left  '>
+                      <div style={{marginBottom:'10px'}}>
+                        <label htmlFor='addTaskID'>User ID</label>
                       </div>
                       <Input
-                        placeholder='Enter your Total Hours'
-                        value={addTask.totalHours}
-                        onChange={(e) => handleInputChange('totalHours', e.target.value)}
-                        
+                        placeholder='Enter your Employee ID'
+                        value={addTask.userId}
+                        onChange={(e) => handleInputChange('userId', e.target.value)}  
                       />
-                    </div>
-                    <div className='create-layout-addtask-reportingTo  '>
-                      <div className='create-layout-reportingTo'>
-                        <label style={{color:'#0B4266'}} htmlFor='reportingTo'>Reporting To</label>
+                    </div> */}
+                    <div className='create-layout-addtask'>
+                      <div>
+                        <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
                       </div>
-                      <select
-                        id='reportingTo-addtask'
-                        value={addTask.reportingTo}
-                        onChange={(e) => handleInputChange('reportingTo', e.target.value)}
-                      >
-                        <option value=''>Select Reporting To</option>
-                        {reportingOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </div> 
+                      <div>
+                        <select
+                          id='task'
+                          value={addTask.task}
+                          onChange={(e) => handleInputChange('task', e.target.value)}
+                        >
+                          {taskOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                      
+                    </div>
+                    
+
+                  </div>
+                  {addTask.task === 'Meeting' && (
+                          <div className='section-addtask' style={{width:'61%'}}>
+                            <div className='create-layout-addtask'>
+                              <div>
+                                <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
+                              </div>
+                              <div>
+                                <select
+                                  id='task'
+                                  value={addTask.title}
+                                  onChange={(e) => handleInputChange('title', e.target.value)}
+                                >
+                                  {meetingTitle.map((option, index) => (  // Use 'index' as the key
+                                    <option key={index} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {(addTask.task === 'Project'|| addTask.task==='Learning' || addTask.task==='Training') && (
+                          <div className='section-addtask' style={{width:'61%'}}>
+                            <div className='create-layout-addtask'>
+                              <div>
+                                <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
+                              </div>
+                              <div>
+                                <select
+                                  id='task'
+                                  value={addTask.title}
+                                  onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
+                                >
+                                  {projectTitle.map((option, index) => (  // Use 'index' as the key
+                                    <option key={index} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                  <div className='section-addtask' style={{width:'125%'}}>
+                      <div className='create-layout-addtask-left'>
+                        <div>
+                          <label htmlFor='startTime'>Start Time</label>
+                        </div>
+                        <TimePicker
+                          value={
+                            addTask.startTime
+                              ? dayjs(addTask.startTime, 'hh:mm A') // Convert to dayjs here
+                              : null
+                          }
+                          onChange={(time, timeString) =>
+                            handleInputChange('startTime', timeString)
+                          }
+                          className='timepicker'
+                          format='hh:mm A' // Set the format to include AM/PM
+                        />
+                      </div>
+                      <div className='create-layout-addtask'>
+                        <div>
+                          <label style={{color:'#0B4266'}} htmlFor='endTime'>End Time</label>
+                        </div>
+                        <TimePicker
+                          value={
+                            addTask.endTime
+                              ? dayjs(addTask.endTime, 'HH:mm A') // Convert to dayjs here
+                              : null
+                          }
+                          onChange={(time, timeString) =>
+                            handleInputChange('endTime', timeString)
+                          }
+                          className='timepicker'
+                          format='hh:mm A' 
+                          rootClassName='timer'
+                        />
+                      </div>
+                  </div>
+                  <div className='section-addtask' style={{width:'125%'}}>
+                      
+                    <div className='create-layout-addtask-left  '>
+                        <div style={{marginBottom:'10px'}}>
+                          <label style={{color:'#0B4266'}} htmlFor='totalHours'>Total Hours</label>
+                        </div>
+                        <Input
+                          placeholder='Enter your Total Hours'
+                          value={addTask.totalHours}
+                          onChange={(e) => handleInputChange('totalHours', e.target.value)}
+                          
+                        />
+                      </div>
+                      <div className='create-layout-addtask-reportingTo  '>
+                        <div className='create-layout-reportingTo'>
+                          <label style={{color:'#0B4266'}} htmlFor='reportingTo'>Reporting To</label>
+                        </div>
+                        <select
+                          id='reportingTo-addtask'
+                          value={addTask.reportingTo}
+                          onChange={(e) => handleInputChange('reportingTo', e.target.value)}
+                        >
+                          <option value=''>Select Reporting To</option>
+                          {reportingOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div> 
                   </div>  
                   <div>
-                    <div className='create-layout-description'>
-                      <div>
-                        <label style={{color:'#0B4266'}}>Description</label>
-                      </div>
-                      <textarea
-                        value={addTask.description}
-                        onChange={(e) => handleInputChange('description', e.target.value)}
-                        className='description-input'
-                        style={{width:'230%'}}
-                      />
-                    </div>
+                  <div className='create-layout-description'>
+                        <div>
+                          <label style={{color:'#0B4266'}}>Description</label>
+                        </div>
+                        <textarea
+                          value={addTask.description}
+                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          className='description-input'
+                          style={{width:'230%'}}
+                        />
+                  </div>
                   </div>
                 </div>
                 <div className='chart-container' style={{ marginLeft: "150px",width:'750px'}}>
@@ -1436,7 +1449,7 @@ const handleOverallSubmit = () => {
                       options={pieChartDataInForm.options}
                       series={pieChartDataInForm.series}
                       type="pie"
-                      width="380"
+                      width="480"
       
                       
                   />

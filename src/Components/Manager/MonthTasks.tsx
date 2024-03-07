@@ -18,6 +18,7 @@ import { TaskObject } from './ApprovalRequest';
 import { Task } from '../Employee/AddTask'
 import ApprovalRequest from './ApprovalRequest';
 import '../Styles/ApprovalRequest.css';
+import '../Styles/AddTask.css';
 import type { ThemeConfig } from "antd";
 import { Pie } from 'react-chartjs-2';
 import Chart from 'react-apexcharts';
@@ -88,6 +89,8 @@ const MonthTasks: React.FC = () => {
     const [hoveredRow, setHoveredRow] = useState<DateTask | null>(null); // Initialize hoveredRow with DateTask or null
     const [chartData, setChartData] = useState<{ labels: string[]; series: number[] }>({ labels: [], series: [] }); // Initialize chartData with appropriate types
     console.log("received data", formattedMonth,userId, tasksForClickedMonth)
+    const [modalVisible, setModalVisible] = useState(false);
+    const [clickedRecord, setClickedRecord] = useState<DateTask | null>(null);
     const [chartOptions, setChartOptions] = useState<ChartOptions>({
         labels: [],
         colors: [],
@@ -211,6 +214,12 @@ const MonthTasks: React.FC = () => {
         console.log("handleRowSelection", selectedRowKeys);
     };
 
+    // Function to handle row click
+    const handleRowClick = (record: DateTask) => {
+        setModalVisible(true);
+        setClickedRecord(record);
+    };
+
     const handleReject = () => {
         setCommentVisible(true);
         let updatedRejectKeys: RejectedKeys = { ...rejectKeys };
@@ -220,7 +229,7 @@ const MonthTasks: React.FC = () => {
             const isRowIncluded = selectedRows.includes(row.key);
             console.log("isRowIncluded", isRowIncluded);
             if (isRowIncluded) {
-                const userId = '123'; // Assuming a static userId for this example
+                const userId = '1234'; // Assuming a static userId for this example
                 if (!updatedRejectKeys[userId]) {
                     updatedRejectKeys[userId] = [];
                     updatedRejectDates[userId] = [];
@@ -250,7 +259,7 @@ const MonthTasks: React.FC = () => {
         const updatedMonthTasksData = monthTasksData.filter(row => {
             const isRowIncluded = selectedRows.includes(row.key);
             if (isRowIncluded) {
-                const userId = '123'; // Assuming a static userId for this example
+                const userId = '1234'; // Assuming a static userId for this example
                 if (!key[userId]) {
                     key[userId] = [];
                     date[userId] = [];
@@ -355,7 +364,7 @@ const MonthTasks: React.FC = () => {
       };
 
     const handleApprove = async () => {
-        const userId = '123'; // Assuming a static userId for this example
+        const userId = '1234'; // Assuming a static userId for this example
         let key: SelectedKeys = {};
         let date: SelectedKeys = {};
         const updatedMonthTasksData = monthTasksData.filter(row => {
@@ -1018,59 +1027,70 @@ const MonthTasks: React.FC = () => {
         },  
         {
           title: 'Task',
-          sorter: (a: Task, b: Task) => {
-            return a.task.localeCompare(b.task);
-          },
+        //   sorter: (a: Task, b: Task) => {
+        //     return a.task.localeCompare(b.task);
+        //   },
           dataIndex: 'task',
           key: 'task',
           fixed: 'left',
         },
         {
             title: 'Title',
-            sorter: (a: Task, b: Task) => {
-              return a.title.localeCompare(b.title);
-            },
+            // sorter: (a: Task, b: Task) => {
+            //   return a.title.localeCompare(b.title);
+            // },
             dataIndex: 'title',
             key: 'title',
             fixed: 'left',
           },
         {
           title: 'Start Time',
-          sorter: (a: Task, b: Task) => {
-            return a.startTime.localeCompare(b.startTime);
-          },
+        //   sorter: (a: Task, b: Task) => {
+        //     return a.startTime.localeCompare(b.startTime);
+        //   },
           dataIndex: 'startTime',
           key: 'startTime',
           fixed: 'left',
         },
         {
           title: 'End Time',
-          sorter: (a: Task, b: Task) => {
-            return a.endTime.localeCompare(b.endTime);
-          },
+        //   sorter: (a: Task, b: Task) => {
+        //     return a.endTime.localeCompare(b.endTime);
+        //   },
           dataIndex: 'endTime',
           key: 'endTime',
           fixed: 'left',
         },
         {
           title: 'Total Hours',
-          sorter: (a: Task, b: Task) => {
-            return a.totalHours.localeCompare(b.totalHours);
-          },
+        //   sorter: (a: Task, b: Task) => {
+        //     return a.totalHours.localeCompare(b.totalHours);
+        //   },
           dataIndex: 'totalHours',
           key: 'totalHours',
           fixed: 'left',
         },
         {
           title: 'Description',
-          sorter: (a: Task, b: Task) => {
-            return a.description.localeCompare(b.description);
-          },
+        //   sorter: (a: Task, b: Task) => {
+        //     return a.description.localeCompare(b.description);
+        //   },
           dataIndex: 'description',
           key: 'description',
           fixed: 'left',
         },
     ];
+
+    // JSX for modal content
+    const modalContent = clickedRecord && (
+        <Table
+            className='addtask-table'
+            columns={innerColumn as ColumnsType<Task>}
+            dataSource={clickedRecord.task}
+            pagination={false}
+        />
+    );
+
     return (
         <div id="dashboardLayout" className='flex gap-5'>
             <DashboardLayout>
@@ -1103,21 +1123,21 @@ const MonthTasks: React.FC = () => {
                                 Export PDF
                             </Button>
                         </div> */}
-                        <div style={{marginRight:'20px'}}>
+                        <div style={{marginRight:'20px', marginTop:'25px'}}>
                             <Dropdown overlay={exportMenuForPDF} placement="bottomLeft">
                                 <Button
                                 type="primary"
-                                style={{ marginLeft: "8px", height: "40px", width:'75px'}}
+                                style={{ marginLeft: "8px", height: "40px", width:'102px', background:'#0B4266', color:'white'}}
                                 >
                                 Export PDF
                                 </Button>
                             </Dropdown>
                         </div>
-                        <div style={{marginRight:'20px'}}>
+                        <div style={{marginRight:'20px', marginTop:'25px'}}>
                             <Dropdown overlay={exportMenu} placement="bottomLeft">
                                 <Button
                                 type="primary"
-                                style={{ marginLeft: "8px", height: "40px", width:'75px'}}
+                                style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
                                 >
                                 Export
                                 </Button>
@@ -1161,43 +1181,57 @@ const MonthTasks: React.FC = () => {
                                 selectedRowKeys: selectedRows,
                                 onChange: handleRowSelection
                             }}
-                            onRow={(record) => ({
-                                onMouseEnter: () => handleRowHover(record), // Handle mouse enter event
-                                onMouseLeave: () => handleRowLeave(), // Handle mouse leave event
+                            // onRow={(record) => ({
+                            //     onMouseEnter: () => handleRowHover(record), // Handle mouse enter event
+                            //     onMouseLeave: () => handleRowLeave(), // Handle mouse leave event
+                            // })}
+                            onRow={(record: DateTask) => ({
+                                onClick: () => handleRowClick(record),
+                                onMouseEnter: () => handleRowHover(record),
+                                onMouseLeave: handleRowLeave,
                             })}
                             columns={getColumn(formattedMonth)} 
                             //rowClassName="rowstyle"
                             className='table-striped-rows approvalrequests-table'
                             dataSource={monthTasksData}
                             pagination={false}
-                            expandable={{
-                                expandedRowRender: (record: DateTask) => {
-                                    const handleInnerRowExpand = () => {
-                                        return (
+                            // expandable={{
+                            //     expandedRowRender: (record: DateTask) => {
+                            //         const handleInnerRowExpand = () => {
+                            //             return (
                                             
-                                            <Table
-                                                columns={innerColumn as ColumnsType<Task>}
-                                                dataSource={record.task} // Pass all tasks in the date as dataSource
-                                                pagination={false}
-                                            />
-                                        );
-                                    };
+                            //                 <Table
+                            //                     columns={innerColumn as ColumnsType<Task>}
+                            //                     dataSource={record.task} // Pass all tasks in the date as dataSource
+                            //                     pagination={false}
+                            //                 />
+                            //             );
+                            //         };
                                     
-                                    return (
-                                        <>
-                                            {handleInnerRowExpand()}
-                                        </>
-                                    );
-                                },
-                                expandRowByClick: true,
-                                expandIcon: ({ expanded, onExpand, record }) =>
-                                    expanded ? (
-                                        <UpOutlined onClick={e => onExpand(record, e)} style={{float:'right'}} />
-                                    ) : (
-                                        <DownOutlined onClick={e => onExpand(record, e)} style={{float: 'right'}}/>
-                                    ),
-                            }} 
-                        />     
+                            //         return (
+                            //             <>
+                            //                 {handleInnerRowExpand()}
+                            //             </>
+                            //         );
+                            //     },
+                            //     expandRowByClick: true,
+                            //     expandIcon: ({ expanded, onExpand, record }) =>
+                            //         expanded ? (
+                            //             <UpOutlined onClick={e => onExpand(record, e)} style={{float:'right'}} />
+                            //         ) : (
+                            //             <DownOutlined onClick={e => onExpand(record, e)} style={{float: 'right'}}/>
+                            //         ),
+                            // }} 
+                        />   
+                        <Modal
+                           title={clickedRecord && clickedRecord.task.length > 0 ? dayjs(clickedRecord.task[0].date).format('MMMM DD, YYYY') : ""}
+                            visible={modalVisible}
+                            onCancel={() => setModalVisible(false)}
+                            footer={null}
+                        >
+                            {modalContent}
+                        </Modal>
+
                     </ConfigProvider>
                     <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>   
                         <Button style={{height:'200%' ,width: '100px', backgroundColor: 'red', color: 'white', marginRight:'10px' }} onClick={handleReject}>

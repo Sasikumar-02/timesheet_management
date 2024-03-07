@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DashboardLayout from '../Dashboard/Layout'
+import { Link } from 'react-router-dom';
 import {
     UserOutlined,
     DownOutlined,
@@ -18,7 +19,7 @@ import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
 import { notification, Card , ConfigProvider, Button} from 'antd';
 import { Task } from '../Employee/AddTask';
-import { UserGroupedTask } from './ApprovalRequest';
+import { GroupedTasks, SetGroupedTasks, UserGroupedTask } from './ApprovalRequest';
 import { set } from 'lodash';
 import { CatchingPokemonSharp } from '@mui/icons-material';
 import asset from '../../assets/images/asset.svg'
@@ -32,7 +33,7 @@ interface PerformanceDatum {
 }
 const config: ThemeConfig = {
     token: {
-      colorPrimary: "#0b4266",
+      // colorPrimary: "#0b4266",
    
       colorPrimaryBg: "rgba(155, 178, 192, 0.2)",
    
@@ -47,6 +48,24 @@ const config: ThemeConfig = {
       colorBgContainerDisabled: "rgba(0, 0, 0, 0.04)",
     },
   };
+
+  interface TitleCount {
+    [title: string]: number;
+}
+
+// Function to calculate and update the counts
+const calculateTitleCounts = (tasks: Task[]) => {
+    const titleCounts: TitleCount = {};
+    tasks?.forEach(task => {
+        if (!titleCounts[task.title]) {
+            titleCounts[task.title] = 1;
+        } else {
+            titleCounts[task.title]++;
+        }
+    });
+    return titleCounts;
+};
+
 interface EmployeeTaskStatusProps{
     setSelectedMonth: React.Dispatch<React.SetStateAction<string>>;
     setSelectedYear: React.Dispatch<React.SetStateAction<string>>;
@@ -75,6 +94,7 @@ const ManagerDashboard = () => {
     const [searchText, setSearchText] = useState("");
     // Define state for groupedTasks
   const [groupedTasks, setGroupedTasks] = useState<UserGroupedTask>({});
+  const [titleCounts, setTitleCounts] = useState<TitleCount>({});
   const [taskRequestedOn, setTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
 
@@ -90,10 +110,44 @@ const ManagerDashboard = () => {
     }
   }, []);
 
+    useEffect(() => {
+      const newTitleCounts: TitleCount = {};
+      // Iterate through groupedTasks to calculate title counts
+      console.log("card groupedTasks", groupedTasks);
+      Object.values(groupedTasks)?.forEach(userTasks => {
+        console.log("card userTasks", userTasks);
+          Object.values(userTasks)?.forEach(monthTasks => {
+            console.log("card monthTasks", monthTasks);
+              Object.values(monthTasks.tasks)?.forEach(dayTasks => {
+                console.log("card dayTasks", dayTasks);
+                  dayTasks.tasks.forEach((task: Task) => {
+                      const title = task.title;
+                      if (newTitleCounts[title]) {
+                          newTitleCounts[title]++;
+                      } else {
+                          newTitleCounts[title] = 1;
+                      }
+                  });
+              });
+          });
+      });
+      console.log("card newTitleCounts", newTitleCounts);
+      setTitleCounts(newTitleCounts);
+  }, [groupedTasks]);
+
+
+  function getWeekOfMonth(date: dayjs.Dayjs): number {
+    const firstDayOfMonth = date.startOf('month').day();
+    const firstWeek = Math.ceil((1 + (7 - firstDayOfMonth)) / 7);
+    const currentWeek = Math.ceil((date.date() + firstDayOfMonth) / 7);
+    return currentWeek - firstWeek ;
+}
+
+
   const handleFilterChangeForId = (
     filterType: keyof typeof filters,
     value: string | string[] | null
-) => {
+    ) => {
     const updatedFilters = { ...filters, [filterType]: value };
     setIsFilterActive(
         Object.values(updatedFilters).some((filter) => {
@@ -107,163 +161,172 @@ const ManagerDashboard = () => {
     // Convert single value or array of values to display in Select
     const selectedValues = Array.isArray(value) ? value : [value];
     setSelectedUserId(selectedValues.length === 1 ? selectedValues[0] : null);
-};
-
-
-  const handleClearFilters = () => {
-    setFilters(initialFilters);
-    setPlaceholderValues({
-      userId: "Filter by UserId",
-    });
-
-    setIsFilterActive(false);
-    setSelectedUserId(null);
   };
 
-  // useEffect to retrieve groupedTasks from localStorage
-  useEffect(() => {
-    // Retrieve groupedTasks from localStorage
-    const storedGroupedTasks = localStorage.getItem('groupedTasks');
-    if (storedGroupedTasks) {
-      // Parse JSON string to object
-      const parsedGroupedTasks: UserGroupedTask = JSON.parse(storedGroupedTasks);
-      // Set groupedTasks state
-      setGroupedTasks(parsedGroupedTasks);
-    }
-  }, []); // Empty dependency array to run only once on component mount
+    const handleClearFilters = () => {
+      setFilters(initialFilters);
+      setPlaceholderValues({
+        userId: "Filter by UserId",
+      });
 
-  const handleSearchInputChange = (value: string) => {
-    setSearchText(value);
-  };
+      setIsFilterActive(false);
+      setSelectedUserId(null);
+    };
 
-  const calculateFullPerformanceData = (): PerformanceDatum[] => {
-    const taskHoursMap: { [taskName: string]: number } = {}; // Map to store accumulated hours for each task
+    // useEffect to retrieve groupedTasks from localStorage
+    useEffect(() => {
+      // Retrieve groupedTasks from localStorage
+      const storedGroupedTasks = localStorage.getItem('groupedTasks');
+      if (storedGroupedTasks) {
+        // Parse JSON string to object
+        const parsedGroupedTasks: UserGroupedTask = JSON.parse(storedGroupedTasks);
+        // Set groupedTasks state
+        setGroupedTasks(parsedGroupedTasks);
+      }
+    }, []); // Empty dependency array to run only once on component mount
 
-    // Iterate over each user
-    Object.values(groupedTasks).forEach((userTasks) => {
-        // Iterate over each task group
-        Object.values(userTasks).forEach((taskGroup) => {
-            // Iterate over each date
-            Object.values(taskGroup.tasks).forEach((dailyTasks) => {
-                // Iterate over tasks for each date
-                dailyTasks.tasks.forEach((task) => {
-                    // Calculate total hours worked for each task
-                    const totalTaskHours = parseFloat(task.totalHours);
-                    // Accumulate hours for each task
-                    if (taskHoursMap[task.task]) {
-                        taskHoursMap[task.task] += totalTaskHours;
-                    } else {
-                        taskHoursMap[task.task] = totalTaskHours;
-                    }
+    const handleSearchInputChange = (value: string) => {
+      setSearchText(value);
+    };
+
+    const calculateFullPerformanceData = (): PerformanceDatum[] => {
+        const taskHoursMap: { [taskName: string]: number } = {}; // Map to store accumulated hours for each task
+
+        // Iterate over each user
+        Object.values(groupedTasks).forEach((userTasks) => {
+            // Iterate over each task group
+            Object.values(userTasks).forEach((taskGroup) => {
+                // Iterate over each date
+                Object.values(taskGroup.tasks).forEach((dailyTasks) => {
+                    // Iterate over tasks for each date
+                    dailyTasks.tasks.forEach((task) => {
+                        // Calculate total hours worked for each task
+                        const totalTaskHours = parseFloat(task.totalHours);
+                        // Accumulate hours for each task
+                        if (taskHoursMap[task.task]) {
+                            taskHoursMap[task.task] += totalTaskHours;
+                        } else {
+                            taskHoursMap[task.task] = totalTaskHours;
+                        }
+                    });
                 });
             });
         });
-    });
 
-    // Convert the accumulated task hours into PerformanceDatum objects
-    const performanceData: PerformanceDatum[] = Object.entries(taskHoursMap).map(([taskName, totalHours]) => ({
-        taskName,
-        totalHours,
-    }));
+        // Convert the accumulated task hours into PerformanceDatum objects
+        const performanceData: PerformanceDatum[] = Object.entries(taskHoursMap).map(([taskName, totalHours]) => ({
+            taskName,
+            totalHours,
+        }));
 
-    return performanceData;
-};
+        return performanceData;
+    };
 
-// Call the function to calculate performance data
-const fullPerformanceDataForManager: PerformanceDatum[] = calculateFullPerformanceData();
+    // Call the function to calculate performance data
+    const fullPerformanceDataForManager: PerformanceDatum[] = calculateFullPerformanceData();
 
-const calculatePerformanceData = (): PerformanceDatum[] => {
-    const taskHoursMap: { [taskName: string]: number } = {}; // Map to store accumulated hours for each task
+    const calculatePerformanceData = (): PerformanceDatum[] => {
+        const taskHoursMap: { [taskName: string]: number } = {}; // Map to store accumulated hours for each task
 
-    // Determine the range of dates based on filterOption
-    let startDate: string, endDate: string;
-    if (filterOption === 'Month') {
-        startDate = dayjs(currentMonth).startOf('month').format('YYYY-MM-DD');
-        endDate = dayjs(currentMonth).endOf('month').format('YYYY-MM-DD');
-    } else if (filterOption === 'Week') {
-        startDate = dayjs(currentWeek).startOf('week').format('YYYY-MM-DD');
-        endDate = dayjs(currentWeek).endOf('week').format('YYYY-MM-DD');
-    } else {
-        startDate = dayjs(currentDate).format('YYYY-MM-DD');
-        endDate = startDate;
-    }
+        // Determine the range of dates based on filterOption
+        let startDate: string, endDate: string;
+        if (filterOption === 'Month') {
+            startDate = dayjs(currentMonth).startOf('month').format('YYYY-MM-DD');
+            endDate = dayjs(currentMonth).endOf('month').format('YYYY-MM-DD');
+        } else if (filterOption === 'Week') {
+            startDate = dayjs(currentWeek).startOf('week').format('YYYY-MM-DD');
+            endDate = dayjs(currentWeek).endOf('week').format('YYYY-MM-DD');
+        } else {
+            startDate = dayjs(currentDate).format('YYYY-MM-DD');
+            endDate = startDate;
+        }
 
-    // Get the userId to filter tasks
-    const userIdToFilter = filters.userId || selectedUserId; // Use selectedUserId if userId is not specified in filters
-    console.log("calculatePerformanceData userId", userIdToFilter);
-    // Iterate over each user
-    if (userIdToFilter && groupedTasks[userIdToFilter]) {
-        // Iterate over months for the selected user
-        Object.values(groupedTasks[userIdToFilter]).forEach((monthTasks) => {
-            // Check if the month matches the current month (if applicable)
-            if (dayjs(monthTasks.month).isSame(currentMonth, 'month') || filterOption !== 'Month') {
-                // Iterate over dates for each month
-                Object.keys(monthTasks.tasks).forEach((date) => {
-                    // Check if the date is within the range
-                    if ((dayjs(date).isSame(startDate) || dayjs(date).isAfter(startDate)) && (dayjs(date).isSame(endDate) || dayjs(date).isBefore(endDate))) {
-                        // Iterate over tasks for the current date
-                        monthTasks.tasks[date].tasks.forEach((task) => {
-                            // Check if the task belongs to the selected user
-                            if (task.userId === userIdToFilter) {
-                                // Calculate total hours worked for each task
-                                const totalTaskHours = parseFloat(task.totalHours);
-                                // Accumulate hours for each task
-                                if (taskHoursMap[task.task]) {
-                                    taskHoursMap[task.task] += totalTaskHours;
-                                } else {
-                                    taskHoursMap[task.task] = totalTaskHours;
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    } else{
-        Object.values(groupedTasks).forEach((userTasks) => {
-            console.log("calculatePerformanceData userTasks",userTasks);
-            // Iterate over months for each user
-            Object.values(userTasks).forEach((monthTasks) => {
-                console.log("calculatePerformanceData monthTasks",monthTasks);
+        // Get the userId to filter tasks
+        const userIdToFilter = filters.userId || selectedUserId; // Use selectedUserId if userId is not specified in filters
+        console.log("calculatePerformanceData userId", userIdToFilter);
+        // Iterate over each user
+        if (userIdToFilter && groupedTasks[userIdToFilter]) {
+            // Iterate over months for the selected user
+            Object.values(groupedTasks[userIdToFilter]).forEach((monthTasks) => {
                 // Check if the month matches the current month (if applicable)
-                console.log("calculatePerformanceData monthTasks",monthTasks);
                 if (dayjs(monthTasks.month).isSame(currentMonth, 'month') || filterOption !== 'Month') {
                     // Iterate over dates for each month
                     Object.keys(monthTasks.tasks).forEach((date) => {
                         // Check if the date is within the range
-                        if ((dayjs(date).isSame(startDate) || dayjs(date).isAfter(startDate))&& (dayjs(date).isSame(endDate)|| dayjs(date).isBefore(endDate))) {
+                        if ((dayjs(date).isSame(startDate) || dayjs(date).isAfter(startDate)) && (dayjs(date).isSame(endDate) || dayjs(date).isBefore(endDate))) {
                             // Iterate over tasks for the current date
                             monthTasks.tasks[date].tasks.forEach((task) => {
-                                // Calculate total hours worked for each task
-                                const totalTaskHours = parseFloat(task.totalHours);
-                                // Accumulate hours for each task
-                                if (taskHoursMap[task.task]) {
-                                    taskHoursMap[task.task] += totalTaskHours;
-                                } else {
-                                    taskHoursMap[task.task] = totalTaskHours;
+                                // Check if the task belongs to the selected user
+                                if (task.userId === userIdToFilter) {
+                                    // Calculate total hours worked for each task
+                                    const totalTaskHours = parseFloat(task.totalHours);
+                                    // Accumulate hours for each task
+                                    if (taskHoursMap[task.task]) {
+                                        taskHoursMap[task.task] += totalTaskHours;
+                                    } else {
+                                        taskHoursMap[task.task] = totalTaskHours;
+                                    }
                                 }
                             });
                         }
                     });
                 }
             });
-        });
-    }
+        } else{
+            Object.values(groupedTasks).forEach((userTasks) => {
+                console.log("calculatePerformanceData userTasks",userTasks);
+                // Iterate over months for each user
+                Object.values(userTasks).forEach((monthTasks) => {
+                    console.log("calculatePerformanceData monthTasks",monthTasks);
+                    // Check if the month matches the current month (if applicable)
+                    console.log("calculatePerformanceData monthTasks",monthTasks);
+                    if (dayjs(monthTasks.month).isSame(currentMonth, 'month') || filterOption !== 'Month') {
+                        // Iterate over dates for each month
+                        Object.keys(monthTasks.tasks).forEach((date) => {
+                            // Check if the date is within the range
+                            if ((dayjs(date).isSame(startDate) || dayjs(date).isAfter(startDate))&& (dayjs(date).isSame(endDate)|| dayjs(date).isBefore(endDate))) {
+                                // Iterate over tasks for the current date
+                                monthTasks.tasks[date].tasks.forEach((task) => {
+                                    // Calculate total hours worked for each task
+                                    const totalTaskHours = parseFloat(task.totalHours);
+                                    // Accumulate hours for each task
+                                    if (taskHoursMap[task.task]) {
+                                        taskHoursMap[task.task] += totalTaskHours;
+                                    } else {
+                                        taskHoursMap[task.task] = totalTaskHours;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        }
 
-    // Convert the accumulated task hours into PerformanceDatum objects
-    const performanceData: PerformanceDatum[] = Object.entries(taskHoursMap).map(([taskName, totalHours]) => ({
-        taskName,
-        totalHours,
-    }));
+        // Convert the accumulated task hours into PerformanceDatum objects
+        const performanceData: PerformanceDatum[] = Object.entries(taskHoursMap).map(([taskName, totalHours]) => ({
+            taskName,
+            totalHours,
+        }));
 
-    return performanceData;
-};
+        return performanceData;
+    };
 
-// Call the function to calculate performance data
-const performanceDataForManager: PerformanceDatum[] = calculatePerformanceData();
+    // Call the function to calculate performance data
+    const performanceDataForManager: PerformanceDatum[] = calculatePerformanceData();
     
-    const handleFilterChange = (value: any) => {
+    const handleFilterChange = (value:any) => {
         setFilterOption(value);
+        if (value === 'Month') {
+            // Calculate and set the start of the current month
+            setCurrentMonth(dayjs().startOf('month'));
+        } else if (value === 'Week') {
+            // Calculate and set the start of the current week
+            setCurrentWeek(dayjs().startOf('week'));
+        } else {
+            // For 'Date', simply use the current date
+            setCurrentDate(dayjs());
+        }
     };
 
     const getCurrentMonth = (filterOption: string, currentDate: string, currentMonth: string, currentWeek: any) => {
@@ -315,243 +378,275 @@ const performanceDataForManager: PerformanceDatum[] = calculatePerformanceData()
         }
       };
     
-      const handleRightArrowClick = () => {
-        if (filterOption === 'Date') {
-          const nextDate = currentDate.add(1, 'day');
-          if(nextDate.isAfter(dayjs(), 'day')){
-            notification.warning({
-              message: 'Warning',
-              description: 'Cannot navigate to future weeks.',
-            });
-            return;
-          }
-          setCurrentDate(nextDate);
-        } else if (filterOption === 'Week') {
-          const nextWeekStart = currentWeek.add(1, 'week').startOf('week');
-          const nextWeekEnd = currentWeek.add(1, 'week').endOf('week');
-          if (nextWeekStart.isAfter(dayjs(), 'day')) {
-            notification.warning({
-              message: 'Warning',
-              description: 'Cannot navigate to future weeks.',
-            });
-            return;
-          }
-          setCurrentWeek(nextWeekStart);
-          
-        } else if (filterOption === 'Month') {
-          const nextMonthStart = currentMonth.add(1, 'month').startOf('month');
-          if (nextMonthStart.isAfter(dayjs(), 'day')) {
-            notification.warning({
-              message: 'Warning',
-              description: 'Cannot navigate to future months.',
-            });
-            return;
-          }
-          setCurrentMonth(nextMonthStart);
+    const handleRightArrowClick = () => {
+      if (filterOption === 'Date') {
+        const nextDate = currentDate.add(1, 'day');
+        if(nextDate.isAfter(dayjs(), 'day')){
+          notification.warning({
+            message: 'Warning',
+            description: 'Cannot navigate to future weeks.',
+          });
+          return;
         }
+        setCurrentDate(nextDate);
+      } else if (filterOption === 'Week') {
+        const nextWeekStart = currentWeek.add(1, 'week').startOf('week');
+        const nextWeekEnd = currentWeek.add(1, 'week').endOf('week');
+        if (nextWeekStart.isAfter(dayjs(), 'day')) {
+          notification.warning({
+            message: 'Warning',
+            description: 'Cannot navigate to future weeks.',
+          });
+          return;
+        }
+        setCurrentWeek(nextWeekStart);
         
-      };
-
-      // Function to handle approval
-// Function to handle approval
-  const handleApprove = (userId: string, month: string, date: string) => {
-      // Update taskRequestedOn
-      const updatedTaskRequestedOn = { ...taskRequestedOn };
-      if (!updatedTaskRequestedOn[userId]) {
-        updatedTaskRequestedOn[userId] = {};
+      } else if (filterOption === 'Month') {
+        const nextMonthStart = currentMonth.add(1, 'month').startOf('month');
+        if (nextMonthStart.isAfter(dayjs(), 'day')) {
+          notification.warning({
+            message: 'Warning',
+            description: 'Cannot navigate to future months.',
+          });
+          return;
+        }
+        setCurrentMonth(nextMonthStart);
       }
-      if (!updatedTaskRequestedOn[userId][month]) {
-        updatedTaskRequestedOn[userId][month] = [];
-      }
-      updatedTaskRequestedOn[userId][month] = updatedTaskRequestedOn[userId][month].filter(d => d !== date);
-      setTaskRequestedOn(updatedTaskRequestedOn);
-
-      // Update approveTaskRequestedOn
-      const updatedApproveTaskRequestedOn = { ...approveTaskRequestedOn };
-      if (!updatedApproveTaskRequestedOn[userId]) {
-        updatedApproveTaskRequestedOn[userId] = {};
-      }
-      if (!updatedApproveTaskRequestedOn[userId][month]) {
-        updatedApproveTaskRequestedOn[userId][month] = [];
-      }
-      updatedApproveTaskRequestedOn[userId][month] = [...updatedApproveTaskRequestedOn[userId][month], date];
-      setApproveTaskRequestedOn(updatedApproveTaskRequestedOn);
-
-      // Store updated data in localStorage
-      localStorage.setItem('taskRequestedOn', JSON.stringify(updatedTaskRequestedOn));
-      localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApproveTaskRequestedOn));
+      
     };
 
+    // Function to handle approval
+    const handleApprove = (userId: string, month: string, date: string) => {
+        // Update taskRequestedOn
+        const updatedTaskRequestedOn = { ...taskRequestedOn };
+        if (!updatedTaskRequestedOn[userId]) {
+          updatedTaskRequestedOn[userId] = {};
+        }
+        if (!updatedTaskRequestedOn[userId][month]) {
+          updatedTaskRequestedOn[userId][month] = [];
+        }
+        updatedTaskRequestedOn[userId][month] = updatedTaskRequestedOn[userId][month].filter(d => d !== date);
+        setTaskRequestedOn(updatedTaskRequestedOn);
+
+        // Update approveTaskRequestedOn
+        const updatedApproveTaskRequestedOn = { ...approveTaskRequestedOn };
+        if (!updatedApproveTaskRequestedOn[userId]) {
+          updatedApproveTaskRequestedOn[userId] = {};
+        }
+        if (!updatedApproveTaskRequestedOn[userId][month]) {
+          updatedApproveTaskRequestedOn[userId][month] = [];
+        }
+        updatedApproveTaskRequestedOn[userId][month] = [...updatedApproveTaskRequestedOn[userId][month], date];
+        setApproveTaskRequestedOn(updatedApproveTaskRequestedOn);
+
+        // Store updated data in localStorage
+        localStorage.setItem('taskRequestedOn', JSON.stringify(updatedTaskRequestedOn));
+        localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApproveTaskRequestedOn));
+    };
   
-  // Function to handle rejection
-  const handleReject = (userId: string, month: string, date: string) => {
-    // Implement logic to mark the task as rejected
-    console.log(`Rejected: UserId-${userId}, Month-${month}, Date-${date}`);
-  };
+    // Function to handle rejection
+    const handleReject = (userId: string, month: string, date: string) => {
+      // Implement logic to mark the task as rejected
+      console.log(`Rejected: UserId-${userId}, Month-${month}, Date-${date}`);
+    };
 
+    const handleClick = (title: string) => {
+        navigate(`/manager/projectuser`, { state: { title } });
+      };
   
-  return (
-    <DashboardLayout>
-        <h1>Manager</h1>
+    return (
+      <DashboardLayout>
+          <h1>Manager</h1>
 
-    <div style={{margin:'30px 0px 0px 0px'}}>
-            <Card className="main-card">
-            <div style={{ display: "flex", height:'55px' }}>
-                <div>
-                <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
-                <span className="wave" role="img" aria-label="Waving hand">👋</span></h3>
-                <p>
-                    All of us do not have equal talent, but all of us have an equal
-                    opportunities to improve our <strong>Talent</strong>
-                </p>
-                </div>
-                <img
-                src={asset}
-                alt="..."
-                style={{ marginLeft: "auto", marginTop: "-5px" }}
-                />
-            </div>
-            </Card>
-    </div>
+      <div style={{margin:'30px 0px 0px 0px'}}>
+              <Card className="main-card">
+              <div style={{ display: "flex", height:'55px' }}>
+                  <div>
+                  <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
+                  <span className="wave" role="img" aria-label="Waving hand">👋</span></h3>
+                  <p>
+                      All of us do not have equal talent, but all of us have an equal
+                      opportunities to improve our <strong>Talent</strong>
+                  </p>
+                  </div>
+                  <img
+                  src={asset}
+                  alt="..."
+                  style={{ marginLeft: "auto", marginTop: "-5px" }}
+                  />
+              </div>
+              </Card>
+      </div>
 
-    {/* <div>
-      <h2>Task Requests</h2>
-      {Object.entries(taskRequestedOn).map(([userId, months]) => (
-        <div key={userId}>
-          <h3>User ID: {userId}</h3>
-          {Object.entries(months).map(([month, dates]) => (
-            <div key={month}>
-              <h4>Month: {month}</h4>
-              {dates.map((date) => (
-                <div key={date}>
-                  <p>Date: {date}</p>
-                  {/* Render approve and reject icons 
-                  <button onClick={() => handleApprove(userId, month, date)}>Approve</button>
-                  <button onClick={() => handleReject(userId, month, date)}>Reject</button>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div> */}
-
-    <div style={{display:'flex', justifyContent:'space-between'}}>
-        <div style={{display:'flex', justifyContent:'flex-end', height:'47px', margin:'0px 20px 10px 20px'}}>
-            <ConfigProvider theme={config}>
-                <Button id='submit-less' onClick={handleLeftArrowClick}> 
-                    <LeftOutlined />
-                </Button>
-                <Button id='submit-less' onClick={handleRightArrowClick}>
-                    <RightOutlined />
-                </Button>
-            </ConfigProvider>
-            <div className='employeetask'>
-                { filterOption === 'Month' ? (
-                <div style={{display:'flex', justifyContent:'flex-start'}}>
-                    <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
-                    <div style={{ margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
-                </div>
-                ) : filterOption === 'Week' ? (
-                    <div style={{display:'flex', justifyContent:'flex-start'}}>
-                        <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentWeek).format('YYYY-MM-DD')}</div>
-                        <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
-                    </div>
-                )  : (
-                    <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>Date: {currentDate.format('YYYY-MM-DD')}</div>
-                )
-                }
-            </div>
-            {/* <div>
-                <Input
-                    className="search"
-                    placeholder="Search by ID"
-                    allowClear
-                    suffix={<SearchOutlined style={{ color: "#04172480" }} />}
-                    onChange={(e: any) => handleSearchInputChange(e.target.value)}
-                    style={{marginLeft:'20px'}}
-                />
-            </div> */}
-        </div>
-        <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
-        <div>
-            <Select
-                showSearch
-                style={{ width: 200, marginRight: 8, height: 40, color:'white', textAlign:'left' }}
-                placeholder={placeholderValues.userId}
-                onChange={(value) => {
-                    handleFilterChangeForId("userId", value);
-                    setSelectedUserId(value);
-                }}
-                value={selectedUserId !== null ? selectedUserId : undefined}
-                virtual
-                listHeight={200}
-
-            >
-                {userId.map((id) => (
-                    <Select.Option key={id} value={id}>
-                        {id}
-                    </Select.Option>
+      {/* <div>
+        <h2>Task Requests</h2>
+        {Object.entries(taskRequestedOn).map(([userId, months]) => (
+          <div key={userId}>
+            <h3>User ID: {userId}</h3>
+            {Object.entries(months).map(([month, dates]) => (
+              <div key={month}>
+                <h4>Month: {month}</h4>
+                {dates.map((date) => (
+                  <div key={date}>
+                    <p>Date: {date}</p>
+                    {/* Render approve and reject icons 
+                    <button onClick={() => handleApprove(userId, month, date)}>Approve</button>
+                    <button onClick={() => handleReject(userId, month, date)}>Reject</button>
+                  </div>
                 ))}
-            </Select>
-        </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div> */}
 
-            <div>
-              <Button
-                style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'0px', paddingTop:'8px'}}
-                className='regenerateactive'
-                onClick={handleClearFilters}
+      <div style={{display:'flex', justifyContent:'space-between'}}>
+          <div style={{display:'flex', justifyContent:'flex-end', height:'47px', margin:'0px 20px 10px 20px'}}>
+              <ConfigProvider theme={config}>
+                  <Button id='submit-icon' onClick={handleLeftArrowClick}> 
+                      <LeftOutlined />
+                  </Button>
+                  <Select 
+                    // id='submit-less' 
+                      style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', marginTop:'10px', height:'68%'}} 
+                      onChange={(value) => handleFilterChange(value)} 
+                      value={filterOption}
+                      dropdownStyle={{ textAlign: 'center' }} // Style the dropdown menu
+                  >
+                      <Option value='Date'>Date</Option>
+                      <Option value='Week'>Week</Option>
+                      <Option value='Month'>Month</Option>
+                  </Select>
+                  <Button id='submit-icon' onClick={handleRightArrowClick}>
+                      <RightOutlined />
+                  </Button>
+              </ConfigProvider>
+              {/* <div className='employeetask'>
+                  { filterOption === 'Month' ? (
+                  <div style={{display:'flex', justifyContent:'flex-start'}}>
+                      <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
+                      <div style={{ margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
+                  </div>
+                  ) : filterOption === 'Week' ? (
+                      <div style={{display:'flex', justifyContent:'flex-start'}}>
+                          <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentWeek).format('YYYY-MM-DD')}</div>
+                          <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
+                      </div>
+                  )  : (
+                      <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>Date: {currentDate.format('YYYY-MM-DD')}</div>
+                  )
+                  }
+              </div> */}
+
+              <div className='employeetask'>
+                  {filterOption === 'Month' ? (
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                          <div style={{ margin: '10px 20px', fontSize: '16px', fontFamily: 'poppins' }}>
+                              {dayjs(currentMonth).format('MMMM YYYY')}
+                          </div>
+                      </div>
+                  ) : filterOption === 'Week' ? (
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                          <div style={{ margin: '10px 20px', fontSize: '16px', fontFamily: 'poppins' }}>
+                            {dayjs(currentWeek).format('MMMM YYYY')} Week {getWeekOfMonth(currentWeek)}
+                          </div>
+                      </div>
+                  ) : (
+                      <div style={{ margin: '10px 20px', fontSize: '16px', fontFamily: 'poppins' }}>
+                          {dayjs(currentDate).format('MMMM DD, YYYY')}
+                      </div>
+                  )}
+              </div>
+
+
+              {/* <div>
+                  <Input
+                      className="search"
+                      placeholder="Search by ID"
+                      allowClear
+                      suffix={<SearchOutlined style={{ color: "#04172480" }} />}
+                      onChange={(e: any) => handleSearchInputChange(e.target.value)}
+                      style={{marginLeft:'20px'}}
+                  />
+              </div> */}
+          </div>
+          <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
+          <div>
+              <Select
+                  showSearch
+                  style={{ width: 200, marginRight: 8, height: 40, textAlign:'left' }}
+                  placeholder={placeholderValues.userId}
+                  onChange={(value) => {
+                      handleFilterChangeForId("userId", value);
+                      setSelectedUserId(value);
+                  }}
+                  value={selectedUserId !== null ? selectedUserId : undefined}
+                  virtual
+                  listHeight={200}
+
               >
-              Clear
-              </Button>
-            </div>
-            <ConfigProvider theme={config}>
-                <Select 
-                    id='submit' 
-                    style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none'}} 
-                    onChange={(value) => handleFilterChange(value)} 
-                    value={filterOption}
-                    dropdownStyle={{ textAlign: 'center' }} // Style the dropdown menu
+                  {userId.map((id) => (
+                      <Select.Option key={id} value={id}>
+                          {id}
+                      </Select.Option>
+                  ))}
+              </Select>
+          </div>
+
+              <div>
+                <Button
+                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'0px', paddingTop:'8px'}}
+                  className='regenerateactive'
+                  onClick={handleClearFilters}
                 >
-                    <Option value='Date'>Date</Option>
-                    <Option value='Week'>Week</Option>
-                    <Option value='Month'>Month</Option>
-                </Select>
-            </ConfigProvider>
+                Clear
+                </Button>
+              </div>
+              
+          </div>
+      </div>
+        <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
+          <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+              <ApexCharts
+                  options={{
+                      chart: {
+                          type: 'pie',
+                      },
+                      labels: fullPerformanceDataForManager.map(data => data.taskName),
+                  }}
+                  series={fullPerformanceDataForManager.map(data => data.totalHours)}
+                  type="pie"
+                  width={600}
+                  height={300}
+              />
+          </div>
+          <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
+              <ApexCharts
+                  options={{
+                      chart: {
+                          type: 'pie',
+                      },
+                      labels: performanceDataForManager.map(task => task.taskName),
+                  }}
+                  series={performanceDataForManager.map(data => data.totalHours)}
+                  type="pie"
+                  width={600}
+                  height={300}
+              />
+          </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {Object.entries(titleCounts).map(([title, count]) => (
+                <button className='box' key={title} title={`Click to view ${title}`} onClick={()=>handleClick(title)}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                        <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', textAlign: 'center', fontWeight: 'bold' }}>{title}</p>
+                        <p style={{ color: 'black', fontSize: '34px', fontFamily: 'poppins' }}>{count}</p>
+                    </div>
+                </button>
+            ))}
         </div>
-    </div>
-      <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-            <ApexCharts
-                options={{
-                    chart: {
-                        type: 'pie',
-                    },
-                    labels: fullPerformanceDataForManager.map(data => data.taskName),
-                }}
-                series={fullPerformanceDataForManager.map(data => data.totalHours)}
-                type="pie"
-                width={600}
-                height={300}
-            />
-        </div>
-        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-            <ApexCharts
-                options={{
-                    chart: {
-                        type: 'pie',
-                    },
-                    labels: performanceDataForManager.map(task => task.taskName),
-                }}
-                series={performanceDataForManager.map(data => data.totalHours)}
-                type="pie"
-                width={600}
-                height={300}
-            />
-        </div>
-    </div>
-    </DashboardLayout>
-  )
+      </DashboardLayout>
+    )
 }
 
 export default ManagerDashboard;

@@ -123,9 +123,9 @@ const Sidebar: React.FC = () => {
       </div>
       <Menu id="side" mode="inline">
         {renderMenuItems()}
-        <Menu.Item id="signout" key="3" danger icon={<PoweroffOutlined />} onClick={handleSignout}>
+        {/* <Menu.Item id="signout" key="3" danger icon={<PoweroffOutlined />} onClick={handleSignout}>
           Signout
-        </Menu.Item>
+        </Menu.Item> */}
       </Menu>
     </div>
   );

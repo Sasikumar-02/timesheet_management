@@ -13,11 +13,11 @@
         justify-content: space-between;
 }
 
-.ant-select-selector .ant-select-selection-placeholder {
+/* .ant-select-selector .ant-select-selection-placeholder {
         text-align: left;
         color: white;
       
-      }
+      } */
 
 #userdetails-submit{
     height: 40px;

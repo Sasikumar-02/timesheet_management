@@ -16,7 +16,7 @@
   }
 
   
-.ant-card-body{
+/* .ant-card-body{
   padding-top: 0px;
 } 
 
@@ -24,7 +24,7 @@
   text-align: left;
   color: white;
 
-}
+} */
 
   @keyframes wave-animation {
       0% { transform: rotate( 0.0deg) }
@@ -99,9 +99,9 @@
   /* font-weight: bold; */
 }
 
-.ant-select .ant-select-outlined .css-dev-only-do-not-override-1qhpsh8 .ant-select-single .ant-select-show-arrow{
+/* .ant-select .ant-select-outlined .css-dev-only-do-not-override-1qhpsh8 .ant-select-single .ant-select-show-arrow{
   color: white
-}
+} */
 
 #scroll-container {
   height: 100px;

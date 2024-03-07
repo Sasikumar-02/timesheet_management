@@ -9,6 +9,7 @@ interface DashboardLayoutProps{
   children:ReactNode;
 }
 const headerStyle: React.CSSProperties = {
+    marginTop:'10px',
     color: 'black',
     height: 70,
     backgroundColor: '#E7ECF0',
@@ -18,17 +19,19 @@ const headerStyle: React.CSSProperties = {
 };
 
 const contentStyle: React.CSSProperties = {
-    textAlign: 'center',
-    minHeight: 120,
-    marginTop:70,
-    marginLeft:200,
-    // lineHeight: '120px',
-    height:'calc(100vh - 70px)',
-    color: 'black',
-    backgroundColor: '#fff',
-    borderTopLeftRadius: '20px',
-    overflowY: 'auto', 
+  textAlign: 'center',
+  minHeight: 120,
+  marginTop: 90,
+  marginLeft: 200,
+  //lineHeight: '120px',
+  //height: `calc(100vh - ${90}px)`, // Subtracting marginTop from viewport height
+  height:`calc(100vh - 90px)`,
+  color: 'black',
+  backgroundColor: '#fff',
+  borderTopLeftRadius: '20px',
+  overflowY: 'auto',
 };
+
 
 const siderStyle: React.CSSProperties = {
     width:'100px',

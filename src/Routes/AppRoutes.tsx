@@ -44,6 +44,7 @@ import { Task } from '../Components/Employee/AddTask';
 import MonthTasks from '../Components/Manager/MonthTasks';
 import { AdminLayout } from '../Components/Dashboard/AdminLayout';
 import ManagerDashboard from '../Components/Manager/ManagerDashboard';
+import ManagerUserDetails from '../Components/Manager/ManagerUserDetails';
 
 const AppRoutes: React.FC = () => {
   const userEmail = localStorage.getItem('email');
@@ -89,6 +90,7 @@ const AppRoutes: React.FC = () => {
         <Route path='/monthTasks' element={(userEmail === 'sasikumarmurugan02@gmail.com') ? <MonthTasks /> : <Navigate to="/dashboard" />} />
         <Route path='/adminlayout' element={<AdminLayout/>}/>
         <Route path='/managerdashboard' element={<ManagerDashboard/>}/>
+        <Route path='/manager/projectuser' element={<ManagerUserDetails/>}/>
       </Route>
     </Routes>
   );

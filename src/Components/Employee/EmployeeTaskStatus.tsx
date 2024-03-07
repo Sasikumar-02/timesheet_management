@@ -49,7 +49,7 @@ interface EmployeeTaskStatusProps{
 }
 
 const EmployeeTaskStatus = () => {
-    const userId = '123'; // Assuming you have a function to get the current user's ID
+    const userId = '1234'; // Assuming you have a function to get the current user's ID
     const { Option } = Select; // Destructure the Option component from Select
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
@@ -732,19 +732,20 @@ const EmployeeTaskStatus = () => {
         <button className='box' onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', textAlign:'center', fontWeight:'bold' }}>Not Filled</p>
-                <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {missedCount}</p>
+                <p style={{ color: '#FF8C00', fontSize: '34px', fontFamily: 'poppins' }}> {missedCount}</p>
             </div>
         </button>
         <button className='box' onClick={() => handleCountClick('Pending', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold'}}>Pending</p>    
-                <p style={{ color: 'black', fontSize: '34px', fontFamily: 'poppins' }}> {pendingCount}</p>
+                <p style={{ color: '#FFD700', fontSize: '34px', fontFamily: 'poppins' }}>{pendingCount}</p>
+
             </div>
         </button>
         <button className='box' onClick={() => handleCountClick('Accepted',filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266' , fontWeight:'bold'}}>Accepted</p>
-                <p style={{ color: 'green', fontSize: '34px', fontFamily: 'poppins' }}> {acceptCount}</p>
+                <p style={{ color: '#32CD32	', fontSize: '34px', fontFamily: 'poppins' }}>{acceptCount}</p>
             </div>
         </button>
         <button className='box' onClick={() => handleCountClick('Rejected', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
