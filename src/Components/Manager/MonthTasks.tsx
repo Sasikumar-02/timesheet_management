@@ -7,6 +7,7 @@ import {
     DownOutlined,
     UpOutlined,
 } from "@ant-design/icons";
+import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
@@ -304,61 +305,6 @@ const MonthTasks: React.FC = () => {
         setCommentVisible(false);
     };
    
-    
-    // const handleSubmit = () => {
-    //     // Handle submission logic here
-    //     const userId = '123'; // Assuming a static userId for this example
-    
-    //     // Get stored rejected keys from localStorage or initialize an empty object if none exists
-    //     const storedRejectedKeys: RejectedKeys = JSON.parse(localStorage.getItem('rejectedKeys') || '{}');
-    //     console.log("handleSubmit - storedRejectedKeys:", storedRejectedKeys);
-    
-    //     const newKeysToAdd = Object.keys(storedRejectedKeys[userId] || {}).filter(newKey => {
-    //         return !storedRejectedKeys[userId] || !storedRejectedKeys[userId].some(rejected => rejected.date === newKey);
-    //     });
-    //     console.log("handleSubmit - newKeysToAdd:", newKeysToAdd);
-    
-    //     // Update storedRejectedKeys with the new keys to add
-    //     const updatedRejectedKeys: RejectedKeys = {
-    //         ...storedRejectedKeys,
-    //         [userId]: [
-    //             ...(storedRejectedKeys[userId] || []),
-    //             ...newKeysToAdd.map(dateKey => ({ date: dateKey, comment: comments }))
-    //         ]
-    //     };
-    //     console.log("handleSubmit - updatedRejectedKeys:", updatedRejectedKeys);
-    //     localStorage.setItem('rejectedKeys', JSON.stringify(updatedRejectedKeys));
-    
-    //     // Store recent rejected dates along with comments in the local storage under the key "recentRejected"
-    //     const recentRejected: RejectedKeys = JSON.parse(localStorage.getItem('recentRejected') || '{}');
-    //     const updatedRecentRejected: RejectedKeys = {
-    //         ...recentRejected,
-    //         [userId]: [
-    //             ...(recentRejected[userId] || []),
-    //             ...newKeysToAdd.map(dateKey => ({ date: dateKey, comment: comments }))
-    //         ]
-    //     };
-    //     console.log("handleSubmit - updatedRecentRejected:", updatedRecentRejected);
-    //     localStorage.setItem('recentRejected', JSON.stringify(updatedRecentRejected));
-    
-    //     const updatedMonthTasksDataObj = Object.keys(monthTasks).reduce((acc: { [key: string]: TaskObject }, dateKey: string) => {
-    //         const dateData = monthTasks[dateKey];
-    //         const filteredData = Object.fromEntries(Object.entries(dateData).filter(([date, data]) => !updatedRejectedKeys[userId].some(rejected => rejected.date === date)));
-    //         console.log("filteredData", filteredData);
-    //         if (Object.keys(filteredData).length > 0) {
-    //             acc[dateKey] = filteredData;
-    //         }
-    //         return acc;
-    //     }, {});
-    
-    //     setMonthTasks(updatedMonthTasksDataObj);
-    //     console.log("handleSubmit - updatedMonthTasksDataObj:", updatedMonthTasksDataObj);
-    
-    //     console.log('handleSubmit - Comments:', comments);
-    //     setCommentVisible(false);
-    // };
-    
-    
     const handleInputChange = (e:any) => {
         setComments(e.target.value);
       };
@@ -491,82 +437,24 @@ const MonthTasks: React.FC = () => {
         setHoveredRow(null); // Clear the hovered row
     };
 
-    const generatePieChartAsImage = async (options: ChartOptions, series: number[], chartWidth: number, chartHeight: number) =>{
-        // Create a div element for the chart
-        const chartContainer = document.createElement('div')
-        // Set the width and height of the chart
-        chartContainer.style.width = `${chartWidth}px`;
-        chartContainer.style.height = `${chartHeight}px`;
-        // Render the ApexCharts component inside the div
-        ReactDOM.render(
-            <Chart
-                options={options}
-                series={series}
-                type="pie"
-                width={chartWidth}
-                height={chartHeight}
-            />,
-            chartContainer
-        )
-        // Wait for the chart to finish rendering
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Adjust the timeout as needed
-        // Convert the div to an image
-        const imageUrl = await toPng(chartContainer);
-        // Clean up
-        ReactDOM.unmountComponentAtNode(chartContainer);
-        return imageUrl;
-    }
-
     // const exportToPDF = async () => {
     //     try {
-    //         // Create PDF document
-            // let pdfDoc = await PDFDocument.create();
-            
-            // // Generate pie chart
-            // const pieChartImageBytes = await generatePieChartAsImage(chartOptions, chartSeries);
-            // const pieChartImage = await pdfDoc.embedPng(pieChartImageBytes);
-        
-    //         // Generate line chart
-    //        // const lineChartImageBytes = await generateLineChartAsImage(chartDatas);
-    //        // const lineChartImage = await pdfDoc.embedPng(lineChartImageBytes);
-        
+    //         let pdfDoc = await PDFDocument.create();  
+    //         const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'Total Hours', 'Extra Hours']; // Updated header
     //         const page = pdfDoc.addPage([600, 600]);
     //         const { width, height } = page.getSize();
-    //         const fontSize = 10;
-    //         const padding = 20;
+    //         const fontSize = 10; // Adjusted font size
+    //         const padding = 20; // Adjusted padding
     //         const textHeight = fontSize + 5;
-        
+    
     //         let y = height - padding;
-        
-            // // Draw pie chart
-            // const pieChartWidth = 300;
-            // const pieChartHeight = 300;
-            // const pieChartX = padding;
-            // const pieChartY = y - pieChartHeight - 20; // Adjusted position
-            // page.drawImage(pieChartImage, {
-            //     x: pieChartX,
-            //     y: pieChartY,
-            //     width: pieChartWidth,
-            //     height: pieChartHeight,
-            // });
-        
-    //         // Draw line chart
-    //         // const lineChartWidth = 500;
-    //         // const lineChartHeight = 300;
-    //         // const lineChartX = padding;
-    //         // const lineChartY = y - pieChartHeight - lineChartHeight - 40; // Adjusted position
-    //         // page.drawImage(lineChartImage, {
-    //         //     x: lineChartX,
-    //         //     y: lineChartY,
-    //         //     width: lineChartWidth,
-    //         //     height: lineChartHeight,
-    //         // });
-        
+            
+
     //         console.log("exportToPDF - selectedRows", selectedRows);
     //         const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
     //         console.log("exportToPDF - dataToExport", dataToExport);
-            
-    //         const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'Total Hours', 'Extra Hours']; // Updated header
+          
+    
     //         page.drawText('User Details', {
     //             x: padding,
     //             y: y,
@@ -574,9 +462,9 @@ const MonthTasks: React.FC = () => {
     //             font: await pdfDoc.embedFont('Helvetica-Bold'),
     //             color: rgb(0, 0, 0),
     //         });
-        
+    
     //         y -= textHeight;
-        
+    
     //         // Drawing table headers
     //         let x = padding;
     //         for (const heading of header) {
@@ -589,9 +477,9 @@ const MonthTasks: React.FC = () => {
     //             });
     //             x += 70; // Adjusted padding to match data padding
     //         }
-        
+    
     //         y -= textHeight;
-        
+    
     //         for (const dateTask of dataToExport) {
     //             x = padding; // Reset x coordinate to padding
     //             const rowData: any[] = [
@@ -601,7 +489,7 @@ const MonthTasks: React.FC = () => {
     //                 0, // Placeholder for totalHours
     //                 0, // Placeholder for extraHours
     //             ];
-        
+    
     //             for (const task of dateTask.task) {
     //                 if (task.task === 'Meeting') {
     //                     rowData[2] = parseFloat(task.totalHours || '0');
@@ -613,14 +501,14 @@ const MonthTasks: React.FC = () => {
     //                     rowData[4] = parseFloat(task.totalHours || '0');
     //                 }
     //             }
-        
+    
     //            // Calculate totalHours and extraHours
     //             const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + (typeof val === 'string' ? parseFloat(val) : val), 0);
     //             const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-        
+    
     //             rowData[6] = totalHours; // Index 6 for totalHours
     //             rowData[7] = extraHours; // Index 7 for extraHours
-        
+    
     //             for (const cell of rowData) {
     //                 page.drawText(cell.toString(), {
     //                     x: x,
@@ -633,8 +521,7 @@ const MonthTasks: React.FC = () => {
     //             }
     //             y -= textHeight; // Decrement y coordinate for the next row
     //         }
-        
-    //         // Save PDF
+    
     //         const pdfBytes = await pdfDoc.save();
     //         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
     //         saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.pdf`);
@@ -643,100 +530,149 @@ const MonthTasks: React.FC = () => {
     //     }
     // };
     
+    // Function to export as PDF
+    // const exportToPDF = () => {
+    //     try {
+    //         const chartContainer1 = document.getElementById('pie-chart-container'); // Get pie chart container element
+    //         const chartContainer2 = document.getElementById('line-chart-container'); // Get line chart container element
+    //         if (!chartContainer1 || !chartContainer2) return;
+
+    //         html2canvas(chartContainer1).then(canvas1 => { // Convert pie chart container to canvas
+    //             const imgData1 = canvas1.toDataURL('image/png'); // Convert canvas to image data
+    //             const pdf = new jsPDF(); // Create new PDF document
+    //             pdf.addImage(imgData1, 'PNG', 10, 10, 100, 100); // Add pie chart to PDF
+
+    //             // Add page break
+    //             pdf.addPage();
+
+    //             html2canvas(chartContainer2).then(canvas2 => { // Convert line chart container to canvas
+    //                 const imgData2 = canvas2.toDataURL('image/png'); // Convert canvas to image data
+    //                 pdf.addImage(imgData2, 'PNG', 10, 10, 180, 100); // Add line chart to PDF
+    //                 pdf.save(`charts_and_table_${moment().format('YYYY-MM-DD_HH-mm-ss')}.pdf`); // Save PDF
+    //             });
+    //         });
+    //     } catch (error) {
+    //         console.error('Error exporting to PDF:', error);
+    //     }
+    // };
+
     const exportToPDF = async () => {
         try {
-            let pdfDoc = await PDFDocument.create();  
-            const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'Total Hours', 'Extra Hours']; // Updated header
-            const page = pdfDoc.addPage([600, 600]);
-            const { width, height } = page.getSize();
-            const fontSize = 10; // Adjusted font size
-            const padding = 20; // Adjusted padding
-            const textHeight = fontSize + 5;
+            const chartContainer1 = document.getElementById('pie-chart-container'); // Get pie chart container element
+            const chartContainer2 = document.getElementById('line-chart-container'); // Get line chart container element
+            if (!chartContainer1 || !chartContainer2) return;
     
-            let y = height - padding;
-            
-
-            console.log("exportToPDF - selectedRows", selectedRows);
-            const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
-            console.log("exportToPDF - dataToExport", dataToExport);
-          
+            // Configuration for html2canvas to capture with transparent background
+            const html2canvasOptions = {
+                backgroundColor: null,
+            };
     
-            page.drawText('User Details', {
-                x: padding,
-                y: y,
-                size: 18,
-                font: await pdfDoc.embedFont('Helvetica-Bold'),
-                color: rgb(0, 0, 0),
-            });
+            html2canvas(chartContainer1, html2canvasOptions).then(async canvas1 => { // Convert pie chart container to canvas
+                const imgData1 = canvas1.toDataURL('image/png'); // Convert canvas to image data
+                const pdf = new jsPDF(); // Create new PDF document
+                pdf.addImage(imgData1, 'PNG', 10, 10, 100, 100); // Add pie chart to PDF
     
-            y -= textHeight;
+                // Add page break
+                pdf.addPage();
     
-            // Drawing table headers
-            let x = padding;
-            for (const heading of header) {
-                page.drawText(heading, {
-                    x: x,
-                    y: y,
-                    size: fontSize,
-                    font: await pdfDoc.embedFont('Helvetica-Bold'),
-                    color: rgb(0, 0, 0),
-                });
-                x += 70; // Adjusted padding to match data padding
-            }
+                html2canvas(chartContainer2, html2canvasOptions).then(async canvas2 => { // Convert line chart container to canvas
+                    const imgData2 = canvas2.toDataURL('image/png'); // Convert canvas to image data
+                    pdf.addImage(imgData2, 'PNG', 10, 10, 180, 100); // Add line chart to PDF
     
-            y -= textHeight;
+                    const pdfDoc = await PDFDocument.create(); // Create a new PDF document
     
-            for (const dateTask of dataToExport) {
-                x = padding; // Reset x coordinate to padding
-                const rowData: any[] = [
-                    dateTask.task[0].userId,
-                    dateTask.task[0].date, // Placeholder for Date
-                    0, 0, 0, 0, // Initialize Meeting, Project, Training, Learning to 0
-                    0, // Placeholder for totalHours
-                    0, // Placeholder for extraHours
-                ];
+                    const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'Total Hours', 'Extra Hours']; // Updated header
+                    const page = pdfDoc.addPage([600, 600]);
+                    const { width, height } = page.getSize();
+                    const fontSize = 10;
+                    const padding = 20;
+                    const textHeight = fontSize + 5;
     
-                for (const task of dateTask.task) {
-                    if (task.task === 'Meeting') {
-                        rowData[2] = parseFloat(task.totalHours || '0');
-                    } else if (task.task === 'Project') {
-                        rowData[3] = parseFloat(task.totalHours || '0');
-                    } else if (task.task === 'Training') {
-                        rowData[5] = parseFloat(task.totalHours || '0');
-                    } else if (task.task === 'Learning') {
-                        rowData[4] = parseFloat(task.totalHours || '0');
-                    }
-                }
+                    let y = height - padding;
     
-               // Calculate totalHours and extraHours
-                const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + (typeof val === 'string' ? parseFloat(val) : val), 0);
-                const extraHours = totalHours > 9 ? totalHours - 9 : 0;
+                    console.log("exportToPDF - selectedRows", selectedRows);
+                    const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
+                    console.log("exportToPDF - dataToExport", dataToExport);
     
-                rowData[6] = totalHours; // Index 6 for totalHours
-                rowData[7] = extraHours; // Index 7 for extraHours
     
-                for (const cell of rowData) {
-                    page.drawText(cell.toString(), {
-                        x: x,
+                    page.drawText('User Details', {
+                        x: padding,
                         y: y,
-                        size: fontSize,
-                        font: await pdfDoc.embedFont('Helvetica'),
+                        size: 18,
+                        font: await pdfDoc.embedFont('Helvetica-Bold'),
                         color: rgb(0, 0, 0),
                     });
-                    x += 70; // Increment x coordinate for the next cell
-                }
-                y -= textHeight; // Decrement y coordinate for the next row
-            }
     
-            const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.pdf`);
+                    y -= textHeight;
+    
+                    // Drawing table headers
+                    let x = padding;
+                    for (const heading of header) {
+                        page.drawText(heading, {
+                            x: x,
+                            y: y,
+                            size: fontSize,
+                            font: await pdfDoc.embedFont('Helvetica-Bold'),
+                            color: rgb(0, 0, 0),
+                        });
+                        x += 70; // Adjusted padding to match data padding
+                    }
+    
+                    y -= textHeight;
+    
+                    for (const dateTask of dataToExport) {
+                        x = padding; // Reset x coordinate to padding
+                        const rowData: any[] = [
+                            dateTask.task[0].userId,
+                            dateTask.task[0].date, // Placeholder for Date
+                            0, 0, 0, 0, // Initialize Meeting, Project, Training, Learning to 0
+                            0, // Placeholder for totalHours
+                            0, // Placeholder for extraHours
+                        ];
+    
+                        for (const task of dateTask.task) {
+                            if (task.task === 'Meeting') {
+                                rowData[2] = parseFloat(task.totalHours || '0');
+                            } else if (task.task === 'Project') {
+                                rowData[3] = parseFloat(task.totalHours || '0');
+                            } else if (task.task === 'Training') {
+                                rowData[5] = parseFloat(task.totalHours || '0');
+                            } else if (task.task === 'Learning') {
+                                rowData[4] = parseFloat(task.totalHours || '0');
+                            }
+                        }
+    
+                       // Calculate totalHours and extraHours
+                        const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + (typeof val === 'string' ? parseFloat(val) : val), 0);
+                        const extraHours = totalHours > 9 ? totalHours - 9 : 0;
+    
+                        rowData[6] = totalHours; // Index 6 for totalHours
+                        rowData[7] = extraHours; // Index 7 for extraHours
+    
+                        for (const cell of rowData) {
+                            page.drawText(cell.toString(), {
+                                x: x,
+                                y: y,
+                                size: fontSize,
+                                font: await pdfDoc.embedFont('Helvetica'),
+                                color: rgb(0, 0, 0),
+                            });
+                            x += 70; // Increment x coordinate for the next cell
+                        }
+                        y -= textHeight; // Decrement y coordinate for the next row
+                    }
+    
+                    const pdfBytes = await pdfDoc.save();
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.pdf`);
+                });
+            });
         } catch (error) {
             console.error('Error exporting to PDF:', error);
         }
     };
     
-    
+
     const handleExportOptionForPDF = (key: string) => {
         if (key === 'all' || selectedRows.length === 0) {
             // Notify if no rows are selected
@@ -761,6 +697,7 @@ const MonthTasks: React.FC = () => {
 
     const exportToExcel = () => {
         try {
+            
             console.log("exportToExcel - selectedRows", selectedRows);
             const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
             console.log("exportToExcel - dataToExport", dataToExport);
@@ -812,7 +749,101 @@ const MonthTasks: React.FC = () => {
         }
     };
     
-
+    // const exportToExcel = async (selectedRows: string[], monthTasksData: DateTask[]) => {
+    //     try {
+    //         const pieChartContainer = document.getElementById('pie-chart-container');
+    //         const lineChartContainer = document.getElementById('line-chart-container');
+    
+    //         if (!pieChartContainer || !lineChartContainer) {
+    //             console.error('Pie chart container or line chart container not found.');
+    //             return;
+    //         }
+    
+    //         const pieChartCanvas = await html2canvas(pieChartContainer);
+    //         const pieChartImgData = pieChartCanvas.toDataURL('image/png');
+    
+    //         const lineChartCanvas = await html2canvas(lineChartContainer);
+    //         const lineChartImgData = lineChartCanvas.toDataURL('image/png');
+    
+    //         console.log("exportToExcel - selectedRows", selectedRows);
+    //         const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
+    //         console.log("exportToExcel - dataToExport", dataToExport);
+    
+    //         const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'totalHours', 'extraHours'];
+    
+    //         const data = dataToExport.map(row => {
+    //             const rowData: any[] = [];
+    //             rowData.push(row.task[0].userId); // Add userId
+    //             rowData.push(row.task[0].date); // Add Date
+    //             // Initialize task data to 0 if missing
+    //             const taskData: { [key: string]: number } = {
+    //                 'Meeting': 0,
+    //                 'Project': 0,
+    //                 'Learning': 0,
+    //                 'Training': 0
+    //             };
+    
+    //             // Populate task data with actual values if available
+    //             row.task.forEach(task => {
+    //                 taskData[task.task] = parseFloat(task.totalHours || '0');
+    //             });
+    
+    //             // Push task data into rowData
+    //             rowData.push(taskData['Meeting']);
+    //             rowData.push(taskData['Project']);
+    //             rowData.push(taskData['Learning']);
+    //             rowData.push(taskData['Training']);
+    
+    //             // Calculate totalHours and extraHours
+    //             const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + val, 0);
+    //             const extraHours = totalHours > 9 ? totalHours - 9 : 0;
+    
+    //             rowData.push(totalHours);
+    //             rowData.push(extraHours);
+    
+    //             return rowData;
+    //         });
+    
+    //         // Convert chart images into base64 strings and include them in the worksheet
+    //         const worksheet = XLSX.utils.json_to_sheet([header, ...data]);
+    
+    //         // Add pie chart image
+    //         const pieChartImageArray = pieChartImgData.split(',');
+    //         XLSX.utils.sheet_add_dom(worksheet, {
+    //             type: 'image',
+    //             position: {
+    //                 width: '250px',
+    //                 height: '150px',
+    //                 top: '20px',
+    //                 left: '20px',
+    //             },
+    //             content: pieChartImageArray[1],
+    //         });
+    
+    //         // Add line chart image
+    //         const lineChartImageArray = lineChartImgData.split(',');
+    //         XLSX.utils.sheet_add_dom(worksheet, {
+    //             type: 'image',
+    //             position: {
+    //                 width: '250px',
+    //                 height: '150px',
+    //                 top: '20px',
+    //                 left: '20px',
+    //             },
+    //             content: lineChartImageArray[1],
+    //         });
+    
+    //         const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
+    
+    //         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    //         const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    
+    //         saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+    //     } catch (error) {
+    //         console.error('Error exporting to Excel:', error);
+    //     }
+    // };
+    
     const handleExportOption = (key: string) => {
         if (key === 'all' || selectedRows.length === 0) {
           // Notify if no rows are selected
@@ -821,7 +852,8 @@ const MonthTasks: React.FC = () => {
             return;
           }
           // Proceed with export
-          exportToExcel();
+        //   exportToExcel(selectedRows, monthTasksData);
+            exportToExcel();
         } else {
           exportToExcel();
         }
@@ -1110,19 +1142,6 @@ const MonthTasks: React.FC = () => {
                             </div>
 
                         </div>
-                        {/* <div>
-                            <Button
-                                type="primary"
-                                style={{ height: "40px", width: "150px", marginRight: "10px" }}
-                                disabled={pdfExportInProgress}
-                                onClick={() => {
-                                    setPdfExportInProgress(true);
-                                    handleExportOptionForPDF();
-                                }}
-                            >
-                                Export PDF
-                            </Button>
-                        </div> */}
                         <div style={{marginRight:'20px', marginTop:'25px'}}>
                             <Dropdown overlay={exportMenuForPDF} placement="bottomLeft">
                                 <Button
@@ -1145,8 +1164,8 @@ const MonthTasks: React.FC = () => {
                         </div>
                     </div>
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 20px', alignItems: 'center' }}>
-                        <div style={{ 
+                    <div  style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 20px', alignItems: 'center' }}>
+                        <div id='pie-chart-container' style={{ 
                             transition: 'box-shadow .3s',
                             boxShadow: '0 0 4px rgba(33,33,33,.2)',  
                             borderRadius: '5px', 
@@ -1160,7 +1179,7 @@ const MonthTasks: React.FC = () => {
                         }}>
                             <Chart options={chartOptions} series={chartSeries} type="pie" width="380" />
                         </div>
-                        <div style={{ transition: 'box-shadow .3s',
+                        <div id='line-chart-container' style={{ transition: 'box-shadow .3s',
                             boxShadow: '0 0 4px rgba(33,33,33,.2)',  borderRadius: '5px', padding: '20px', width: '48%', boxSizing: 'border-box' }}>
                             <LineChart width={700} height={300} data={chartDatas} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -1181,47 +1200,15 @@ const MonthTasks: React.FC = () => {
                                 selectedRowKeys: selectedRows,
                                 onChange: handleRowSelection
                             }}
-                            // onRow={(record) => ({
-                            //     onMouseEnter: () => handleRowHover(record), // Handle mouse enter event
-                            //     onMouseLeave: () => handleRowLeave(), // Handle mouse leave event
-                            // })}
                             onRow={(record: DateTask) => ({
                                 onClick: () => handleRowClick(record),
                                 onMouseEnter: () => handleRowHover(record),
                                 onMouseLeave: handleRowLeave,
                             })}
                             columns={getColumn(formattedMonth)} 
-                            //rowClassName="rowstyle"
                             className='table-striped-rows approvalrequests-table'
                             dataSource={monthTasksData}
                             pagination={false}
-                            // expandable={{
-                            //     expandedRowRender: (record: DateTask) => {
-                            //         const handleInnerRowExpand = () => {
-                            //             return (
-                                            
-                            //                 <Table
-                            //                     columns={innerColumn as ColumnsType<Task>}
-                            //                     dataSource={record.task} // Pass all tasks in the date as dataSource
-                            //                     pagination={false}
-                            //                 />
-                            //             );
-                            //         };
-                                    
-                            //         return (
-                            //             <>
-                            //                 {handleInnerRowExpand()}
-                            //             </>
-                            //         );
-                            //     },
-                            //     expandRowByClick: true,
-                            //     expandIcon: ({ expanded, onExpand, record }) =>
-                            //         expanded ? (
-                            //             <UpOutlined onClick={e => onExpand(record, e)} style={{float:'right'}} />
-                            //         ) : (
-                            //             <DownOutlined onClick={e => onExpand(record, e)} style={{float: 'right'}}/>
-                            //         ),
-                            // }} 
                         />   
                         <Modal
                            title={clickedRecord && clickedRecord.task.length > 0 ? dayjs(clickedRecord.task[0].date).format('MMMM DD, YYYY') : ""}

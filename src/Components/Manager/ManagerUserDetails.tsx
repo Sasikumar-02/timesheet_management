@@ -49,9 +49,9 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
       }).map(task => ({
         slNo: rowNumber++, // Increment rowNumber for each task
         userId: task.userId,
-        role: 'Frontend', // Assuming role is fixed for now
+        role: 'Team Member', // Assuming role is fixed for now
         email: 'sasikumarmurugan02@gmail.com', // Assuming email is fixed for now
-        designation: 'Internship', // Assuming designation is fixed for now
+        designation: 'Frontend', // Assuming designation is fixed for now
       }));
     });
   });
@@ -77,7 +77,7 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
             <div>
               <strong>Sasi Kumar</strong>
             </div>
-            <div>{userIdsWithTitles.has(userId) ? `Employee - ${userId}` : 'Employee'}</div>
+            <div>{userIdsWithTitles.has(userId) ? `${userId}` : 'Employee'}</div>
           </div>
         </Space>
       ),
@@ -85,7 +85,7 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
     {
       title: 'Role',
       dataIndex: 'role',
-      render: () => <div>Frontend</div>,
+      render: () => <div>Team Member</div>,
     },
     {
       title: 'Email',
@@ -95,7 +95,7 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
     {
       title: 'Designation',
       dataIndex: 'designation',
-      render: () => <div>Internship</div>,
+      render: () => <div>Frontend</div>,
     },
   ];
 
@@ -107,8 +107,8 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
           columns={columns}
           className='custom-table'
           dataSource={dataSource}
-          pagination={false} // If you want pagination, remove this line or adjust as needed
-          scroll={{ x: 1500 }} // Adjust the width as needed
+          pagination={false} 
+          scroll={{ x: 1500 }} 
           onRow={(record, rowIndex) => {
             return {
               onClick: event => {
