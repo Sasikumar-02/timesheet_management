@@ -505,7 +505,7 @@ const AdminDashboard = () => {
   
     return (
       <DashboardLayout>
-          {/* <h1>Manager</h1> */}
+          <h1>Admin</h1>
 
       <div style={{margin:'30px 0px 0px 0px'}}>
               <Card className="main-card">

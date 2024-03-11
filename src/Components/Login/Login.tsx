@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     userName: "",
     emailError: "",
     password: "",
-    passwordError: "",
+    passwordError: ""
   });
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
