@@ -453,10 +453,59 @@ const ManagerDashboard = () => {
     const handleClick = (title: string) => {
         navigate(`/manager/projectuser`, { state: { title } });
       };
+
+      // Function to send reminders and store them in localStorage
+      const sendReminders = () => {
+        const currentDateFormatted = dayjs(currentDate).format('MMMM DD, YYYY');
+        let reminderMessage = '';
+        
+        // Generate reminder message based on filterOption
+        switch (filterOption) {
+            case 'Date':
+                reminderMessage = `Reminder for ${currentDateFormatted} to fill the task`;
+                break;
+            case 'Week':
+                const startOfWeek = dayjs(currentWeek).startOf('week').format('MMMM DD, YYYY');
+                const endOfWeek = dayjs(currentWeek).endOf('week').format('MMMM DD, YYYY');
+                reminderMessage = `Reminder for the week ${startOfWeek} to ${endOfWeek} to fill the task`;
+                break;
+            case 'Month':
+                const startOfMonth = dayjs(currentMonth).startOf('month').format('MMMM DD, YYYY');
+                const endOfMonth = dayjs(currentMonth).endOf('month').format('MMMM DD, YYYY');
+                reminderMessage = `Reminder for the month of ${dayjs(currentMonth).format('MMMM YYYY')} to fill the task`;
+                break;
+            default:
+                reminderMessage = '';
+        }
+        
+        // Retrieve existing reminders from localStorage
+        const existingReminders = JSON.parse(localStorage.getItem('remainder') || '{}');
+        
+        // Append new reminders to existing reminders or initialize as an array
+        userId.forEach(id => {
+            if (!existingReminders[id]) {
+                existingReminders[id] = [];
+            }
+            // Push the new reminder message to the array
+            existingReminders[id].push(reminderMessage);
+        });
+        
+        // Store updated reminders back into localStorage
+        localStorage.setItem('remainder', JSON.stringify(existingReminders));
+        
+        notification.success({
+            message: 'Success',
+            description: 'Reminder has been sent successfully',
+        });
+        
+        console.log('Reminders sent and stored in localStorage.');
+    };
+    
+    
   
     return (
       <DashboardLayout>
-          <h1>Manager</h1>
+          {/* <h1>Manager</h1> */}
 
       <div style={{margin:'30px 0px 0px 0px'}}>
               <Card className="main-card">
@@ -471,7 +520,7 @@ const ManagerDashboard = () => {
                   </div>
                   <img
                   src={asset}
-                  alt="..."
+                  alt="talent"
                   style={{ marginLeft: "auto", marginTop: "-5px" }}
                   />
               </div>
@@ -558,7 +607,6 @@ const ManagerDashboard = () => {
                   )}
               </div>
 
-
               {/* <div>
                   <Input
                       className="search"
@@ -571,38 +619,39 @@ const ManagerDashboard = () => {
               </div> */}
           </div>
           <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
-          <div>
-              <Select
-                  showSearch
-                  style={{ width: 200, marginRight: 8, height: 40, textAlign:'left' }}
-                  placeholder={placeholderValues.userId}
-                  onChange={(value) => {
-                      handleFilterChangeForId("userId", value);
-                      setSelectedUserId(value);
-                  }}
-                  value={selectedUserId !== null ? selectedUserId : undefined}
-                  virtual
-                  listHeight={200}
+            <div style={{ width:'200px'}}>
+                <Button style={{width:'50%', height:'100%'}} onClick={sendReminders}>Reminder</Button>
+            </div>
+            <div>
+                <Select
+                    showSearch
+                    style={{ width: 200, marginRight: 8, height: 40, textAlign:'left' }}
+                    placeholder={placeholderValues.userId}
+                    onChange={(value) => {
+                        handleFilterChangeForId("userId", value);
+                        setSelectedUserId(value);
+                    }}
+                    value={selectedUserId !== null ? selectedUserId : undefined}
+                    virtual
+                    listHeight={200}
 
-              >
-                  {userId.map((id) => (
-                      <Select.Option key={id} value={id}>
-                          {id}
-                      </Select.Option>
-                  ))}
-              </Select>
-          </div>
-
-              <div>
-                <Button
-                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'0px', paddingTop:'8px'}}
-                  className='regenerateactive'
-                  onClick={handleClearFilters}
                 >
-                Clear
-                </Button>
-              </div>
-              
+                    {userId.map((id) => (
+                        <Select.Option key={id} value={id}>
+                            {id}
+                        </Select.Option>
+                    ))}
+                </Select>
+            </div>
+            <div style={{width:'90px'}}>
+            <Button
+                style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'0px', paddingTop:'8px'}}
+                className='regenerateactive'
+                onClick={handleClearFilters}
+            >
+            Clear
+            </Button>
+            </div>
           </div>
       </div>
         <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>

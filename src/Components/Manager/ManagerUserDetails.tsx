@@ -6,8 +6,9 @@ import { Task } from '../Employee/AddTask';
 import { TaskObject, UserGroupedTask, GroupedTasks } from './ApprovalRequest';
 import '../Styles/ApprovalRequest.css';
 import '../Styles/AddTask.css';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 const ManagerUserDetails = () => {
+  const navigate = useNavigate();
  const location = useLocation();
  const {title}= location.state;
   // Access groupedTask and taskList from local storage
@@ -55,6 +56,10 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
   });
 });
 
+const handleRowClick = (userId:string) => {
+  // Navigate to the dashboard and send userId as a prop
+  navigate('/dashboard', { state: { userId: userId } });
+};
 
   // Define columns for the table
   const columns = [
@@ -100,7 +105,7 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
   return (
     <DashboardLayout>
       <div>{title}</div>
-      <Link to="/dashboard">
+      
         <Table
           columns={columns}
           className='custom-table'
@@ -110,12 +115,13 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
           onRow={(record, rowIndex) => {
             return {
               onClick: event => {
-                // Navigate to the dashboard when a row is clicked
+                // Call handleRowClick with the userId when a row is clicked
+                handleRowClick(record.userId);
               },
             };
           }}
         />
-      </Link>
+    
 
 
     </DashboardLayout>

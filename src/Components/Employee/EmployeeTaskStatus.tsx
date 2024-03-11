@@ -9,7 +9,7 @@ import {
   } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import Calendar from './Calendar'; // Import your Calendar component
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
 //import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ResponsiveContainer, Brush, ReferenceLine, Label } from 'recharts';
@@ -17,6 +17,7 @@ import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
 import { notification, Card , ConfigProvider, Button} from 'antd';
 import { Task } from './AddTask';
+import '../Styles/AddTask.css';
 import { set } from 'lodash';
 import { CatchingPokemonSharp } from '@mui/icons-material';
 import asset from '../../assets/images/asset.svg'
@@ -49,7 +50,10 @@ interface EmployeeTaskStatusProps{
 }
 
 const EmployeeTaskStatus = () => {
-    const userId = '1234'; // Assuming you have a function to get the current user's ID
+    const location = useLocation();
+    const { state } = location;
+    const userId = state && state.userId ? state.userId : '1234';
+    console.log("locate - userId", userId);
     const { Option } = Select; // Destructure the Option component from Select
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
@@ -582,6 +586,13 @@ const EmployeeTaskStatus = () => {
         }
         
       };
+
+      function getWeekOfMonth(date: dayjs.Dayjs): number {
+        const firstDayOfMonth = date.startOf('month').day();
+        const firstWeek = Math.ceil((1 + (7 - firstDayOfMonth)) / 7);
+        const currentWeek = Math.ceil((date.date() + firstDayOfMonth) / 7);
+        return currentWeek - firstWeek ;
+    }
   return (
     <>
     {/* <div style={{display:'flex', justifyContent:'space-between'}}>
@@ -595,7 +606,9 @@ const EmployeeTaskStatus = () => {
             </h3> 
         </div>
     </div> */}
-
+    <div>
+        <h1>{userId}</h1>
+    </div>
     <div style={{margin:'30px 0px 0px 0px'}}>
             <Card className="main-card">
             <div style={{ display: "flex", height:'55px' }}>
@@ -620,7 +633,8 @@ const EmployeeTaskStatus = () => {
         <div style={{display:'flex', justifyContent:'flex-end', height:'47px', margin:'0px 20px 10px 20px'}}>
         {/* id='submit-less' */}
             <ConfigProvider theme={config}>
-                <Button id='submit-less' onClick={handleLeftArrowClick}> 
+                <Button id='submit-icon' onClick={handleLeftArrowClick}> 
+                {/* if id is submit-less then the button color is blue */}
                     <LeftOutlined />
                 </Button>
                 {/* <select 
@@ -632,11 +646,11 @@ const EmployeeTaskStatus = () => {
                     <option style={{textAlign:'center'}} value='Week'>Week</option>
                     <option style={{textAlign:'center'}} value='Month'>Month</option>
                 </select> */}
-                <Button id='submit-less' onClick={handleRightArrowClick}>
+                <Button id='submit-icon' onClick={handleRightArrowClick}>
                     <RightOutlined />
                 </Button>
             </ConfigProvider>
-                <div className='employeetask'>
+                {/* <div className='employeetask'>
                     { filterOption === 'Month' ? (
                     <div style={{display:'flex', justifyContent:'flex-start'}}>
                         <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
@@ -651,7 +665,26 @@ const EmployeeTaskStatus = () => {
                         <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>Date: {currentDate.format('YYYY-MM-DD')}</div>
                     )
                     }
-                </div>
+                </div> */}
+                <div className='employeetask'>
+                  {filterOption === 'Month' ? (
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                          <div style={{ margin: '10px 20px', fontSize: '16px', fontFamily: 'poppins' }}>
+                              {dayjs(currentMonth).format('MMMM YYYY')}
+                          </div>
+                      </div>
+                  ) : filterOption === 'Week' ? (
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                          <div style={{ margin: '10px 20px', fontSize: '16px', fontFamily: 'poppins' }}>
+                            {dayjs(currentWeek).format('MMMM YYYY')} Week {getWeekOfMonth(currentWeek)}
+                          </div>
+                      </div>
+                  ) : (
+                      <div style={{ margin: '10px 20px', fontSize: '16px', fontFamily: 'poppins' }}>
+                          {dayjs(currentDate).format('MMMM DD, YYYY')}
+                      </div>
+                  )}
+              </div>
         </div>
         
         <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
