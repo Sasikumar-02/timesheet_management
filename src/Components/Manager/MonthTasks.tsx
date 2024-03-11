@@ -1058,6 +1058,13 @@ const MonthTasks: React.FC = () => {
           render: (_, __, index) => <span>{index + 1}</span>,
         },  
         {
+            title: 'Work Location',
+            //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+            dataIndex: 'workLocation',
+            key: 'workLocation',
+            fixed: 'left',
+        },
+        {
           title: 'Task',
         //   sorter: (a: Task, b: Task) => {
         //     return a.task.localeCompare(b.task);

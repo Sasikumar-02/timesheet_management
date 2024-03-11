@@ -4,7 +4,7 @@ import { Link, useNavigate,useLocation } from "react-router-dom";
 import { useMsal } from '@azure/msal-react';
 import '../Styles/Dashboard.css';
 import mindgraph from "../../assets/images/mindgraph-logo.png";
-import { PoweroffOutlined, HomeFilled, UserAddOutlined, AppstoreAddOutlined } from "@ant-design/icons";
+import { PoweroffOutlined, HomeFilled, UserAddOutlined, AppstoreAddOutlined, UserOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 const Sidebar: React.FC = () => {
     const { instance } = useMsal();
     const navigate = useNavigate();
@@ -72,18 +72,18 @@ const Sidebar: React.FC = () => {
           return (
             <>
                <Menu.Item id="menu" key="1" icon={<HomeFilled />}
-                className={Location.pathname === "/dashboard" ? "active" : ""}>
-                <Link to="/dashboard">Dashboard</Link>
+                className={Location.pathname === "/managerdashboard" ? "active" : ""}>
+                <Link to="/managerdashboard">Dashboard</Link>
               </Menu.Item>
-              <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
+              {/* <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/calendar" ? "active" : ""}>
                 <Link to="/calendar">Calendar</Link>
-              </Menu.Item>
+              </Menu.Item> */}
               <Menu.Item id="menu" key="5" icon={<UserAddOutlined />}
                 className={Location.pathname === "/createuser" ? "active" : ""}>
                 <Link to="/createuser">Create User</Link>
               </Menu.Item>
-              <Menu.Item id="menu" key="5" icon={<UserAddOutlined />}
+              <Menu.Item id="menu" key="5" icon={<UsergroupAddOutlined />}
                 className={Location.pathname === "/userdetails" ? "active" : ""}>
                 <Link to="/userdetails">User Details</Link>
               </Menu.Item>

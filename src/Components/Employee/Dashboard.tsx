@@ -1,9 +1,8 @@
 import 'chart.js/auto';
 import React from 'react';
-import { Pie } from 'react-chartjs-2';
 import DashboardLayout from '../Dashboard/Layout';
 import EmployeeTaskStatus from './EmployeeTaskStatus';
-
+import { PieChart, Pie, Tooltip, Cell } from 'recharts';
 interface PieChartProps {
   data: { [key: string]: number };
 }

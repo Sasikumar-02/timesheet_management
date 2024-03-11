@@ -34,6 +34,7 @@ export interface Task {
   idx: number; 
   date: string;
   userId: string;
+  workLocation: string;
   task: string;
   title: string;
   startTime: string;
@@ -76,6 +77,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
     idx: 1, // Set initial idx
     date: currentDate.format('YYYY-MM-DD'),
     userId: userId,
+    workLocation: '',
     task: '',
     title: '',
     startTime: '',
@@ -123,6 +125,7 @@ const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsD
 };
 const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
 const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
+const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
   useEffect(() => {
     const updateFormWidth = () => {
       const formElement = document.getElementById('myForm');
@@ -422,6 +425,7 @@ const handleFormOnSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       setAddTask({
         date: dayjs(currentDate).format('YYYY-MM-DD'),
         userId:userId,
+        workLocation: '',
         task: '',
         title:'',
         startTime: '',
@@ -540,6 +544,7 @@ console.log("approvedRequestedOn", approvedRequestedOn);
       idx: taskList.length + 2, // Set a new idx
       date: dayjs(currentDate).format('YYYY-MM-DD'),
       userId: userId,
+      workLocation: '',
       task: '',
       title:'',
       startTime: '',
@@ -655,6 +660,7 @@ const handleRequestForm = () => {
     setAddTask({
       date: dayjs(addTask.date).format('YYYY-MM-DD'),
       userId: userId,
+      workLocation: '',
       task: '',
       title:'',
       startTime: '',
@@ -736,6 +742,7 @@ const handleEditTask = (idx: number) => {
     setAddTask({
         date: taskToEdit.date,
         userId: taskToEdit.userId,
+        workLocation:taskToEdit.workLocation,
         task: taskToEdit.task,
         title:taskToEdit.title,
         startTime: taskToEdit.startTime,
@@ -982,6 +989,7 @@ const handleOverallSubmit = () => {
     const requestData: Task[] = tasksToSend.map(task => ({
         date: task.date,
         userId: task.userId,
+        workLocation: task.workLocation,
         task: task.task,
         title:task.title,
         startTime: task.startTime,
@@ -1087,6 +1095,13 @@ const handleOverallSubmit = () => {
       //sorter: (a: Task, b: Task) => (a.slNo && b.slNo ? a.slNo - b.slNo : 0),
       dataIndex: 'slNo',
       key: 'slNo',
+      fixed: 'left',
+    },
+    {
+      title: 'Work Location',
+      //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+      dataIndex: 'workLocation',
+      key: 'workLocation',
       fixed: 'left',
     },
     {
@@ -1250,7 +1265,7 @@ const handleOverallSubmit = () => {
                 />
               )}
               <div style={{display:'flex', alignItems:'center'}}>
-                <div>
+                <div style={{width:'35%'}}>
                   <div className='section-addtask' style={{width:'125%'}}>
                     <div className='create-layout-addtask-left  '>
                       <div style={{marginBottom:'10px'}}>
@@ -1293,6 +1308,27 @@ const handleOverallSubmit = () => {
                     </div> */}
                     <div className='create-layout-addtask'>
                       <div>
+                        <label style={{color:'#0B4266'}} htmlFor='task'>Work Location</label>
+                      </div>
+                      <div>
+                        <select
+                          id='task'
+                          value={addTask.workLocation}
+                          onChange={(e) => handleInputChange('workLocation', e.target.value)}
+                        >
+                          {workLocation.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                      
+                    </div>
+                  </div>
+                  <div className='section-addtask' style={{width:'125%'}}>
+                    <div className='create-layout-addtask'>
+                      <div>
                         <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
                       </div>
                       <div>
@@ -1310,12 +1346,28 @@ const handleOverallSubmit = () => {
                       </div>
                       
                     </div>
-                    
-
-                  </div>
-                  {addTask.task === 'Meeting' && (
-                          <div className='section-addtask' style={{width:'61%'}}>
-                            <div className='create-layout-addtask'>
+                    {addTask.task === 'Meeting' && (
+                          // <div className='section-addtask' style={{width:'61%'}}>
+                          //   <div className='create-layout-addtask'>
+                          //     <div>
+                          //       <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
+                          //     </div>
+                          //     <div>
+                          //       <select
+                          //         id='task'
+                          //         value={addTask.title}
+                          //         onChange={(e) => handleInputChange('title', e.target.value)}
+                          //       >
+                          //         {meetingTitle.map((option, index) => (  // Use 'index' as the key
+                          //           <option key={index} value={option}>
+                          //             {option}
+                          //           </option>
+                          //         ))}
+                          //       </select>
+                          //     </div>
+                          //   </div>
+                          // </div>
+                          <div className='create-layout-addtask'>
                               <div>
                                 <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
                               </div>
@@ -1332,31 +1384,51 @@ const handleOverallSubmit = () => {
                                   ))}
                                 </select>
                               </div>
-                            </div>
                           </div>
-                        )}
-                        {(addTask.task === 'Project'|| addTask.task==='Learning' || addTask.task==='Training') && (
-                          <div className='section-addtask' style={{width:'61%'}}>
-                            <div className='create-layout-addtask'>
-                              <div>
-                                <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
-                              </div>
-                              <div>
-                                <select
-                                  id='task'
-                                  value={addTask.title}
-                                  onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
-                                >
-                                  {projectTitle.map((option, index) => (  // Use 'index' as the key
-                                    <option key={index} value={option}>
-                                      {option}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                    )}
+                    {(addTask.task === 'Project'|| addTask.task==='Learning' || addTask.task==='Training') && (
+                      // <div className='section-addtask' style={{width:'61%'}}>
+                      //   <div className='create-layout-addtask'>
+                      //     <div>
+                      //       <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
+                      //     </div>
+                      //     <div>
+                      //       <select
+                      //         id='task'
+                      //         value={addTask.title}
+                      //         onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
+                      //       >
+                      //         {projectTitle.map((option, index) => (  // Use 'index' as the key
+                      //           <option key={index} value={option}>
+                      //             {option}
+                      //           </option>
+                      //         ))}
+                      //       </select>
+                      //     </div>
+                      //   </div>
+                      // </div>
+                      <div className='create-layout-addtask'>
+                      <div>
+                        <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
+                      </div>
+                      <div>
+                        <select
+                          id='task'
+                          value={addTask.title}
+                          onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
+                        >
+                          {projectTitle.map((option, index) => (  // Use 'index' as the key
+                            <option key={index} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    )}
+
+                  </div>
+                  
                   <div className='section-addtask' style={{width:'125%'}}>
                       <div className='create-layout-addtask-left'>
                         <div>
@@ -1477,7 +1549,7 @@ const handleOverallSubmit = () => {
         <div>
           <div style={{ display:'flex', justifyContent:'space-between', margin:'10px 20px' }}>
             <div style={{display:'flex'}}>
-              <Button id='submit-less' onClick={handleLeftArrowClick}> 
+              <Button id='submit-icon' onClick={handleLeftArrowClick}> 
                       <LeftOutlined />
                   </Button>
                   {/* <select 
@@ -1489,7 +1561,7 @@ const handleOverallSubmit = () => {
                       <option style={{textAlign:'center'}} value='Week'>Week</option>
                       <option style={{textAlign:'center'}} value='Month'>Month</option>
                   </select> */}
-                  <Button id='submit-less' onClick={handleRightArrowClick}>
+                  <Button id='submit-icon' onClick={handleRightArrowClick}>
                       <RightOutlined />
                   </Button>
 

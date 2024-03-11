@@ -13,6 +13,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
 //import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ResponsiveContainer, Brush, ReferenceLine, Label } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
+import { Doughnut } from 'react-chartjs-2';
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
 import { notification, Card , ConfigProvider, Button} from 'antd';
@@ -75,8 +77,17 @@ const EmployeeTaskStatus = () => {
     const [selectedYear, setSelectedYear]=useState<string>('');
     const userName = localStorage.getItem("userName");
     console.log("userName", userName);
+    const [workFromHomeCount, setWorkFromHomeCount] = useState(0);
+    const [workFromOfficeCount, setWorkFromOfficeCount] = useState(0);
     const [recentApproved, setRecentApproved] = useState([]);
     const [recentRejected, setRecentRejected] = useState<RecentRejected[]>([]);
+
+    const chartOptions = {
+        maintainAspectRatio: false,
+        responsive: true,
+        width: 200,
+        height: 300,
+      };
 
     useEffect(() => {
         // Fetch recentApproved dates from localStorage
@@ -144,6 +155,46 @@ const EmployeeTaskStatus = () => {
           console.log("else-useEffect", storedKeysString);
       }
   }, []);
+
+  useEffect(() => {
+    let fromDate:any, toDate:any;
+    if (filterOption === 'Month') {
+      fromDate = dayjs(currentMonth).startOf('month');
+      toDate = dayjs(currentMonth).endOf('month');
+    } else if (filterOption === 'Week') {
+      fromDate = dayjs(currentWeek).startOf('week');
+      toDate = dayjs(currentWeek).endOf('week');
+    } else if (filterOption === 'Date') {
+      fromDate = toDate = dayjs(currentDate);
+    }
+
+    const filteredTasks = taskList.filter(task => {
+      const taskDate = dayjs(task.date);
+      return (taskDate.isSame(fromDate)|| taskDate.isAfter(fromDate)) && (taskDate.isSame(toDate)|| taskDate.isBefore(toDate));
+    });
+
+    const workFromHome = filteredTasks.filter(task => task.workLocation === 'Work from Home');
+    const workFromOffice = filteredTasks.filter(task => task.workLocation === 'Work From Office');
+
+    setWorkFromHomeCount(workFromHome.length);
+    setWorkFromOfficeCount(workFromOffice.length);
+  }, [filterOption, currentDate, currentWeek, currentMonth, taskList]);
+
+//   const data = [
+//     { name: 'Work From Home', value: workFromHomeCount },
+//     { name: 'Work From Office', value: workFromOfficeCount }
+//   ];
+
+    const data = {
+        labels: ['Work from Home', 'Work From Office'],
+        datasets: [
+        {
+            data: [workFromHomeCount, workFromOfficeCount],
+            backgroundColor: ['#FF6384', '#36A2EB'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB'],
+        },
+        ],
+    };
 
 
     function getDaysInMonth(month: number, year: number) {
@@ -868,7 +919,7 @@ const EmployeeTaskStatus = () => {
             />
         </div>
         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-            <ApexCharts
+            {/* <ApexCharts
                 options={{
                     chart: {
                         type: 'pie',
@@ -879,7 +930,25 @@ const EmployeeTaskStatus = () => {
                 type="pie"
                 width={600}
                 height={300}
-            />
+            /> */}
+            {/* <PieChart width={400} height={400}>
+                <Pie
+                    data={data}
+                    cx={200}
+                    cy={200}
+                    labelLine={false}
+                    label={true}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                >
+                    {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                </Pie>
+                <Tooltip />
+            </PieChart> */}
+            <Doughnut data={data} options={chartOptions} style={{height:'300px'}}/>
         </div>
     </div>
     </>
