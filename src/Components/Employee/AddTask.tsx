@@ -164,57 +164,57 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
     } else {
         console.log("else-useEffect", storedKeysString);
     }
-}, []);
+  }, []);
 
-useEffect(() => {
-  // Calculate data for the pie chart
-  const taskHours: { [key: string]: number } = {};
-  
-  // Calculate total hours worked
-  let totalHours = 0;
-  filteredTasks.forEach(task => {
-    // Convert totalHours to a number before adding
-    totalHours += parseFloat(task.totalHours) || 0;
-  });
+  useEffect(() => {
+    // Calculate data for the pie chart
+    const taskHours: { [key: string]: number } = {};
+    
+    // Calculate total hours worked
+    let totalHours = 0;
+    filteredTasks.forEach(task => {
+      // Convert totalHours to a number before adding
+      totalHours += parseFloat(task.totalHours) || 0;
+    });
 
-  // Calculate hours for each task and add to the taskHours object
-  filteredTasks.forEach(task => {
-    // Convert totalHours to a number before calculating percentage
-    const taskHoursValue = parseFloat(task.totalHours) || 0;
-    // Check if the task name exists in the taskHours object
-    if (taskHours[task.task]) {
-      // If it exists, add the hours to the existing value
-      taskHours[task.task] += taskHoursValue;
-    } else {
-      // If it doesn't exist, initialize the value with the hours
-      taskHours[task.task] = taskHoursValue;
-    }
-  });
+    // Calculate hours for each task and add to the taskHours object
+    filteredTasks.forEach(task => {
+      // Convert totalHours to a number before calculating percentage
+      const taskHoursValue = parseFloat(task.totalHours) || 0;
+      // Check if the task name exists in the taskHours object
+      if (taskHours[task.task]) {
+        // If it exists, add the hours to the existing value
+        taskHours[task.task] += taskHoursValue;
+      } else {
+        // If it doesn't exist, initialize the value with the hours
+        taskHours[task.task] = taskHoursValue;
+      }
+    });
 
-  // Calculate percentage for each task
-  const taskPercentage: { [key: string]: number } = {};
-  Object.keys(taskHours).forEach(taskName => {
-    taskPercentage[taskName] = (taskHours[taskName] / totalHours) * 100;
-  });
+    // Calculate percentage for each task
+    const taskPercentage: { [key: string]: number } = {};
+    Object.keys(taskHours).forEach(taskName => {
+      taskPercentage[taskName] = (taskHours[taskName] / totalHours) * 100;
+    });
 
-  const labels = Object.keys(taskHours);
-  const data = Object.values(taskPercentage);
+    const labels = Object.keys(taskHours);
+    const data = Object.values(taskPercentage);
 
-  // Update pie chart data
-  setPieChartDataInForm({
-    options: {
-      labels: labels,
-    },
-    series: data,
-  });
-}, [filteredTasks]);
+    // Update pie chart data
+    setPieChartDataInForm({
+      options: {
+        labels: labels,
+      },
+      series: data,
+    });
+  }, [filteredTasks]);
 
-<Chart
-  options={pieChartDataInForm.options}
-  series={pieChartDataInForm.series}
-  type="pie"
-  width="380"
-/>
+  <Chart
+    options={pieChartDataInForm.options}
+    series={pieChartDataInForm.series}
+    type="pie"
+    width="380"
+  />
 
   
   const handleInputChange = (field: keyof Task, value: string) => {
@@ -1269,7 +1269,7 @@ const handleOverallSubmit = () => {
                   <div className='section-addtask' style={{width:'125%'}}>
                     <div className='create-layout-addtask-left  '>
                       <div style={{marginBottom:'10px'}}>
-                        <label style={{color:'#0B4266'}} htmlFor='addTaskID'>Date</label>
+                        <label style={{color:'#0B4266'}} htmlFor='addTaskID'><span style={{color:'red', paddingRight:'5px'}}>*</span>Date</label>
                       </div>
                       {/* <input
                         type="date"
@@ -1308,7 +1308,7 @@ const handleOverallSubmit = () => {
                     </div> */}
                     <div className='create-layout-addtask'>
                       <div>
-                        <label style={{color:'#0B4266'}} htmlFor='task'>Work Location</label>
+                        <label style={{color:'#0B4266'}} htmlFor='task'><span style={{color:'red', paddingRight:'5px'}}>*</span>Work Location</label>
                       </div>
                       <div>
                         <select
@@ -1329,7 +1329,7 @@ const handleOverallSubmit = () => {
                   <div className='section-addtask' style={{width:'125%'}}>
                     <div className='create-layout-addtask'>
                       <div>
-                        <label style={{color:'#0B4266'}} htmlFor='task'>Task</label>
+                        <label style={{color:'#0B4266'}} htmlFor='task'><span style={{color:'red', paddingRight:'5px'}}>*</span>Task</label>
                       </div>
                       <div>
                         <select
@@ -1369,7 +1369,7 @@ const handleOverallSubmit = () => {
                           // </div>
                           <div className='create-layout-addtask'>
                               <div>
-                                <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
+                                <label style={{ color:'#0B4266' }} htmlFor='title'><span style={{color:'red', paddingRight:'5px'}}>*</span>Meeting</label>
                               </div>
                               <div>
                                 <select
@@ -1409,7 +1409,7 @@ const handleOverallSubmit = () => {
                       // </div>
                       <div className='create-layout-addtask'>
                       <div>
-                        <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
+                        <label style={{ color:'#0B4266' }} htmlFor='title'><span style={{color:'red', paddingRight:'5px'}}>*</span>{addTask.task}</label>
                       </div>
                       <div>
                         <select
@@ -1432,7 +1432,7 @@ const handleOverallSubmit = () => {
                   <div className='section-addtask' style={{width:'125%'}}>
                       <div className='create-layout-addtask-left'>
                         <div>
-                          <label htmlFor='startTime'>Start Time</label>
+                          <label htmlFor='startTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>Start Time</label>
                         </div>
                         <TimePicker
                           value={
@@ -1449,7 +1449,7 @@ const handleOverallSubmit = () => {
                       </div>
                       <div className='create-layout-addtask'>
                         <div>
-                          <label style={{color:'#0B4266'}} htmlFor='endTime'>End Time</label>
+                          <label style={{color:'#0B4266'}} htmlFor='endTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>End Time</label>
                         </div>
                         <TimePicker
                           value={
@@ -1470,7 +1470,7 @@ const handleOverallSubmit = () => {
                       
                     <div className='create-layout-addtask-left  '>
                         <div style={{marginBottom:'10px'}}>
-                          <label style={{color:'#0B4266'}} htmlFor='totalHours'>Total Hours</label>
+                          <label style={{color:'#0B4266'}} htmlFor='totalHours'><span style={{color:'red', paddingRight:'5px'}}>*</span>Total Hours</label>
                         </div>
                         <Input
                           placeholder='Enter your Total Hours'
@@ -1481,7 +1481,7 @@ const handleOverallSubmit = () => {
                       </div>
                       <div className='create-layout-addtask-reportingTo  '>
                         <div className='create-layout-reportingTo'>
-                          <label style={{color:'#0B4266'}} htmlFor='reportingTo'>Reporting To</label>
+                          <label style={{color:'#0B4266'}} htmlFor='reportingTo'><span style={{color:'red', paddingRight:'5px'}}>*</span>Reporting To</label>
                         </div>
                         <select
                           id='reportingTo-addtask'
@@ -1500,13 +1500,13 @@ const handleOverallSubmit = () => {
                   <div>
                   <div className='create-layout-description'>
                         <div>
-                          <label style={{color:'#0B4266'}}>Description</label>
+                          <label style={{color:'#0B4266'}}><span style={{color:'red', paddingRight:'5px'}}>*</span>Description</label>
                         </div>
                         <textarea
                           value={addTask.description}
                           onChange={(e) => handleInputChange('description', e.target.value)}
                           className='description-input'
-                          style={{width:'230%'}}
+                          style={{width:'240%'}}
                         />
                   </div>
                   </div>
@@ -1529,7 +1529,7 @@ const handleOverallSubmit = () => {
                 </div>
               </div>
             </div>
-            <div className='button' style={{marginBottom:'10px'}}>
+            <div className='button' style={{marginBottom:'10px', width:'300px'}}>
               <Button  id='cancel-addtask' onClick={handleClearSubmit} style={{width:'7%'}}>
                 Clear
               </Button>

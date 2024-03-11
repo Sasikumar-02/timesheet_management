@@ -156,7 +156,7 @@ const CreateUser: React.FC = () => {
         <div className='section-createuser'>
              <div className='create-layout-addtask'>
                <div>
-                 <label htmlFor='name'>Name</label>
+                 <label htmlFor='name'><span style={{color:'red', paddingRight:'5px'}}>*</span>Name</label>
                </div>
                <select
                   id='name'
@@ -164,7 +164,7 @@ const CreateUser: React.FC = () => {
                   value={user.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                 >
-                  <option value=''>Enter your name</option>
+                  <option value=''><span style={{color:'red', paddingRight:'5px'}}>*</span>Enter your name</option>
                   {nameOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -174,7 +174,7 @@ const CreateUser: React.FC = () => {
               </div>
               <div className='create-layout-addtask'>
                 <div>
-                <label htmlFor='userId'>Employee ID</label>
+                <label htmlFor='userId'><span style={{color:'red', paddingRight:'5px'}}>*</span>Employee ID</label>
                 </div>
                 <Input
                   placeholder='Enter your Employee ID'
@@ -187,7 +187,7 @@ const CreateUser: React.FC = () => {
             <div className='section-createuser'>
               <div className='create-layout-addtask'>
                 <div>
-                <label htmlFor='email'>Email</label>
+                <label htmlFor='email'><span style={{color:'red', paddingRight:'5px'}}>*</span>Email</label>
                 </div>
                 <Input
                   placeholder='Enter your E-mail ID'
@@ -218,7 +218,7 @@ const CreateUser: React.FC = () => {
                 />
               </div>
               <div className='create-layout-addtask'>
-                <label htmlFor='designation' className='text'>
+                <label htmlFor='designation' className='text'><span style={{color:'red', paddingRight:'5px'}}>*</span>
                   Designation
                 </label>
                 <Input
@@ -230,7 +230,7 @@ const CreateUser: React.FC = () => {
               </div>
             </div>
             <div className='create-layout'>
-              <label>Role</label>
+              <label><span style={{color:'red', paddingRight:'5px'}}>*</span>Role</label>
             </div>
             <div>
               <input
@@ -265,7 +265,7 @@ const CreateUser: React.FC = () => {
             {['Team Leader', 'Team Member'].includes(user.role) && (
               <div>
                 <div className='create-layout'>
-                  <label htmlFor='reportingTo'>Reporting To</label>
+                  <label htmlFor='reportingTo'><span style={{color:'red', paddingRight:'5px'}}>*</span>Reporting To</label>
                 </div>
                 <select
                   id='reportingTo'
