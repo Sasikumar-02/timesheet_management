@@ -23,8 +23,6 @@ const ManagerUserDetails = () => {
       userIdsWithTitles.add(task.userId);
     }
   });
-
-  
   
  // Create a Set to store unique user IDs
 const uniqueUserIds = new Set<string>();
