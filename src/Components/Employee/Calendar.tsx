@@ -203,7 +203,7 @@ const Calendar = () => {
         const formattedDate = clickedDate.format('YYYY-MM-DD');
 
         // Navigate to the /addtask route with the date as a query parameter
-        navigate(`/addtask?date=${formattedDate}`, { state: { formattedDate } });
+        navigate(`/employee/addtask?date=${formattedDate}`, { state: { formattedDate } });
     }
   };
 
@@ -223,7 +223,7 @@ const Calendar = () => {
   const currentDate = clickedDateFromLocalStorage ? clickedDateFromLocalStorage : dayjs().startOf('year').format('YYYY-MM-DD');
   return (
     <div>
-      <DashboardLayout>
+      <>
       <div id="calendar-main" style={{width:'97%', margin:'30px 20px 20px 20px', fontFamily:'poppins', fontSize:'14px', cursor:'pointer'}}>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -241,7 +241,7 @@ const Calendar = () => {
           eventClassNames="calendar"
         />
         </div>
-      </DashboardLayout>
+      </>
     </div>
   );
 }

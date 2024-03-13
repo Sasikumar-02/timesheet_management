@@ -14,6 +14,20 @@
   pointer-events: none;
 }
 
+/* .App .ant-btn{
+  width: 100px;
+  height: 30px;
+  background: #0B4266;
+}
+
+.App .ant-btn:hover{
+  width: 100px;
+  height: 30px;
+  background: #0B4266;
+} */
+
+
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

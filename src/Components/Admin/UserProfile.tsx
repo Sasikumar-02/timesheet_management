@@ -29,7 +29,7 @@ const UserProfile: React.FC = () => {
 
   const handleEditClick = () => {
     // Navigate to the /createuser/:userId route with the user data as a parameter
-    navigate(`/createuser/${userId}`, { state: { userData } });
+    navigate(`/hr/createuser/${userId}`, { state: { userData } });
   };
 
   const handleDeleteClick = () => {
@@ -44,7 +44,7 @@ const UserProfile: React.FC = () => {
     message.success('User deleted successfully');
 
     // Navigate back to /userdetails
-    navigate('/userdetails');
+    navigate('/hr/userdetails');
   };
 
   if (!userData) {
@@ -67,11 +67,11 @@ const UserProfile: React.FC = () => {
       const formattedDate = clickedDate.format('YYYY-MM-DD');
   
       // Navigate to the /addtask route with the date as a query parameter
-      navigate(`/addtask?date=${formattedDate}`);
+      navigate(`/employee/addtask?date=${formattedDate}`);
     }
   };
   return (
-    <DashboardLayout>
+    <>
       <p>Admin &gt; Timesheet Management &gt; User Details &gt; User Profile</p>
       <div className='userprofile-main'>
         <div className='userdetails'> 
@@ -149,7 +149,7 @@ const UserProfile: React.FC = () => {
           <h1 className='userprofile-main'>History</h1>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

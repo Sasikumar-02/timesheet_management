@@ -10,6 +10,7 @@ import {
     UpOutlined,
   } from "@ant-design/icons";
 import dayjs from 'dayjs';
+import { Doughnut } from 'react-chartjs-2';
 import Calendar from '../Employee/Calendar'; // Import your Calendar component
 import { useNavigate } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
@@ -97,6 +98,9 @@ const ManagerDashboard = () => {
   const [titleCounts, setTitleCounts] = useState<TitleCount>({});
   const [taskRequestedOn, setTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
+  const [workFromHomeCount, setWorkFromHomeCount] = useState(0);
+  const [workFromOfficeCount, setWorkFromOfficeCount] = useState(0);
+
 
   // Load taskRequestedOn and approveTaskRequestedOn from localStorage on component mount
   useEffect(() => {
@@ -501,10 +505,108 @@ const ManagerDashboard = () => {
         console.log('Reminders sent and stored in localStorage.');
     };
     
+       
+    useEffect(() => {
+        calculateWorkCounts();
+      }, [groupedTasks, filterOption, selectedUserId]);
+    
+      const calculateWorkCounts = () => {
+        let totalWorkFromHome = 0;
+        let totalWorkFromOffice = 0;
+    
+        // Determine the range of dates based on filterOption
+        let startDate: dayjs.Dayjs, endDate: dayjs.Dayjs;
+        if (filterOption === 'Month') {
+          startDate = dayjs().startOf('month');
+          endDate = dayjs().endOf('month');
+        } else if (filterOption === 'Week') {
+          startDate = dayjs().startOf('week');
+          endDate = dayjs().endOf('week');
+        } else {
+          startDate = dayjs();
+          endDate = startDate;
+        }
+        console.log("calculateWorkCounts startDate endDate",startDate,endDate);
+        // Get the userId to filter tasks
+        const userIdToFilter = filters.userId || selectedUserId; // Use selectedUserId if userId is not specified in filters
+        console.log("calculateWorkCounts userIdToFilter",userIdToFilter);
+        if (userIdToFilter && groupedTasks[userIdToFilter]) {
+          // Iterate over months for the selected user
+          console.log("calculateWorkCounts groupedTasks[userIdToFilter]",groupedTasks[userIdToFilter]);
+          Object.values(groupedTasks[userIdToFilter]).forEach((monthTasks) => {
+            // Check if the month matches the current month (if applicable)
+            console.log("calculateWorkCounts monthTasks",monthTasks);
+            if (dayjs(monthTasks.month).isSame(startDate, 'month') || filterOption !== 'Month') {
+              // Iterate over dates for each month
+              Object.keys(monthTasks.tasks).forEach((date) => {
+                // Check if the date is within the range
+                console.log("calculateWorkCounts monthTasks.tasks",monthTasks.tasks);
+                if (
+                  (dayjs(date).isSame(startDate) || dayjs(date).isAfter(startDate)) &&
+                  (dayjs(date).isSame(endDate) || dayjs(date).isBefore(endDate))
+                ) {
+                  // Iterate over tasks for the current date
+                  monthTasks.tasks[date].tasks.forEach((task) => {
+                    if (task.workLocation === 'Work From Home') {
+                      totalWorkFromHome++;
+                    } else if (task.workLocation === 'Work From Office') {
+                      totalWorkFromOffice++;
+                    }
+                  });
+                }
+              });
+            }
+          });
+        } else {
+          Object.values(groupedTasks).forEach((userTasks) => {
+            // Iterate over months for each user
+            Object.values(userTasks).forEach((monthTasks) => {
+               
+              // Check if the month matches the current month (if applicable)
+              if (dayjs(monthTasks.month).isSame(startDate, 'month') || filterOption !== 'Month') {
+                // Iterate over dates for each month
+                Object.keys(monthTasks.tasks).forEach((date) => {
+                    console.log("calculateWorkCounts monthTasks.tasks",monthTasks.tasks);
+                  // Check if the date is within the range
+                  if (
+                    (dayjs(date).isSame(startDate) || dayjs(date).isAfter(startDate)) &&
+                    (dayjs(date).isSame(endDate) || dayjs(date).isBefore(endDate))
+                  ) {
+                    // Iterate over tasks for the current date
+                    monthTasks.tasks[date].tasks.forEach((task) => {
+                      if (task.workLocation === 'Work From Home') {
+                        totalWorkFromHome++;
+                      } else if (task.workLocation === 'Work From Office') {
+                        totalWorkFromOffice++;
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          });
+        }
+        console.log("calculateWorkCounts totalWorkFromHome",totalWorkFromHome);
+        console.log("calculateWorkCounts totalWorkFromOffice",totalWorkFromOffice);
+        setWorkFromHomeCount(totalWorkFromHome);
+        setWorkFromOfficeCount(totalWorkFromOffice);
+      };
+    
+      const data = {
+        labels: ['Work from Home', 'Work From Office'],
+        datasets: [
+          {
+            data: [workFromHomeCount, workFromOfficeCount],
+            backgroundColor: ['#FF6384', '#36A2EB'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB'],
+          },
+        ],
+      };
+    
     
   
     return (
-      <DashboardLayout>
+      <>
           {/* <h1>Manager</h1> */}
 
       <div style={{margin:'30px 0px 0px 0px'}}>
@@ -656,7 +758,7 @@ const ManagerDashboard = () => {
       </div>
         <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
           <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-              <ApexCharts
+              {/* <ApexCharts
                   options={{
                       chart: {
                           type: 'pie',
@@ -667,7 +769,8 @@ const ManagerDashboard = () => {
                   type="pie"
                   width={600}
                   height={300}
-              />
+              /> */}
+              <Doughnut data={data} />
           </div>
           <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
               <ApexCharts
@@ -694,7 +797,7 @@ const ManagerDashboard = () => {
                 </button>
             ))}
         </div>
-      </DashboardLayout>
+      </>
     )
 }
 

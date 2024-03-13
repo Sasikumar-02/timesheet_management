@@ -1232,7 +1232,7 @@ const handleOverallSubmit = () => {
   ]
 
   return (
-    <DashboardLayout>
+    <>
       <div className='createuser-main'>
         <h1>Manager Timesheet</h1>
         <div className='header'>
@@ -1658,7 +1658,7 @@ const handleOverallSubmit = () => {
             </Button>
         </>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 export default ManagerTimeSheet;

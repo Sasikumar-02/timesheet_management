@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
-import { Input, TimePicker, Select, notification, DatePicker, Button, Modal} from 'antd';
+import { Input, TimePicker, Select, notification, DatePicker, Button, Modal, ConfigProvider} from 'antd';
 import { SearchOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOut
 import Dashboard from './Dashboard';
 import { RecentRejected, SelectedKeys, RejectedKeys } from '../Manager/MonthTasks';
 import asset from '../../assets/images/asset.svg';
+import type { ThemeConfig } from "antd";
 export interface DateTask{
   key: string;
   task: Task[];
@@ -58,7 +59,14 @@ type AddTaskProps = {
   approvalRequestsData: Task[];
 };
 
-const AddTask: React.FC<AddTaskProps> = ({ setPieChartData, setApprovalRequestsData }) => {
+const config: ThemeConfig = {
+  token: {
+    colorPrimary: "#0B4266",
+    colorPrimaryBg: "#E7ECF0",
+  },
+};
+
+const AddTask: React.FC = () => {
   const userId = '1234';
   const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
@@ -1085,7 +1093,7 @@ const handleOverallSubmit = () => {
     });
 
     // Navigate to approval requests page
-    navigate('/approvalrequests');
+    //navigate('/manager/approvalrequests');
 };
 
   const columns: ColumnsType<Task> = [
@@ -1235,7 +1243,7 @@ const handleOverallSubmit = () => {
   ]
 
   return (
-    <DashboardLayout>
+    <ConfigProvider theme={config}>
       <div className='createuser-main'>
         <div className='header'>
           <div>
@@ -1279,6 +1287,7 @@ const handleOverallSubmit = () => {
                       <Input
                         type='date'
                         placeholder='Enter your Employee ID'
+                        style={{height:'50%'}}
                         value={currentDate.format('YYYY-MM-DD')} 
                         // value={
                         //   filterOption === 'Month'
@@ -1310,9 +1319,10 @@ const handleOverallSubmit = () => {
                       <div>
                         <label style={{color:'#0B4266'}} htmlFor='task'><span style={{color:'red', paddingRight:'5px'}}>*</span>Work Location</label>
                       </div>
-                      <div>
+                      <div style={{height:'50%'}}>
                         <select
                           id='task'
+                          style={{height:'100%'}}
                           value={addTask.workLocation}
                           onChange={(e) => handleInputChange('workLocation', e.target.value)}
                         >
@@ -1331,9 +1341,10 @@ const handleOverallSubmit = () => {
                       <div>
                         <label style={{color:'#0B4266'}} htmlFor='task'><span style={{color:'red', paddingRight:'5px'}}>*</span>Task</label>
                       </div>
-                      <div>
+                      <div style={{height:'50%'}}>
                         <select
                           id='task'
+                          style={{height:'100%'}}
                           value={addTask.task}
                           onChange={(e) => handleInputChange('task', e.target.value)}
                         >
@@ -1371,9 +1382,10 @@ const handleOverallSubmit = () => {
                               <div>
                                 <label style={{ color:'#0B4266' }} htmlFor='title'><span style={{color:'red', paddingRight:'5px'}}>*</span>Meeting</label>
                               </div>
-                              <div>
+                              <div style={{height:'50%'}}>
                                 <select
                                   id='task'
+                                  style={{height:'100%'}}
                                   value={addTask.title}
                                   onChange={(e) => handleInputChange('title', e.target.value)}
                                 >
@@ -1411,9 +1423,10 @@ const handleOverallSubmit = () => {
                       <div>
                         <label style={{ color:'#0B4266' }} htmlFor='title'><span style={{color:'red', paddingRight:'5px'}}>*</span>{addTask.task}</label>
                       </div>
-                      <div>
+                      <div style={{height:'50%'}}>
                         <select
                           id='task'
+                          style={{height:'100%'}}
                           value={addTask.title}
                           onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
                         >
@@ -1429,12 +1442,13 @@ const handleOverallSubmit = () => {
 
                   </div>
                   
-                  <div className='section-addtask' style={{width:'125%'}}>
+                  <div className='section-addtask' style={{width:'125%',height: '110px'}}>
                       <div className='create-layout-addtask-left'>
                         <div>
                           <label htmlFor='startTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>Start Time</label>
                         </div>
                         <TimePicker
+                          style={{height:'40%'}}
                           value={
                             addTask.startTime
                               ? dayjs(addTask.startTime, 'hh:mm A') // Convert to dayjs here
@@ -1452,6 +1466,7 @@ const handleOverallSubmit = () => {
                           <label style={{color:'#0B4266'}} htmlFor='endTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>End Time</label>
                         </div>
                         <TimePicker
+                          style={{height:'40%'}}
                           value={
                             addTask.endTime
                               ? dayjs(addTask.endTime, 'HH:mm A') // Convert to dayjs here
@@ -1466,7 +1481,7 @@ const handleOverallSubmit = () => {
                         />
                       </div>
                   </div>
-                  <div className='section-addtask' style={{width:'125%'}}>
+                  <div className='section-addtask' style={{width:'125%', marginBottom:'30px'}}>
                       
                     <div className='create-layout-addtask-left  '>
                         <div style={{marginBottom:'10px'}}>
@@ -1474,6 +1489,7 @@ const handleOverallSubmit = () => {
                         </div>
                         <Input
                           placeholder='Enter your Total Hours'
+                          style={{height:'65%'}}
                           value={addTask.totalHours}
                           onChange={(e) => handleInputChange('totalHours', e.target.value)}
                           
@@ -1485,6 +1501,7 @@ const handleOverallSubmit = () => {
                         </div>
                         <select
                           id='reportingTo-addtask'
+                          style={{height:'60%'}}
                           value={addTask.reportingTo}
                           onChange={(e) => handleInputChange('reportingTo', e.target.value)}
                         >
@@ -1660,7 +1677,7 @@ const handleOverallSubmit = () => {
             </Button>
         </>
       </div>
-    </DashboardLayout>
+    </ConfigProvider>
   );
 };
 export default AddTask;

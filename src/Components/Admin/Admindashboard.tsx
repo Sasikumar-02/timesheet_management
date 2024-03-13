@@ -384,7 +384,7 @@ const AdminDashboard = () => {
         if(nextDate.isAfter(dayjs(), 'day')){
           notification.warning({
             message: 'Warning',
-            description: 'Cannot navigate to future weeks.',
+            description: 'Cannot navigate to future date.',
           });
           return;
         }
@@ -504,7 +504,7 @@ const AdminDashboard = () => {
     
   
     return (
-      <DashboardLayout>
+      <>
           <h1>Admin</h1>
 
       <div style={{margin:'30px 0px 0px 0px'}}>
@@ -694,7 +694,7 @@ const AdminDashboard = () => {
                 </button>
             ))}
         </div>
-      </DashboardLayout>
+      </>
     )
 }
 

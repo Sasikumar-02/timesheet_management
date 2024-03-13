@@ -1132,7 +1132,7 @@ const MonthTasks: React.FC = () => {
 
     return (
         <div id="dashboardLayout" className='flex gap-5'>
-            <DashboardLayout>
+            <>
                     <div style={{display:'flex', justifyContent:'space-between'}}>
                         <div style={{display:'flex', alignItems:'flex-start', margin:'10px 20px'}}>
                             <div>
@@ -1247,7 +1247,7 @@ const MonthTasks: React.FC = () => {
                         </Modal>
                     </div> 
                 
-            </DashboardLayout>
+            </>
         </div>
 
     )

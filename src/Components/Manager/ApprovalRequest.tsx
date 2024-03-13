@@ -1071,7 +1071,7 @@ useEffect(() => {
     };
      
   return (
-    <DashboardLayout>
+    <>
       <div>
           <Table
             rowSelection={{
@@ -1104,7 +1104,7 @@ useEffect(() => {
                 setMonthTasks(tasksForClickedMonth);
                 // Pass TaskObject and formattedMonth to handleRowClick
                 //handleRowClick(tasksObject, formattedMonth, event);
-                navigate(`/monthtasks?formattedMonth=${formattedMonth}&userId=${userId}`, {state: {
+                navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${userId}`, {state: {
                   formattedMonth: monthYear, //formattedMonth
                   userId: userId,
                   tasksObject: tasksObject,
@@ -1262,7 +1262,7 @@ useEffect(() => {
           </Modal>
         </div>
       </Modal>
-    </DashboardLayout>
+    </>
   );
   
 }

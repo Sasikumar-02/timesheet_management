@@ -169,6 +169,10 @@
   box-shadow: 0 0 11px rgba(33,33,33,.2); 
 }
 
+/* .ant-input .css-dev-only-do-not-override-1qhpsh8 .ant-input-outlined{
+  height: 50%;
+} */
+
 #cancel-addtask{
   width: 100%;
   height: 100%;

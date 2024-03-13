@@ -58,7 +58,7 @@ const dataSource = Object.values(groupedTasks).flatMap((userTasks) => {
 
 const handleRowClick = (userId:string) => {
   // Navigate to the dashboard and send userId as a prop
-  navigate('/dashboard', { state: { userId: userId } });
+  navigate('/employee/dashboard', { state: { userId: userId } });
 };
 
   // Define columns for the table
@@ -103,7 +103,7 @@ const handleRowClick = (userId:string) => {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div>{title}</div>
       
         <Table
@@ -124,7 +124,7 @@ const handleRowClick = (userId:string) => {
     
 
 
-    </DashboardLayout>
+    </>
   );
 };
 

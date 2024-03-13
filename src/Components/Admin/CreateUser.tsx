@@ -1,8 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import { Input, notification } from 'antd';
+import { ConfigProvider, Input, notification } from 'antd';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
+import api from '../../Api/Api-Service';
 // import { User } from './CreateUser';
 import DashboardLayout from '../Dashboard/Layout';
+import { ThemeConfig } from 'antd/lib';
+const config: ThemeConfig = {
+  token: {
+    colorPrimary: "#0B4266",
+    colorPrimaryBg: "#E7ECF0",
+  },
+};
+
+interface UserDetails {
+  profileUrl: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  personalEmail: string;
+  email: string;
+  countryCode: string;
+  mobileNumber: string;
+  gender: string;
+  bloodGroup: string;
+  dateOfBirth: string;
+  alternateMobileNumber: string | null;
+  alternateMobileNumberCountryCode: string | null;
+  emergencyContactPersonName: string | null;
+  emergencyContactMobileNumber: string | null;
+  emergencyContactMobileNumberCountryCode: string | null;
+  department: string | null;
+  role: string;
+  designation: string;
+  employmentType: string;
+  shiftTiming: string;
+  branch: string;
+  currencyCode: string;
+  salary: string;
+  dateOfJoining: string;
+  dateOfLeaving: string | null;
+  lastLogin: string;
+  offboardingReason: string | null;
+  finalInteractionPdfName: string | null;
+  finalInteractionPdfUrl: string | null;
+  revokeReason: string | null;
+  reportingManagerId: string;
+  reportingMangerName: string;
+  reportingManagerEmail: string;
+  skills: string[];
+  currentAddress: {
+      addressLine1: string;
+      addressLine2: string | null;
+      landmark: string | null;
+      district: string;
+      zipcode: string;
+      state: string;
+      nationality: string;
+  } | null;
+  permanentAddress: {
+      addressLine1: string;
+      addressLine2: string | null;
+      landmark: string | null;
+      district: string;
+      zipcode: string;
+      state: string;
+      nationality: string;
+  } | null;
+  userProjects: any[]; // Define the type of userProjects based on the actual structure
+  active: boolean;
+  willingToTravel: boolean;
+  reportingManager: boolean;
+}
+
 export interface User {
     [key: string]: string | number | undefined;
     slNo?: number;
@@ -18,8 +87,41 @@ const CreateUser: React.FC = () => {
   const { state: editUserData } = useLocation();
   const isEdit = Boolean(editUserData);
   const navigate = useNavigate();
-  const reportingOptions = ['ManagerA', 'ManagerB', 'ManagerC']; // Replace with dynamic data if needed
-  const nameOptions = ['Sasi Kumar M', 'Gokul R', 'Ashif', 'Vetrivel'];
+ // const nameOptions = ['Sasi Kumar M', 'Gokul R', 'Ashif', 'Vetrivel'];
+ const [employees, setEmployees] = useState<UserDetails[]>([]);
+ const reportingOptions = employees
+ .filter(employee => employee.reportingManager)
+ .map(employee => `${employee.firstName} ${employee.lastName}`);
+
+ const nameOptions = employees
+ .map(employee => `${employee.firstName} ${employee.lastName}`);
+  
+ 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await api.get(`${process.env.REACT_APP_API_KEY}/api/v1/admin/employee-list`);
+        if (response.status !== 200) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = response.data.response.data;
+        console.log('Fetched data:', data);
+        setEmployees(data); // Set fetched data to state
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData(); // Call the fetchData function
+  }, []); // Empty dependency array to run effect only once on mount
+  // const nameOptions = employees.map((employee) => {
+  //   return {
+  //     value: employee.userId, // Assuming employee ID can uniquely identify each employee
+  //     label: `${employee.firstName} ${employee.lastName}`, // Concatenating firstName and lastName
+  //   };
+  // });
+
   
   const [user, setUser] = useState<User>({
     name: '',
@@ -62,7 +164,7 @@ const CreateUser: React.FC = () => {
     });
 
     // Redirect back to user details
-    navigate('/userdetails');
+    navigate('/hr/userdetails');
   };
 
   const handleSubmit = () => {
@@ -147,31 +249,33 @@ const CreateUser: React.FC = () => {
   //   return storedUsers.length + 1;
   // };
 
+console.log("employees data", employees);
   return (
-    <DashboardLayout>
+    <ConfigProvider theme={config}>
       <p>Admin &gt; Timesheet Management &gt; {isEdit ? 'Edit User' : 'Create User'}</p>
       <div className='createuser-main'>
         <h1>{isEdit ? 'Edit User' : 'Create User'}</h1>
         <form>
         <div className='section-createuser'>
-             <div className='create-layout-addtask'>
-               <div>
-                 <label htmlFor='name'><span style={{color:'red', paddingRight:'5px'}}>*</span>Name</label>
-               </div>
-               <select
-                  id='name'
-                  style={{textAlign:'left'}}
-                  value={user.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                >
-                  <option value=''><span style={{color:'red', paddingRight:'5px'}}>*</span>Enter your name</option>
-                  {nameOptions.map((option) => (
+            <div className='create-layout-addtask'>
+              <div>
+                <label htmlFor='name'><span style={{color:'red', paddingRight:'5px'}}>*</span>Name</label>
+              </div>
+              <select
+                id='name'
+                style={{textAlign:'left'}}
+                value={user.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+              >
+                <option value=''>Enter your name</option>
+                {nameOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
                   ))}
-                </select>
-              </div>
+              </select>
+            </div>
+
               <div className='create-layout-addtask'>
                 <div>
                 <label htmlFor='userId'><span style={{color:'red', paddingRight:'5px'}}>*</span>Employee ID</label>
@@ -237,19 +341,19 @@ const CreateUser: React.FC = () => {
                 type='radio'
                 className='role-input'
                 value='Manager'
-                checked={user.role === 'Manager'}
-                onChange={() => handleInputChange('role', 'Manager')}
+                checked={user.role === 'Human Resource'}
+                onChange={() => handleInputChange('role', 'Human Resource')}
               />
-              <label>Manager</label>
+              <label>Human Resource</label>
               <label>
                 <input
                   type='radio'
                   className='role-input'
                   value='Team Leader'
-                  checked={user.role === 'Team Leader'}
-                  onChange={() => handleInputChange('role', 'Team Leader')}
+                  checked={user.role === 'Manager'}
+                  onChange={() => handleInputChange('role', 'Manager')}
                 />
-                Team Leader
+                Manager
               </label>
               <label>
                 <input
@@ -262,7 +366,7 @@ const CreateUser: React.FC = () => {
                 Team Member
               </label>
             </div>
-            {['Team Leader', 'Team Member'].includes(user.role) && (
+            {['Manager', 'Team Member'].includes(user.role) && (
               <div>
                 <div className='create-layout'>
                   <label htmlFor='reportingTo'><span style={{color:'red', paddingRight:'5px'}}>*</span>Reporting To</label>
@@ -291,7 +395,7 @@ const CreateUser: React.FC = () => {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </ConfigProvider>
   );
 };
 

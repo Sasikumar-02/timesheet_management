@@ -37,56 +37,56 @@ const Sidebar: React.FC = () => {
       });
     };
 
-    const userEmail = localStorage.getItem('email');
+    const userEmail = localStorage.getItem('role');
     const renderMenuItems = () => {
       switch (userEmail) {
-        case 'sasikumarmurugan202@gmail.com':
+        case 'ROLE_EMPLOYEE':
           return (
             <>
               <Menu.Item
                 id="menu"
                 key="1"
                 icon={<HomeFilled />}
-                className={Location.pathname === "/dashboard" ? "active" : ""}
+                className={Location.pathname === "/employee/dashboard" ? "active" : ""}
               >
-                <Link to="/dashboard">Dashboard</Link>
+                <Link to="/employee/dashboard">Dashboard</Link>
               </Menu.Item>
               {/* <Menu.Item
                 id="menu"
                 key="4"
                 icon={<AppstoreAddOutlined />}
-                className={Location.pathname === "/calendar" ? "active" : ""}
+                className={Location.pathname === "/employee/calendar" ? "active" : ""}
               >
-                <Link to="/calendar">Calendar</Link>
+                <Link to="/employee/calendar">Calendar</Link>
               </Menu.Item> */}
               <Menu.Item
                 id="menu"
                 key="5"
                 icon={<ScheduleSendOutlined />}
-                className={Location.pathname === "/addtask" ? "active" : ""}
+                className={Location.pathname === "/employee/addtask" ? "active" : ""}
               >
-                <Link to="/addtask">Add Task</Link>
+                <Link to="/employee/addtask">Add Task</Link>
               </Menu.Item>
             </>
           );
-        case 'sasikumarmurugan232@gmail.com':
+        case 'ROLE_HR':
           return (
             <>
                <Menu.Item id="menu" key="1" icon={<HomeFilled />}
                 className={Location.pathname === "/admin/dashboard" ? "active" : ""}>
-                <Link to="/admin/dashboard">Dashboard</Link>
+                <Link to="/hr/dashboard">Dashboard</Link>
               </Menu.Item>
               {/* <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/calendar" ? "active" : ""}>
                 <Link to="/calendar">Calendar</Link>
               </Menu.Item> */}
               <Menu.Item id="menu" key="5" icon={<UserAddOutlined />}
-                className={Location.pathname === "/createuser" ? "active" : ""}>
-                <Link to="/createuser">Create User</Link>
+                className={Location.pathname === "/admin/createuser" ? "active" : ""}>
+                <Link to="/hr/createuser">Create User</Link>
               </Menu.Item>
               <Menu.Item id="menu" key="5" icon={<UsergroupAddOutlined />}
-                className={Location.pathname === "/userdetails" ? "active" : ""}>
-                <Link to="/userdetails">User Details</Link>
+                className={Location.pathname === "/admin/userdetails" ? "active" : ""}>
+                <Link to="/hr/userdetails">User Details</Link>
               </Menu.Item>
               {/* <Menu.Item id="menu" key="5" icon={<UserAddOutlined />}
                 className={Location.pathname === "/userprofile" ? "active" : ""}>
@@ -94,20 +94,20 @@ const Sidebar: React.FC = () => {
               </Menu.Item> */}
             </>
           );
-        case 'sasikumarmurugan02@gmail.com':
+        case 'ROLE_MANAGER':
           return (
             <>
               <Menu.Item id="menu" key="1" icon={<HomeFilled />}
-                className={Location.pathname === "/managerdashboard" ? "active" : ""}>
-                <Link to="/managerdashboard">Dashboard</Link>
+                className={Location.pathname === "/manager/dashboard" ? "active" : ""}>
+                <Link to="/manager/dashboard">Dashboard</Link>
               </Menu.Item>
               {/* <Menu.Item id="menu" key="4" icon={<AppstoreAddOutlined />}
                 className={Location.pathname === "/calendar" ? "active" : ""}>
                 <Link to="/calendar">Calendar</Link>
               </Menu.Item> */}
               <Menu.Item id="menu" key="4" icon={<PullRequestOutlined />}
-                className={Location.pathname === "/approvalrequests" ? "active" : ""}>
-                <Link to="/approvalrequests">Requests  </Link>
+                className={Location.pathname === "/manager/approvalrequests" ? "active" : ""}>
+                <Link to="/manager/approvalrequest">Requests  </Link>
               </Menu.Item>
               <Menu.Item id="menu" key="4" icon={<ScheduleOutlined />}
                 className={Location.pathname === "/manager/timesheet" ? "active" : ""}>

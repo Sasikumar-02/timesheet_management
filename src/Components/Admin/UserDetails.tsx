@@ -37,6 +37,7 @@ import {
   import { ColumnsType } from "antd/es/table";
 import DashboardLayout from '../Dashboard/Layout';
   import '../Styles/Login.css';
+  import { ThemeConfig } from 'antd/lib';
   const { Option } = Select;
   moment.locale("en-in");
 
@@ -58,6 +59,12 @@ import DashboardLayout from '../Dashboard/Layout';
     return Array.from(uniqueValues);
   }
 
+  const config: ThemeConfig = {
+    token: {
+      colorPrimary: "#0B4266",
+      colorPrimaryBg: "#E7ECF0",
+    },
+  };
 
 const UserDetails:React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -75,6 +82,7 @@ const UserDetails:React.FC = () => {
     designation: null,
   };
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [selectedDesignation, setSelectedDesignation]=useState<string | null>(null);
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [filters, setFilters] = useState(initialFilters);
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -328,6 +336,7 @@ const UserDetails:React.FC = () => {
     setSelectedRows([]);
     setIsFilterActive(false);
     setSelectedRole(null);
+    setSelectedDesignation(null);
   };
   
   const exportToExcel = () => {
@@ -354,6 +363,7 @@ const UserDetails:React.FC = () => {
       <Menu.Item key="all">Export All</Menu.Item>
     </Menu>
   );
+
   const handleExportOption = (key: string) => {
     if (key === 'all' || selectedEmployeeDataForExport.length === 0) {
       // Notify if no rows are selected
@@ -562,8 +572,6 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       reader.readAsArrayBuffer(file);
     });
   };
-  
-
 
   const filterOptions = (
     <>
@@ -622,8 +630,12 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               showSearch
               style={{ width: 200, marginRight: 8, height:40}}
               placeholder={placeholderValues.designation}
-              onChange={(value) => handleFilterChange("designation", value)}
-              value={filters.designation !== null ? filters.designation : []}
+              onChange={(value) =>{
+               handleFilterChange("designation", value)
+               setSelectedDesignation(value);
+              }
+              }
+              value={selectedDesignation !== null ? selectedDesignation : undefined}
               virtual
               listHeight={150}
             >
@@ -694,6 +706,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       
     </>
   );
+
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
     const selectedRowKeysString = selectedRowKeys
       .filter((key) => key !== undefined && key!==null)  // Filter out undefined values
@@ -710,7 +723,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   
   const handleRowClick = (record: User, index: number) => {
     if (!viewModalVisible) {
-      const userPath = `/userprofile/${record.userId}`;
+      const userPath = `/hr/userprofile/${record.userId}`;
     // Navigate to the user profile page
     navigate(userPath);
     }
@@ -750,9 +763,8 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleCreateUserClick = () => {
     // Navigate to the "/createuser" route
-    navigate('/createuser');
+    navigate('/hr/createuser');
   };
-
 
   // Remove the existing paginationOptions object
 
@@ -763,12 +775,12 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     fetchData(page, pageSize || 50);
   };
   
-
 // const handlePageSizeChange = (current: number, size: number) => {
 //   setCurrentPage(1);  // Reset to the first page when changing pageSize
 //   setPageSize(size);
 //   fetchData(1, size);
 // };
+
 const handlePageSizeChange = (current: number, size: number) => {
   console.log("handlePageSizeChange", current, size);
     const newPageSize = size === 50 ? size : Number(size);
@@ -779,6 +791,7 @@ const handlePageSizeChange = (current: number, size: number) => {
   
     fetchData(newPage, newPageSize);
   };
+
 const paginationOptions: any = {
   total: totalItemCount,
   current: currentPage,
@@ -869,8 +882,9 @@ const paginationOptions: any = {
     //   ),
     // },
   ];
+  
   return (
-    <DashboardLayout>
+    <ConfigProvider theme={config}>
       <p>Admin &gt; Timesheet Management &gt; User Details</p>
       <div className='createuser-main'>
         <div className='userdetails'> 
@@ -902,7 +916,7 @@ const paginationOptions: any = {
         <Pagination {...paginationOptions} style={{ margin: '10px 20px ', textAlign: 'right' }} />
         </>
     </div>
-    </DashboardLayout>
+    </ConfigProvider>
   );
 };
 

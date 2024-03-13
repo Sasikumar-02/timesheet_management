@@ -507,7 +507,7 @@ const EmployeeTaskStatus = () => {
         // Store the clickedDate in localStorage
         localStorage.setItem('clickedDate', clickedDate);
         
-        navigate(`/calendar?month=${month}&year=${year}&status=${status}`);
+        navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`);
     };
     
     
@@ -607,7 +607,7 @@ const EmployeeTaskStatus = () => {
           if(nextDate.isAfter(dayjs(), 'day')){
             notification.warning({
               message: 'Warning',
-              description: 'Cannot navigate to future weeks.',
+              description: 'Cannot navigate to future date.',
             });
             return;
           }
