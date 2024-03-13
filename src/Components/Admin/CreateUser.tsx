@@ -12,66 +12,6 @@ const config: ThemeConfig = {
   },
 };
 
-interface UserDetails {
-  profileUrl: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
-  personalEmail: string;
-  email: string;
-  countryCode: string;
-  mobileNumber: string;
-  gender: string;
-  bloodGroup: string;
-  dateOfBirth: string;
-  alternateMobileNumber: string | null;
-  alternateMobileNumberCountryCode: string | null;
-  emergencyContactPersonName: string | null;
-  emergencyContactMobileNumber: string | null;
-  emergencyContactMobileNumberCountryCode: string | null;
-  department: string | null;
-  role: string;
-  designation: string;
-  employmentType: string;
-  shiftTiming: string;
-  branch: string;
-  currencyCode: string;
-  salary: string;
-  dateOfJoining: string;
-  dateOfLeaving: string | null;
-  lastLogin: string;
-  offboardingReason: string | null;
-  finalInteractionPdfName: string | null;
-  finalInteractionPdfUrl: string | null;
-  revokeReason: string | null;
-  reportingManagerId: string;
-  reportingMangerName: string;
-  reportingManagerEmail: string;
-  skills: string[];
-  currentAddress: {
-      addressLine1: string;
-      addressLine2: string | null;
-      landmark: string | null;
-      district: string;
-      zipcode: string;
-      state: string;
-      nationality: string;
-  } | null;
-  permanentAddress: {
-      addressLine1: string;
-      addressLine2: string | null;
-      landmark: string | null;
-      district: string;
-      zipcode: string;
-      state: string;
-      nationality: string;
-  } | null;
-  userProjects: any[]; // Define the type of userProjects based on the actual structure
-  active: boolean;
-  willingToTravel: boolean;
-  reportingManager: boolean;
-}
-
 export interface User {
     [key: string]: string | number | undefined;
     slNo?: number;
@@ -88,10 +28,13 @@ const CreateUser: React.FC = () => {
   const isEdit = Boolean(editUserData);
   const navigate = useNavigate();
  // const nameOptions = ['Sasi Kumar M', 'Gokul R', 'Ashif', 'Vetrivel'];
- const [employees, setEmployees] = useState<UserDetails[]>([]);
- const reportingOptions = employees
- .filter(employee => employee.reportingManager)
- .map(employee => `${employee.firstName} ${employee.lastName}`);
+ const [employees, setEmployees] = useState<any[]>([]);
+ const [managers, setManagers] = useState<any[]>([]);
+//  const reportingOptions = employees
+//  .filter(employee => employee.reportingManager)
+//  .map(employee => `${employee.firstName} ${employee.lastName}`);
+
+const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager.lastName}`)
 
  const nameOptions = employees
  .map(employee => `${employee.firstName} ${employee.lastName}`);
@@ -115,12 +58,24 @@ const CreateUser: React.FC = () => {
 
     fetchData(); // Call the fetchData function
   }, []); // Empty dependency array to run effect only once on mount
-  // const nameOptions = employees.map((employee) => {
-  //   return {
-  //     value: employee.userId, // Assuming employee ID can uniquely identify each employee
-  //     label: `${employee.firstName} ${employee.lastName}`, // Concatenating firstName and lastName
-  //   };
-  // });
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await api.get(`${process.env.REACT_APP_API_KEY}/api/v1/admin/fetch-manager-list`);
+        if (response.status !== 200) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = response.data.response.data;
+        console.log('Fetched data:', data);
+        setManagers(data); // Set fetched data to state
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData(); // Call the fetchData function
+  }, []);
 
   
   const [user, setUser] = useState<User>({
