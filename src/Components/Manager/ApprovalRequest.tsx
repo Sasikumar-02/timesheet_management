@@ -120,24 +120,24 @@ const ApprovalRequest:React.FC = () => {
   const [approvalRequests, setApprovalRequests] = useState<DateTask[]>([]);
   const [monthTasks, setMonthTasks] = useState<TaskObject[]>([]);
   useEffect(() => {
-    // Retrieve approvalRequestsData from local storage
-    const storedData = localStorage.getItem('approvalRequestedData');
-    console.log("approvalRequests", storedData);
-    if (storedData) {
-        const approvalRequestsData: { [key: string]: Task[] } = JSON.parse(storedData);
-        console.log("approvalRequests", approvalRequestsData);
+      // Retrieve approvalRequestsData from local storage
+      const storedData = localStorage.getItem('approvalRequestedData');
+      console.log("approvalRequests", storedData);
+      if (storedData) {
+          const approvalRequestsData: { [key: string]: Task[] } = JSON.parse(storedData);
+          console.log("approvalRequests", approvalRequestsData);
 
-        // Convert the object to an array of DateTask objects
-        const dateTasks: DateTask[] = Object.keys(approvalRequestsData).map(key => ({
-            key: key,
-            task: approvalRequestsData[key]
-        }));
-        console.log("approvalRequests-datetasks", dateTasks);
+          // Convert the object to an array of DateTask objects
+          const dateTasks: DateTask[] = Object.keys(approvalRequestsData).map(key => ({
+              key: key,
+              task: approvalRequestsData[key]
+          }));
+          console.log("approvalRequests-datetasks", dateTasks);
 
-        setApprovalRequests(dateTasks); // Update the state with fetched data
-    }
-    console.log("approvalRequests-approvalrequests", approvalRequests);
-}, []); // Fetch data only once on component mount
+          setApprovalRequests(dateTasks); // Update the state with fetched data
+      }
+      console.log("approvalRequests-approvalrequests", approvalRequests);
+  }, []); // Fetch data only once on component mount
 
   useEffect(() => {
         const storedKeysString: string | null = localStorage.getItem('selectedKeys');
@@ -152,9 +152,9 @@ const ApprovalRequest:React.FC = () => {
         } else {
             console.log("else-useEffect", storedKeysString);
         }
-    }, []);
+  }, []);
 
-    useEffect(() => {
+  useEffect(() => {
       const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
       if (storedKeysString !== null) {
           const storedKeys: RejectedKeys = JSON.parse(storedKeysString);
@@ -175,40 +175,40 @@ const ApprovalRequest:React.FC = () => {
         // Process approvalRequests data
         handleGroupedTasks(approvalRequests);
     }
-}, [approvalRequests]);
+  }, [approvalRequests]);
 
-useEffect(() => {
-  const storedData = localStorage.getItem('groupedTasks');
-  if (storedData && (selectedKeys.length > 0 || rejectedKeys.length>0)) {
-    const parsedData: UserGroupedTask = JSON.parse(storedData);
-    const updatedData = Object.keys(parsedData).reduce((acc: UserGroupedTask, userId: string) => {
-      const userData = parsedData[userId];
-      
-      // Check if userData is not null or undefined
-      if (userData) {
-        const filteredSetGroupedTasks: SetGroupedTasks = {};
-        Object.keys(userData).forEach((monthKey: string) => {
-          const monthData = userData[monthKey];
-          const filteredTasks: TaskObject = {};
-          Object.keys(monthData.tasks).forEach((dateKey: string) => {
-            if (!selectedKeys.includes(dateKey) && !rejectedKeys.some((rejected) => rejected.date === dateKey)) {
-              filteredTasks[dateKey] = monthData.tasks[dateKey];
+  useEffect(() => {
+    const storedData = localStorage.getItem('groupedTasks');
+    if (storedData && (selectedKeys.length > 0 || rejectedKeys.length>0)) {
+      const parsedData: UserGroupedTask = JSON.parse(storedData);
+      const updatedData = Object.keys(parsedData).reduce((acc: UserGroupedTask, userId: string) => {
+        const userData = parsedData[userId];
+        
+        // Check if userData is not null or undefined
+        if (userData) {
+          const filteredSetGroupedTasks: SetGroupedTasks = {};
+          Object.keys(userData).forEach((monthKey: string) => {
+            const monthData = userData[monthKey];
+            const filteredTasks: TaskObject = {};
+            Object.keys(monthData.tasks).forEach((dateKey: string) => {
+              if (!selectedKeys.includes(dateKey) && !rejectedKeys.some((rejected) => rejected.date === dateKey)) {
+                filteredTasks[dateKey] = monthData.tasks[dateKey];
+              }
+            });
+            if (Object.keys(filteredTasks).length > 0) {
+              filteredSetGroupedTasks[monthKey] = { ...monthData, tasks: filteredTasks };
             }
           });
-          if (Object.keys(filteredTasks).length > 0) {
-            filteredSetGroupedTasks[monthKey] = { ...monthData, tasks: filteredTasks };
+          if (Object.keys(filteredSetGroupedTasks).length > 0) {
+            acc[userId] = filteredSetGroupedTasks;
           }
-        });
-        if (Object.keys(filteredSetGroupedTasks).length > 0) {
-          acc[userId] = filteredSetGroupedTasks;
         }
-      }
 
-      return acc;
-    }, {});
-    setGroupedTasks(updatedData);
-  }
-}, [selectedKeys, rejectedKeys]);
+        return acc;
+      }, {});
+      setGroupedTasks(updatedData);
+    }
+  }, [selectedKeys, rejectedKeys]);
 
 
   const handleReject = () => {
@@ -228,37 +228,6 @@ useEffect(() => {
     console.log('Comments:', comments);
     setCommentVisible(false);
   };
-
-//   const handleApprove = () => {
-//     // Filter out the selected row from the groupedTasks state
-//     const updatedGroupedTasks = { ...groupedTasks };
-//     console.log("handleApprove", updatedGroupedTasks);
-//     // Iterate through selected rows
-//     selectedInnerRows.forEach(rowKey => {
-//         // Check if the rowKey exists in updatedGroupedTasks and if its tasks property is defined
-//         if (updatedGroupedTasks[rowKey]?.tasks) {
-//             const tasks = updatedGroupedTasks[rowKey].tasks;
-//             // Iterate through tasks for each date
-//             Object.values(tasks).forEach(dateTasks => {
-//                 // Iterate through individual tasks
-//                 dateTasks.tasks.forEach(task => {
-//                     // Add a special CSS class or inline style to change the background color to green
-//                     (task as Task & { backgroundColor?: string }).backgroundColor = 'green'; // Adjust this to your styling needs
-//                 });
-//             });
-//         }
-//     });
-//     console.log("updatedGroupedTaks", updatedGroupedTasks);
-//     // Update the selectedInnerRows array to remove the approved row
-//     setSelectedInnerRows([]);
-
-//     // Close the modal
-//     setModalVisible(false);
-
-//     // Update the state with the modified groupedTasks
-//     setGroupedTasks(updatedGroupedTasks);
-// };
-
   
   function getDaysInMonth(month: number, year: number) {
     // month is 0-based in JavaScript
@@ -331,368 +300,162 @@ useEffect(() => {
     setApprovalRequests([]);
   };
   
-
-
-  //   useEffect(() => {
-  //     const storedData = localStorage.getItem('groupedTasks');
-    
-  //     if (storedData && selectedKeys.length > 0) {
-  //         const parsedData: UserGroupedTask = JSON.parse(storedData);
-          
-  //         const updatedData = Object.keys(parsedData).reduce((acc: UserGroupedTask, userId: string) => {
-  //             const userGroupedTasks = parsedData[userId];
-              
-  //             const updatedUserGroupedTasks: SetGroupedTasks = Object.keys(userGroupedTasks).reduce((userAcc: SetGroupedTasks, monthKey: string) => {
-  //                 const monthData = userGroupedTasks[monthKey];
-  //                 const filteredTasks: TaskObject = {};
-
-  //                 Object.keys(monthData.tasks).forEach(dateKey => {
-  //                     if (!selectedKeys.includes(dateKey) && !rejectedKeys.some(rejected => rejected.date === dateKey)) {
-  //                         filteredTasks[dateKey] = monthData.tasks[dateKey];
-  //                     }
-  //                 });
-
-  //                 if (Object.keys(filteredTasks).length > 0) {
-  //                     userAcc[monthKey] = { ...monthData, tasks: filteredTasks };
-  //                 }
-                  
-  //                 return userAcc;
-  //             }, {});
-
-  //             if (Object.keys(updatedUserGroupedTasks).length > 0) {
-  //                 acc[userId] = updatedUserGroupedTasks;
-  //             }
-              
-  //             return acc;
-  //         }, {});
-
-  //         setGroupedTasks(updatedData);
-  //     }
-  // }, [selectedKeys, rejectedKeys]);
-
-  
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
     console.log("handleRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
     setSelectedRows(selectedRowKeys as string[]);
   };
 
-// const handleInnerRowSelection = (     
-//   selectedRowKeys: React.Key[],
-//   selectedRows: TaskObject[],
-//   tasksForClickedMonth: TaskObject[]
-// ) => {
-//   // Extracting keys from the tasksForClickedMonth array
-//   const taskKeys = tasksForClickedMonth.flatMap(task => Object.keys(task));
-  
-//   console.log("taskkeys",taskKeys);
-//   setSelectedInnerRows(taskKeys as string[]); // Assuming selectedRowKeys are string keys
-//   console.log("handleInnerRowSelection tasksForClickedMonth", tasksForClickedMonth);
-// };
 
-const rowSelection = {
-  onChange: (selectedRowKeys: React.Key[], selectedRows: TaskObject[]) => {
-    console.log('selectedRowKeys', selectedRowKeys, 'selectedRows: ', selectedRows);
-    setSelectedInnerRows(selectedRowKeys as string[]);
-    console.log(selectedInnerRows);
-  },
-  getCheckboxProps: (record: TaskObject) => ({
-    disabled: false, // Column configuration not to be checked
-    key: record.key,
-  }),
-};
+  const rowSelection = {
+    onChange: (selectedRowKeys: React.Key[], selectedRows: TaskObject[]) => {
+      console.log('selectedRowKeys', selectedRowKeys, 'selectedRows: ', selectedRows);
+      setSelectedInnerRows(selectedRowKeys as string[]);
+      console.log(selectedInnerRows);
+    },
+    getCheckboxProps: (record: TaskObject) => ({
+      disabled: false, // Column configuration not to be checked
+      key: record.key,
+    }),
+  }; //not in use
 
-useEffect(() => {
-  console.log("selectedInnerRows", selectedInnerRows);
-}, [selectedInnerRows]);
+  useEffect(() => {
+    console.log("selectedInnerRows", selectedInnerRows);
+  }, [selectedInnerRows]);
 
-  const handleToggleRowExpand = (record: GroupedTasks, event: React.MouseEvent<HTMLElement>) => {
-    // Update the expandedRow state using the functional form of setState
-    setExpandedRow(prevExpandedRow => prevExpandedRow === record.month ? null : record.month);
-    // Prevent event propagation
-    event.stopPropagation();
-  };
+    const handleToggleRowExpand = (record: GroupedTasks, event: React.MouseEvent<HTMLElement>) => {
+      // Update the expandedRow state using the functional form of setState
+      setExpandedRow(prevExpandedRow => prevExpandedRow === record.month ? null : record.month);
+      // Prevent event propagation
+      event.stopPropagation();
+    };//not in use
 
-  const handleToggleInnerRowExpand = (record: TaskObject) => {
-    const taskKeys = Object.keys(record?.tasks);
-    if (taskKeys.length > 0) {
-      // Get the first key from the tasks object
-      const firstTaskKey = taskKeys[0];
-      // Update the state with the first task key
-      setExpandedInnerRow(prevExpandedInnerRow => {
-        // Check if the current expanded row is the same as the first task key
-        if (prevExpandedInnerRow === firstTaskKey) {
-          // If it is, collapse the row by setting expandedInnerRow to null
-          return null;
-        } else {
-          // Otherwise, expand the row by setting expandedInnerRow to the first task key
-          return firstTaskKey;
-        }
-      });
-    }
-    console.log("handleToggleInnerRowExpand", expandedInnerRow);
-  };
+    const handleToggleInnerRowExpand = (record: TaskObject) => {
+      const taskKeys = Object.keys(record?.tasks);
+      if (taskKeys.length > 0) {
+        // Get the first key from the tasks object
+        const firstTaskKey = taskKeys[0];
+        // Update the state with the first task key
+        setExpandedInnerRow(prevExpandedInnerRow => {
+          // Check if the current expanded row is the same as the first task key
+          if (prevExpandedInnerRow === firstTaskKey) {
+            // If it is, collapse the row by setting expandedInnerRow to null
+            return null;
+          } else {
+            // Otherwise, expand the row by setting expandedInnerRow to the first task key
+            return firstTaskKey;
+          }
+        });
+      }
+      console.log("handleToggleInnerRowExpand", expandedInnerRow);
+    };//not in use
   
     const rowClassName = (record: GroupedTasks, index: number) => {
       return index % 2 === 0 ? 'even-row' : 'odd-row';
-    };
+    };//not in use
 
     const monthTaskDatas: TaskObject[] = Object.values(monthTasks).map(dateData => {
       console.log("monthTaskData-monthtasks", monthTasks)
       console.log("dateData", dateData);
       if (!dateData) return {}; // Check if dateData is undefined or null
-      // const taskObject: TaskObject = {};
-      // Object.entries(dateData).forEach(([date, data]) => {
-      //     taskObject[date] = {
-      //         key: data?.key,
-      //         tasks: data?.tasks
-      //     };
-      // });
-      // console.log("taskObject",taskObject);
-      // return taskObject;
       return dateData ;
-  });
+    });
 
-  const monthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
-      console.log("monthTasksData",taskObject);
-      const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
-      console.log("date", date)
-      const { key, tasks } = taskObject[date];
-      return { key, task: tasks }; // Assuming 'tasks' property is mapped to 'task' in DateTask
-  });
+    const monthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
+        console.log("monthTasksData",taskObject);
+        const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
+        console.log("date", date)
+        const { key, tasks } = taskObject[date];
+        return { key, task: tasks }; // Assuming 'tasks' property is mapped to 'task' in DateTask
+    });
 
   
 
-  const handleInnerRowSelection = (selectedRowKeys: React.Key[]) => {
-    console.log("handleInnerRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
-    setSelectedInnerRows(selectedRowKeys as string[]);
-  };
-  
-
-      // const getColumn = (formattedMonth: string) => {
-      //   const column: ColumnsType<TaskObject> = [
-      //     {
-      //       title: 'Select All',
-      //       dataIndex: 'date',
-      //       key: 'date',
-      //       width: '20%',
-      //       fixed: 'left',
-      //       render: (_, record: TaskObject) => {
-      //         // Get the specific month key
-      //         const monthKey = Object.keys(record).find(
-      //           key =>
-      //             moment(key).format('YYYY-MM') ===
-      //             moment(formattedMonth, 'YYYY-MM').format('YYYY-MM')
-      //         );
-      //         if (!monthKey) return null; // If monthKey is not found, return null
-        
-      //         // Get the formatted date for the month key
-      //         const formattedDate = moment(monthKey).format('YYYY-MM-DD');
-      //         return formattedDate;
-      //       },
-      //     },     
-      //     {
-      //       title: '',
-      //       dataIndex: 'tasks',
-      //       key: 'tasks',
-      //       width: '60%',
-      //       render: (_, record: TaskObject) => {
-      //         // Initialize variables to store task hours and total hours
-      //         let totalHours = 0;
-      //         const taskHours: { [key: string]: number } = {};
-            
-      //         // Iterate over each date in the record
-      //         Object.entries(record).forEach(([date, dateTasks]) => {
-      //           // Iterate over tasks for each date
-      //           dateTasks.tasks.forEach(task => {
-      //             const totalHoursForTask = parseFloat(task.totalHours || '0');
-      //             totalHours += totalHoursForTask; // Accumulate total hours
-      //             taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask; // Add task hours
-      //           });
-      //         });
-            
-      //         // Calculate extra hours if total hours exceed 9
-      //         const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-            
-      //         return (
-      //           <div>
-      //             <ul style={{ display: 'flex', flexDirection: 'row', listStyle: 'none', padding: 0}}>
-      //               {/* Render task hours for each task */}
-      //               {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
-      //                 <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
-      //                   <div style={{ paddingRight: '20px' }}>
-      //                     <div style={{ color: 'grey', paddingBottom: '5px' }}>
-      //                       {taskName}
-      //                     </div>
-      //                     <div style={{ fontWeight: "bold", fontSize: '20px', color: 'black' }}>
-      //                       {taskTotalHours}H
-      //                     </div>
-      //                   </div>
-      //                   <div>
-      //                     <Progress
-      //                       type="circle"
-      //                       percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
-      //                       width={60}
-      //                     />
-      //                   </div>
-      //                 </li>
-      //               ))}
-      //               {/* Render extra hours and total hours */}
-      //               <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white',  margin: '5px' }}>
-      //                 <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-      //                   Extra Hours
-      //                 </div>
-      //                 <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: "bold", fontSize: '20px' }}>
-      //                   {extraHours}H
-      //                 </div>
-      //               </li>
-      //               <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
-      //                 <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-      //                   Total Hours
-      //                 </div>
-      //                 <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
-      //                   {totalHours}H
-      //                 </div>
-      //               </li>
-      //             </ul>
-      //           </div>
-      //         );
-      //       },
-      //     },      
-      //     {
-      //       title: '',
-      //       dataIndex: 'actions',
-      //       key: 'actions',
-      //       fixed: 'right',
-      //       width: '20%',
-      //       render: (_, record: TaskObject) => (
-      //         <div>
-      //           {/* Check if the record has tasks */}
-      //           {record && Object.keys(record).length > 0 ? (
-      //             // Render the appropriate icon based on the expanded state
-      //             expandedInnerRow === Object.keys(record)[0] ? (
-      //               <UpOutlined
-      //                 style={{
-      //                   cursor: 'pointer',
-      //                   color: '#0B4266',
-      //                   fontSize: '16px',
-      //                 }}
-      //                 onClick={() => handleToggleInnerRowExpand(record)}
-      //               />
-      //             ) : (
-      //               <DownOutlined
-      //                 style={{
-      //                   cursor: 'pointer',
-      //                   color: '#0B4266',
-      //                   fontSize: '16px',
-      //                 }}
-      //                 onClick={() => handleToggleInnerRowExpand(record)}
-      //               />
-      //             )
-      //           ) : null}
-      //         </div>
-      //       ),
-      //     }  
-      //   ];
-      //   return column;
-      // };
-    
-
-      const getColumn = (formattedMonth: string) => {
-        const column: ColumnsType<DateTask> = [
-            {
-                title: 'Select All',
-                dataIndex: 'date',
-                key: 'date',
-                width: '20%',
-                fixed: 'left',
-                render: (_, record: DateTask) => {
-                    // Get the specific month key
-
-                    const date = record.task.length > 0 ? record.task[0].date : '';
-                    return date;
-                    // const date = record.task.map(date=>date.date);
-                    // return date;
-                    // const monthKey = Object.keys(record).find(
-                    //     key =>
-                    //         moment(key).format('YYYY-MM') ===
-                    //         moment(formattedMonth, 'YYYY-MM').format('YYYY-MM')
-                    // );
-                    // if (!monthKey) return null; // If monthKey is not found, return null
-    
-                    // // Get the formatted date for the month key
-                    // const formattedDate = moment(monthKey).format('YYYY-MM-DD');
-                    // return formattedDate;
-                },
-            },
-            {
-                title: '',
-                dataIndex: 'tasks',
-                key: 'tasks',
-                width: '60%',
-                render: (_, record: DateTask) => {
-                    // Initialize variables to store task hours and total hours
-                    let totalHours = 0;
-                    const taskHours: { [key: string]: number } = {};
-                    // Iterate over each task in the record
-                    record.task.forEach(task => {
-                        const totalHoursForTask = parseFloat(task.totalHours || '0');
-                        totalHours += totalHoursForTask; // Accumulate total hours
-                        taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask; // Add task hours
-                    });
-    
-                    // Calculate extra hours if total hours exceed 9
-                    const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-    
-                    return (
-                        <div>
-                            <ul style={{ display: 'flex', flexDirection: 'row', listStyle: 'none', padding: 0 }}>
-                                {/* Render task hours for each task */}
-                                {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
-                                    <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
-                                        <div style={{ paddingRight: '20px' }}>
-                                            <div style={{ color: 'grey', paddingBottom: '5px' }}>
-                                                {taskName}
-                                            </div>
-                                            <div style={{ fontWeight: "bold", fontSize: '20px', color: 'black' }}>
-                                                {taskTotalHours}H
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Progress
-                                                type="circle"
-                                                percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
-                                                width={60}
-                                            />
-                                        </div>
-                                    </li>
-                                ))}
-                                {/* Render extra hours and total hours */}
-                                <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
-                                    <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-                                        Extra Hours
-                                    </div>
-                                    <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: "bold", fontSize: '20px' }}>
-                                        {extraHours.toFixed(2)}H
-                                    </div>
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
-                                    <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-                                        Total Hours
-                                    </div>
-                                    <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
-                                        {totalHours}H
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    );
-                },
-            },
-            Table.EXPAND_COLUMN
-        ];
-    
-        return column;
+    const handleInnerRowSelection = (selectedRowKeys: React.Key[]) => {
+      console.log("handleInnerRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
+      setSelectedInnerRows(selectedRowKeys as string[]);
     };
+
+ 
+    const column: ColumnsType<DateTask> = [
+        {
+            title: 'Select All',
+            dataIndex: 'date',
+            key: 'date',
+            width: '20%',
+            fixed: 'left',
+            render: (_, record: DateTask) => {
+                // Get the specific month key
+
+                const date = record.task.length > 0 ? record.task[0].date : '';
+                return date;
+            },
+        },
+        {
+            title: '',
+            dataIndex: 'tasks',
+            key: 'tasks',
+            width: '60%',
+            render: (_, record: DateTask) => {
+                // Initialize variables to store task hours and total hours
+                let totalHours = 0;
+                const taskHours: { [key: string]: number } = {};
+                // Iterate over each task in the record
+                record.task.forEach(task => {
+                    const totalHoursForTask = parseFloat(task.totalHours || '0');
+                    totalHours += totalHoursForTask; // Accumulate total hours
+                    taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask; // Add task hours
+                });
+
+                // Calculate extra hours if total hours exceed 9
+                const extraHours = totalHours > 9 ? totalHours - 9 : 0;
+
+                return (
+                    <div>
+                        <ul style={{ display: 'flex', flexDirection: 'row', listStyle: 'none', padding: 0 }}>
+                            {/* Render task hours for each task */}
+                            {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
+                                <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
+                                    <div style={{ paddingRight: '20px' }}>
+                                        <div style={{ color: 'grey', paddingBottom: '5px' }}>
+                                            {taskName}
+                                        </div>
+                                        <div style={{ fontWeight: "bold", fontSize: '20px', color: 'black' }}>
+                                            {taskTotalHours}H
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Progress
+                                            type="circle"
+                                            percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
+                                            width={60}
+                                        />
+                                    </div>
+                                </li>
+                            ))}
+                            {/* Render extra hours and total hours */}
+                            <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
+                                <div style={{ color: '#0B4266', paddingRight: '20px' }}>
+                                    Extra Hours
+                                </div>
+                                <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: "bold", fontSize: '20px' }}>
+                                    {extraHours.toFixed(2)}H
+                                </div>
+                            </li>
+                            <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
+                                <div style={{ color: '#0B4266', paddingRight: '20px' }}>
+                                    Total Hours
+                                </div>
+                                <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
+                                    {totalHours}H
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                );
+            },
+        },
+        Table.EXPAND_COLUMN
+    ];
 
     const innerColumn: ColumnsType<Task> = [
       {
@@ -924,7 +687,7 @@ useEffect(() => {
       },
       expandRowByClick: true,
       //expandIcon: () => null
-    };
+    }; //not in use
     
     
     const aggregatedData: GroupedTasks[] = Object.keys(groupedTasks).flatMap((userId: string) => {
@@ -982,11 +745,6 @@ useEffect(() => {
       formattedMonth: string,
       event: React.MouseEvent<HTMLElement>
     ) => {
-    
-      // Set the month tasks in the state
-      //setMonthTasks(tasksForClickedMonth);
-      //console.log("tasksForClickedMonth",tasksForClickedMonth);
-      // Set the modal content and make the modal visible
       setModalContent(
         <div>
           <Table
@@ -1000,38 +758,10 @@ useEffect(() => {
                     border: '1px solid grey',
                     borderRadius: '5px',
                 }}
-                columns={getColumn(formattedMonth)} 
+                columns={column} 
                 rowClassName="rowstyle"
                 dataSource={monthTasksData}
                 pagination={false}
-                // expandable={{
-                //     expandedRowRender: (record: DateTask) => {
-                //         const handleInnerRowExpand = (dateKey: string) => {
-                //             const tasksForDate = record.task.find(task => task.date === dateKey);
-                //             return (
-                //                 <Table
-                //                     columns={innerColumn as ColumnsType<Task>}
-                //                     dataSource={tasksForDate ? [tasksForDate] : []} // Pass an array with the task if found, otherwise an empty array
-                //                     pagination={false}
-                //                 />
-                //             );
-                //         };
-                        
-                //         return (
-                //             <>
-                //                 {record.task.map(task => (
-                //                     <div key={task.date}>
-                //                         <div>Date: {task.date}</div>
-                //                         {handleInnerRowExpand(task.date)}
-                //                     </div>
-                //                 ))}
-                //             </>
-                //         );
-                //     },
-                //     expandRowByClick: true,
-                //     expandIcon: () => null,
-                // }}
-
                 expandable={{
                     expandedRowRender: (record: DateTask) => {
                         const handleInnerRowExpand = () => {
@@ -1068,7 +798,7 @@ useEffect(() => {
     
       // Prevent event propagation
       event.stopPropagation();
-    };
+    };//not in use
      
   return (
     <>
@@ -1119,100 +849,6 @@ useEffect(() => {
             columns={columns}
            dataSource={aggregatedData}
             pagination={false}
-            //expandable={expandable}
-            // expandable={{
-            //   expandedRowRender: (record: GroupedTasks) => {
-            //     const taskHours: { [key: string]: number } = {};
-            //     let totalExtraHours = 0; // Track total extra hours for all dates
-                
-            //     for (const dateKey in record.tasks) {
-            //       record.tasks[dateKey].tasks.forEach(task => {
-            //         if (taskHours.hasOwnProperty(task.task)) {
-            //           taskHours[task.task] += parseFloat(task.totalHours || '0');
-            //         } else {
-            //           taskHours[task.task] = parseFloat(task.totalHours || '0');
-            //         }
-            //       });
-            //     }
-                
-            //     // After calculating the total hours for each task, convert them to fixed decimals
-            //     for (const taskName in taskHours) {
-            //       if (taskHours.hasOwnProperty(taskName)) {
-            //         taskHours[taskName] = parseFloat(taskHours[taskName].toFixed(2));
-            //       }
-            //     }
-                
-            //     const totalHours = Math.floor(Object.values(taskHours).reduce((acc, curr) => acc + curr, 0));
-            //     const regularHours = Math.min(totalHours, 9);
-            //     let extraHours = totalHours - regularHours;
-                
-            //     // Calculate extra hours for each date
-            //     for (const dateKey in record.tasks) {
-            //       const dateTotalHours = record.tasks[dateKey].tasks.reduce((acc, task) => acc + parseFloat(task.totalHours || '0'), 0);
-            //       if (dateTotalHours > 9) {
-            //         extraHours += dateTotalHours - 9; // Increment extra hours by the difference
-            //         totalExtraHours += dateTotalHours - 9; // Track total extra hours
-            //       }
-            //     }
-                
-            //     return (
-            //       <div>
-            //         <ul style={{ display: 'flex', justifyContent: 'space-around', listStyle: 'none' }}>
-            //           {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
-            //             <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-            //               <div style={{ paddingRight: '20px' }}>
-            //                 <div style={{ color: 'grey', paddingBottom: '5px' }}>
-            //                   {taskName}
-            //                 </div>
-            //                 <div style={{ fontWeight: "bold", fontSize: '20px', color: 'black' }}>
-            //                   {taskTotalHours}H
-            //                 </div>
-            //               </div>
-            //               <div>
-            //                 <Progress
-            //                   type="circle"
-            //                   percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
-            //                   width={60}
-            //                 />
-            //               </div>
-            //             </div>
-            //           ))}
-            //           {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-            //             <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-            //               Extra Hours
-            //             </div>
-            //             <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: "bold", fontSize: '20px' }}>
-            //               {extraHours}H
-            //             </div>
-            //           </div> */}
-            //           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-            //             <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-            //               Extra Hours
-            //             </div>
-            //             <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
-            //               {totalExtraHours.toFixed(2)}H
-            //             </div>
-            //           </div>
-            //           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white' }}>
-            //             <div style={{ color: '#0B4266', paddingRight: '20px' }}>
-            //               Total Hours
-            //             </div>
-            //             <div style={{ border: '1px solid grey', backgroundColor: '#F5F7F9', padding: '20px 10px', borderRadius: '10px', color: '#0B4266', fontWeight: 'bold', fontSize: '20px' }}>
-            //               {totalHours}H
-            //             </div>
-            //           </div>
-                    
-            //         </ul>
-            //       </div>
-            //     );
-            //   },
-            //   expandRowByClick: true,
-            //   expandIcon: ({ expanded, onExpand, record }) => (
-            //     expanded ? 
-            //       <UpOutlined onClick={(event) => onExpand(record, event)} /> :
-            //       <DownOutlined onClick={(event) => onExpand(record, event)} />
-            //   ),
-            // }}
           />
         
       </div>
@@ -1250,9 +886,6 @@ useEffect(() => {
             visible={commentVisible}
             onCancel={handleCancel}
             footer={[
-              // <Button key="cancel" onClick={handleCancel}>
-              //   Cancel
-              // </Button>,
               <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white' }} key="submit" type="primary" onClick={handleSubmit}>
                 Submit
               </Button>,

@@ -509,46 +509,6 @@ const EmployeeTaskStatus = () => {
         
         navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`);
     };
-    
-    
-    
-    
-    // const generateXAxisCategories = () => {
-    //     if (filterOption === 'Month') {
-    //         // Get the start and end dates of the current month
-    //         const startDate = currentMonth.startOf('month');
-    //         const endDate = currentMonth.endOf('month');
-    //         // const startDate = dayjs(currentMonth).startOf('month');
-    //         // const endDate = dayjs(currentMonth).endOf('month');
-    //         console.log("generateXAxisCategories-month", startDate);
-    //         console.log("generateXAxisCategories-month", endDate);
-    //         // Generate an array of all dates in the current month
-    //         const datesOfMonth = [];
-    //         let currentDate = startDate;
-    //         while (currentDate.isSame(endDate, 'day') || currentDate.isBefore(endDate, 'day')) {
-    //             console.log("1");
-    //             datesOfMonth.push(currentDate.format('YYYY-MM-DD'));
-    //             currentDate = currentDate.add(1, 'day');
-    //         }
-    //         return datesOfMonth;
-    //     } else if (filterOption === 'Week') {
-    //         // Get all dates of the specific week
-    //         const startDate = dayjs(performanceData[0].date).startOf('week');
-    //         const endDate = dayjs(performanceData[performanceData.length - 1].date).endOf('week');
-    //         const datesOfWeek = [];
-    //         let currentDate = startDate;
-    //         while (currentDate.isSame(endDate, 'day') || currentDate.isBefore(endDate, 'day')) {
-    //             datesOfWeek.push(currentDate.format('YYYY-MM-DD'));
-    //             currentDate = currentDate.add(1, 'day');
-    //         }
-    //         return datesOfWeek;
-    //     } else {
-    //         // Get all hours of the specific date
-    //         return Array.from({ length: 24 }, (_, index) => `${index}:00`);
-    //     }
-    // };
-    
-    
 
     // Function to calculate performance data based on filter option
    
@@ -701,22 +661,6 @@ const EmployeeTaskStatus = () => {
                     <RightOutlined />
                 </Button>
             </ConfigProvider>
-                {/* <div className='employeetask'>
-                    { filterOption === 'Month' ? (
-                    <div style={{display:'flex', justifyContent:'flex-start'}}>
-                        <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
-                        <div style={{ margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
-                    </div>
-                    ) : filterOption === 'Week' ? (
-                        <div style={{display:'flex', justifyContent:'flex-start'}}>
-                            <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>From: {dayjs(currentWeek).format('YYYY-MM-DD')}</div>
-                            <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
-                        </div>
-                    )  : (
-                        <div style={{margin: '10px 20px', fontSize:'16px', fontFamily:'poppins'}}>Date: {currentDate.format('YYYY-MM-DD')}</div>
-                    )
-                    }
-                </div> */}
                 <div className='employeetask'>
                   {filterOption === 'Month' ? (
                       <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
@@ -761,57 +705,6 @@ const EmployeeTaskStatus = () => {
                 </button> */}
         </div>
     </div>
-    
-    {/* <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-    <Card className="main-card" style={{ overflow: "hidden" }}>
-        <div id="scroll-container" style={{ display: "flex" }}>
-            <div id="scroll-text">
-                <p style={{ fontSize: '16px', fontFamily: 'poppins', marginBottom: 0}}>
-                    {/* {recentApproved && recentApproved.length > 0 && (
-                        <div style={{padding:'20px', color:'green'}}>
-                            <strong>{recentApproved.join(", ")}</strong>
-                            <span> have been Approved</span>
-                        </div>
-                    )}
-                    {recentRejected && recentRejected.length > 0 && (
-                        recentRejected.map((item, index) => (
-                            <div key={index} style={{color: 'red'}}>
-                                <strong>{item.date}</strong>
-                                <span> have been Rejected</span>
-                                <div style={{padding:'10px',textAlign:'left', margin:'0px 0px 0px 10px'}}><strong>Reason:</strong>{item.comment}</div>
-                            </div>
-                        ))
-                    )} 
-                    Welcome 
-                </p>
-            </div>
-            <img
-                src={asset}
-                alt="..."
-                style={{ marginLeft: "auto", marginTop: "-22px" }}
-            />
-        </div>
-    </Card>
-    </div> */}
-
-    {/* <div style={{display:'flex', justifyContent:'space-between'}}>
-        <div className='cardStyle'>
-            <p style={{fontFamily:'poppins', fontSize:'20px', color:'#0B4266', fontWeight:'bold'}}>Missing</p>
-            <p style={{color:'red', fontSize:'54px', fontFamily:'poppins'}}> {missedCount}</p>
-        </div>
-        <div className='cardStyle'>
-            <p style={{fontFamily:'poppins', fontSize:'20px', color:'#0B4266', fontWeight:'bold'}}>Pending</p>
-            <p style={{color:'black', fontSize:'54px', fontFamily:'poppins'}}> {pendingCount}</p>
-        </div>
-        <div className='cardStyle'>
-            <p style={{fontFamily:'poppins', fontSize:'20px', color:'#0B4266', fontWeight:'bold'}}>Accepted</p>
-            <p style={{color:'green', fontSize:'54px', fontFamily:'poppins'}}> {acceptCount}</p>
-        </div>
-        <div className='cardStyle'>
-            <p style={{fontFamily:'poppins', fontSize:'20px', color:'#0B4266', fontWeight:'bold'}}>Rejected</p>
-            <p style={{color:'red', fontSize:'54px', fontFamily:'poppins'}}> {rejectCount}</p>
-        </div>
-    </div>  */}
     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <button className='box' onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
@@ -839,36 +732,6 @@ const EmployeeTaskStatus = () => {
             </div>
         </button>
     </div>
-
-    {/* <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <ApexCharts
-            options={{
-                chart: {
-                    type: 'line',
-                },
-                xaxis: {
-                    categories: generateXAxisCategories(),
-                },
-                yaxis: {
-                    title: {
-                        text: 'Percentage of Extra Hours Worked',
-                    },
-                    labels: {
-                        formatter: function (value) {
-                            return value.toFixed(2); // Fix the decimal to 2 places
-                        }
-                    }
-                },
-                dataLabels: {
-                    enabled: false,
-                },
-            }}
-            series={[{ name: 'Performance', data: calculatePerformance().map(data => data.percentage) }]}
-            type="line"
-            width={1000}
-            height={400}
-        />
-    </div> */}
   <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom:'20px',marginLeft: '20px', marginRight: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px' }}>
     <ResponsiveContainer width="80%" height={400}>
         <LineChart data={performanceData}>

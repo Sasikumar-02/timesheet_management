@@ -452,7 +452,7 @@ const ManagerDashboard = () => {
     const handleReject = (userId: string, month: string, date: string) => {
       // Implement logic to mark the task as rejected
       console.log(`Rejected: UserId-${userId}, Month-${month}, Date-${date}`);
-    };
+    }; 
 
     const handleClick = (title: string) => {
         navigate(`/manager/projectuser`, { state: { title } });

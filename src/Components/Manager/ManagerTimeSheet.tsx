@@ -115,16 +115,16 @@ const ManagerTimeSheet: React.FC = () => {
     }
   }, [addTask.date, addTask.userId, taskList]); // Update dependencies as per your requirement
 
- const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
-  return tasks.map((task, index) => ({
-    ...task,
-    slNo: index + 1,
-    idx: deleteTask ? index + 1 : task.idx
-  }));
-};
-const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
-const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
-const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
+  const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
+    return tasks.map((task, index) => ({
+      ...task,
+      slNo: index + 1,
+      idx: deleteTask ? index + 1 : task.idx
+    }));
+  };
+  const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
+  const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
+  const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
   useEffect(() => {
     const updateFormWidth = () => {
       const formElement = document.getElementById('myForm');
@@ -270,21 +270,12 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
     setFilteredTasks(updatedTaskList);
   }, [deletedTask]); // Include deletedTask in the dependency array
 
-//   useEffect(() => {
-//     // Filter tasks based on the addTask.date and userId when it changes
-//     if (addTask.date) {
-//         const filtered = taskList.filter(task => task.date === addTask.date && task.userId === userId);
-//         setFilteredTasks(updateSlNo(filtered, deletedTask)); // Update slNo when loading tasks
-//     } else {
-//         // If no date is selected, display all tasks
-//         setFilteredTasks(updateSlNo(taskList, deletedTask)); // Update slNo when loading tasks
-//     }
-// }, [addTask.date, taskList]);
 
-const handleFormOnSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  handleFormSubmit();
-};
+
+  const handleFormOnSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleFormSubmit();
+  };
 
   useEffect(() => {
     // Update addTask with the current date
@@ -453,17 +444,6 @@ const handleFormOnSubmit = (event: React.FormEvent<HTMLFormElement>) => {
   const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
 const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
 console.log("approvedRequestedOn", approvedRequestedOn);  
-    // Check if the date is not in the taskList and it's before the currentDate
-    // const currentDateFormatted = dayjs().format('YYYY-MM-DD');
-    // if (
-    //     (!taskList.find(task => (task.userId===addTask.userId) && (task.date === addTask.date)) && dayjs(addTask.date).isBefore(currentDateFormatted))
-    // ) {
-    //     notification.warning({
-    //         message: 'Restricted',
-    //         description: 'Cannot add task for a date before the current date and not present in the task list.',
-    //     });
-    //     return;
-    // }
 
     const currentDateFormatted = dayjs().format('YYYY-MM-DD');
     // Check if the date is not present in the approvedRequestedOn and satisfies the condition
@@ -529,14 +509,6 @@ console.log("approvedRequestedOn", approvedRequestedOn);
       setFilteredTasks(updateSlNo(updatedTaskList, deletedTask));
       localStorage.setItem('taskList', JSON.stringify(updatedTaskList));
     }
-
-    // After successful submission, remove the date from approvedRequestedOn
-  // if (approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) {
-  //   const updatedApprovedRequestedOn = { ...approvedRequestedOn };
-  //   const index = updatedApprovedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')].indexOf(addTask.date);
-  //   updatedApprovedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')].splice(index, 1);
-  //   localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApprovedRequestedOn));
-  // }
   
     // Clear the form with the default date and reset idx
     setAddTask({
@@ -557,100 +529,100 @@ console.log("approvedRequestedOn", approvedRequestedOn);
     setIsDateChanged(true);
 };
 
-const handleRequestForm = () => {
-  const userId = addTask.userId;
-  const month = dayjs(addTask.date).format('YYYY-MM');
-  const currentDateFormatted = dayjs().format('YYYY-MM-DD');
-  const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
-  const approvedTaskRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
-  if (
-    !taskList.find(task => task.userId === userId && task.date === addTask.date) &&
-    dayjs(addTask.date).isBefore(currentDateFormatted) && !(approvedTaskRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date))
-  ) {
-    const taskRequestedOn: TaskRequestedOn = JSON.parse(localStorage.getItem('taskRequestedOn') || '{}');
-    
+  const handleRequestForm = () => {
+    const userId = addTask.userId;
+    const month = dayjs(addTask.date).format('YYYY-MM');
+    const currentDateFormatted = dayjs().format('YYYY-MM-DD');
+    const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
+    const approvedTaskRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
+    if (
+      !taskList.find(task => task.userId === userId && task.date === addTask.date) &&
+      dayjs(addTask.date).isBefore(currentDateFormatted) && !(approvedTaskRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date))
+    ) {
+      const taskRequestedOn: TaskRequestedOn = JSON.parse(localStorage.getItem('taskRequestedOn') || '{}');
+      
 
-    if (!taskRequestedOn[userId]) {
-      taskRequestedOn[userId] = {};
-    }
+      if (!taskRequestedOn[userId]) {
+        taskRequestedOn[userId] = {};
+      }
 
-    if (!taskRequestedOn[userId][month]) {
-      taskRequestedOn[userId][month] = [];
-    }
+      if (!taskRequestedOn[userId][month]) {
+        taskRequestedOn[userId][month] = [];
+      }
 
-    let datesToRequest: string[] = [];
+      let datesToRequest: string[] = [];
 
-    if (filterOption === 'Month') {
-      // Get the first and last dates of the month
-      const firstDayOfMonth = dayjs(addTask.date).startOf('month');
-      const lastDayOfMonth = dayjs(addTask.date).endOf('month');
-      const presentDate = dayjs().format('YYYY-MM-DD');
-      // Generate all dates in the month
-      let currentDate = firstDayOfMonth;
-      while (
-        (currentDate.isSame(lastDayOfMonth, 'day') || currentDate.isBefore(lastDayOfMonth, 'day')) &&
-        !currentDate.isAfter(presentDate)
-      ) {
-        const currentDateFormatted = currentDate.format('YYYY-MM-DD');
+      if (filterOption === 'Month') {
+        // Get the first and last dates of the month
+        const firstDayOfMonth = dayjs(addTask.date).startOf('month');
+        const lastDayOfMonth = dayjs(addTask.date).endOf('month');
+        const presentDate = dayjs().format('YYYY-MM-DD');
+        // Generate all dates in the month
+        let currentDate = firstDayOfMonth;
+        while (
+          (currentDate.isSame(lastDayOfMonth, 'day') || currentDate.isBefore(lastDayOfMonth, 'day')) &&
+          !currentDate.isAfter(presentDate)
+        ) {
+          const currentDateFormatted = currentDate.format('YYYY-MM-DD');
+          if (
+            !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
+            !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
+          ) {
+            // Check if the date is not already present in both approvedTaskRequestedOn and taskList
+            if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
+              datesToRequest.push(currentDateFormatted);
+            }
+          }
+          currentDate = currentDate.add(1, 'day');
+        }
+      } else if (filterOption === 'Week') {
+        // Get the first and last dates of the week
+        const startOfWeek = dayjs(addTask.date).startOf('week');
+        const endOfWeek = dayjs(addTask.date).endOf('week');
+        const presentDate = dayjs().format('YYYY-MM-DD');
+        // Generate all dates in the week
+        let currentDate = startOfWeek;
+        while (
+          (currentDate.isSame(endOfWeek, 'day') || currentDate.isBefore(endOfWeek, 'day')) &&
+          !currentDate.isAfter(presentDate)
+        ) {
+          const currentDateFormatted = currentDate.format('YYYY-MM-DD');
+          if (
+            !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
+            !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
+          ) {
+            // Check if the date is not already present in both approvedTaskRequestedOn and taskList
+            if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
+              datesToRequest.push(currentDateFormatted);
+            }
+          }
+          currentDate = currentDate.add(1, 'day');
+        }
+      } else if (filterOption === 'Date') {
+        // Generate dates for the specific date option
+        const currentDate = dayjs(addTask.date).format('YYYY-MM-DD');
         if (
-          !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
-          !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
+          !taskList.some(task => task.userId === userId && task.date === currentDate) &&
+          !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDate)
         ) {
           // Check if the date is not already present in both approvedTaskRequestedOn and taskList
-          if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
-            datesToRequest.push(currentDateFormatted);
+          if (!taskRequestedOn[userId][month].includes(currentDate)) {
+            datesToRequest.push(currentDate);
           }
         }
-        currentDate = currentDate.add(1, 'day');
       }
-    } else if (filterOption === 'Week') {
-      // Get the first and last dates of the week
-      const startOfWeek = dayjs(addTask.date).startOf('week');
-      const endOfWeek = dayjs(addTask.date).endOf('week');
-      const presentDate = dayjs().format('YYYY-MM-DD');
-      // Generate all dates in the week
-      let currentDate = startOfWeek;
-      while (
-        (currentDate.isSame(endOfWeek, 'day') || currentDate.isBefore(endOfWeek, 'day')) &&
-        !currentDate.isAfter(presentDate)
-      ) {
-        const currentDateFormatted = currentDate.format('YYYY-MM-DD');
-        if (
-          !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
-          !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
-        ) {
-          // Check if the date is not already present in both approvedTaskRequestedOn and taskList
-          if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
-            datesToRequest.push(currentDateFormatted);
-          }
-        }
-        currentDate = currentDate.add(1, 'day');
-      }
-    } else if (filterOption === 'Date') {
-      // Generate dates for the specific date option
-      const currentDate = dayjs(addTask.date).format('YYYY-MM-DD');
-      if (
-        !taskList.some(task => task.userId === userId && task.date === currentDate) &&
-        !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDate)
-      ) {
-        // Check if the date is not already present in both approvedTaskRequestedOn and taskList
-        if (!taskRequestedOn[userId][month].includes(currentDate)) {
-          datesToRequest.push(currentDate);
-        }
-      }
-    }
 
-    taskRequestedOn[userId][month] = taskRequestedOn[userId][month].concat(datesToRequest);
+      taskRequestedOn[userId][month] = taskRequestedOn[userId][month].concat(datesToRequest);
 
-    localStorage.setItem('taskRequestedOn', JSON.stringify(taskRequestedOn));
+      localStorage.setItem('taskRequestedOn', JSON.stringify(taskRequestedOn));
 
-    // Display notification
-    notification.success({
-      message: `The request for ${addTask.date} has been sent.`,
-      placement: 'topRight',
-    });
-  } 
-};
+      // Display notification
+      notification.success({
+        message: `The request for ${addTask.date} has been sent.`,
+        placement: 'topRight',
+      });
+    } 
+  };
 
 
 
@@ -670,422 +642,188 @@ const handleRequestForm = () => {
       idx: addTask.idx 
     });
   }
-  
-//   const handleEditTask = (idx: number) => {
-//     const taskToEdit = taskList.find((task) => task.idx === idx);
-//     const isExistingTask = taskToEdit !== undefined; // Check if taskToEdit is defined
-//     // if (taskToEdit) {
-//         // const isDateSelected = selectedKeysToHide.includes(taskToEdit.date);
-        
-//     //     // if (isDateSelected && isExistingTask) {
-//     //     //     // Date is selected and it's an existing task, so prevent further action
-//     //     //     // You can display a message or handle this case according to your application's logic
-//     //     //     return;
-//     //     // }
 
-//     //     // setIsEdited(true);
-//     //     // setAddTask({
-//     //     //     date: taskToEdit.date,
-//     //     //     userId: taskToEdit.userId,
-//     //     //     task: taskToEdit.task,
-//     //     //     startTime: taskToEdit.startTime,
-//     //     //     endTime: taskToEdit.endTime,
-//     //     //     totalHours: taskToEdit.totalHours,
-//     //     //     description: taskToEdit.description,
-//     //     //     reportingTo: taskToEdit.reportingTo,
-//     //     //     idx: taskToEdit.idx, 
-//     //     // });
+  const handleEditTask = (idx: number) => {
+    const taskToEdit = taskList.find((task) => (task.idx === idx) && (task.userId === addTask.userId));
+    if (taskToEdit) {
+      // Check if the date is included in selectedKeysToHide
+      if (selectedKeysToHide.includes(taskToEdit.date)) {
+        // Date is included in selectedKeysToHide, so prevent further action
+        // You can display a message or handle this case according to your application's logic
+        return;
+      }
 
-//     //     // // Now, you can perform additional actions or display a modal for editing
-//     //     // setCurrentDate(dayjs(taskToEdit.date));
+      setIsEdited(true);
+    
+      setAddTask({
+          date: taskToEdit.date,
+          userId: taskToEdit.userId,
+          workLocation:taskToEdit.workLocation,
+          task: taskToEdit.task,
+          title:taskToEdit.title,
+          startTime: taskToEdit.startTime,
+          endTime: taskToEdit.endTime,
+          totalHours: taskToEdit.totalHours,
+          description: taskToEdit.description,
+          reportingTo: taskToEdit.reportingTo,
+          idx: taskToEdit.idx, 
+      });
 
-//     // }
+      // Now, you can perform additional actions or display a modal for editing
+      setCurrentDate(dayjs(taskToEdit.date));
+    }
+  };
 
-//     if (taskToEdit) {
-//       const isDateSelected = selectedKeysToHide.includes(taskToEdit.date);
-
-//       if (isDateSelected && taskToEdit.isNew) {
-//           // If the task is newly added and its date is selected, allow editing
-//           setIsEdited(true);
-//           setAddTask({ ...taskToEdit });
-//           setCurrentDate(dayjs(taskToEdit.date));
-//       } else if (!isDateSelected) {
-//           // If the date is not selected, allow editing
-//           setIsEdited(true);
-//           setAddTask({ ...taskToEdit });
-//           setCurrentDate(dayjs(taskToEdit.date));
-//       } else {
-//           // Date is selected and it's an existing task, so prevent further action
-//           // You can display a message or handle this case according to your application's logic
-//           return;
-//       }
-//   } else {
-//       // Handle the case where taskToEdit is undefined
-//       // You can display a message or handle this case according to your application's logic
-//       return;
-//   }
-// };
-
-const handleEditTask = (idx: number) => {
-  const taskToEdit = taskList.find((task) => (task.idx === idx) && (task.userId === addTask.userId));
-  if (taskToEdit) {
-    // Check if the date is included in selectedKeysToHide
-    if (selectedKeysToHide.includes(taskToEdit.date)) {
-      // Date is included in selectedKeysToHide, so prevent further action
-      // You can display a message or handle this case according to your application's logic
+  const handleDeleteTask = useCallback((idx: number) => {
+    const taskToDelete = taskList.find(task => (task.idx === idx));  //&&(task.userId === addTask.userId)
+    
+    if (!taskToDelete || selectedKeysToHide.includes(taskToDelete.date)) {
+      // Task not found or its date is in selectedKeysToHide, do not delete
       return;
     }
 
-    setIsEdited(true);
-  
-    setAddTask({
-        date: taskToEdit.date,
-        userId: taskToEdit.userId,
-        workLocation:taskToEdit.workLocation,
-        task: taskToEdit.task,
-        title:taskToEdit.title,
-        startTime: taskToEdit.startTime,
-        endTime: taskToEdit.endTime,
-        totalHours: taskToEdit.totalHours,
-        description: taskToEdit.description,
-        reportingTo: taskToEdit.reportingTo,
-        idx: taskToEdit.idx, 
-    });
-
-    // Now, you can perform additional actions or display a modal for editing
-    setCurrentDate(dayjs(taskToEdit.date));
-  }
-};
-
-const handleDeleteTask = useCallback((idx: number) => {
-  const taskToDelete = taskList.find(task => (task.idx === idx));  //&&(task.userId === addTask.userId)
-  
-  if (!taskToDelete || selectedKeysToHide.includes(taskToDelete.date)) {
-    // Task not found or its date is in selectedKeysToHide, do not delete
-    return;
-  }
-
-  // Display confirmation modal before deleting the task
-  confirm({
-    title: 'Delete Task',
-    content: 'Are you sure you want to delete the task?',
-    okText: 'Yes',
-    okButtonProps: {
-      style: {
-        width: '80px', backgroundColor: '#0B4266', color: 'white'
+    // Display confirmation modal before deleting the task
+    confirm({
+      title: 'Delete Task',
+      content: 'Are you sure you want to delete the task?',
+      okText: 'Yes',
+      okButtonProps: {
+        style: {
+          width: '80px', backgroundColor: '#0B4266', color: 'white'
+        },
       },
-    },
-    cancelText: 'No',
-    cancelButtonProps: {
-      style: {
-        width: '80px', backgroundColor: '#0B4266', color: 'white'
+      cancelText: 'No',
+      cancelButtonProps: {
+        style: {
+          width: '80px', backgroundColor: '#0B4266', color: 'white'
+        },
       },
-    },
-    onOk() {
-      // Logic to delete the task if user confirms
-      const updatedTaskList = taskList.filter(task => (task.idx !== idx)); //&&(task.userId==addTask.userId)
-  
-      // Reindex the idx starting from 1
-      const reindexedTaskList = updateSlNo(updatedTaskList, true);
-  
-      setTaskList(reindexedTaskList);
-      setFilteredTasks(reindexedTaskList);
-  
-      // Update localStorage
-      localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
-    },
-    onCancel() {
-      // Logic if user cancels deletion
-    },
-  });
-}, [taskList, selectedKeysToHide]);
-
-
-// const handleDeleteTask = useCallback((idx: number) => {
-//   // Check if the date is included in selectedKeysToHide
-//   const isDateIncluded = selectedKeysToHide.some(date => {
-//       // Assuming taskList contains tasks with a 'date' property
-//       const task = taskList.find(task => task.idx === idx);
-//       return task && task.date === date;
-//   });
-
-//   // Toggle the deletedTask flag based on the presence of the date in selectedKeysToHide
-//   setDeletedTask(!isDateIncluded);
-
-//   // Save idx in state
-//   setDeletedTaskIdx(idx);
-// }, [selectedKeysToHide, taskList]);
-
-
-//   useEffect(() => {
-//     if (deletedTask) {
-//       // Implement the logic to delete the task based on idx
-//       const updatedTaskList = taskList.filter(task => {
-//         // Check if the task date is not included in selectedKeysToHide and isNew is true
-//         return !selectedKeysToHide.includes(task.date);
-//       });
-  
-//       // Reindex the idx starting from 1 and use deletedTask flag
-//       const reindexedTaskList = updateSlNo(updatedTaskList, deletedTask);
-  
-//       setTaskList(reindexedTaskList);
-//       setFilteredTasks(reindexedTaskList);
-  
-//       // Update localStorage
-//       localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
-  
-//       // Reset the deletedTask flag after updating
-//       setDeletedTask(false);
-//     }
-//   }, [deletedTask, deletedTaskIdx, selectedKeysToHide, taskList]);
-
-  // const handleDeleteTask = useCallback((idx: number) => {
-  //   // Display confirmation modal before deleting the task
-  //   confirm({
-  //     title: 'Delete Task',
-  //     content: 'Are you sure you want to delete the task?',
-  //     okText: 'Yes',
-  //     okButtonProps: {
-  //       style: {
-  //         width: '80px', backgroundColor: '#0B4266', color: 'white'
-  //       },
-  //     },
-  //     cancelText: 'No',
-  //     cancelButtonProps: {
-  //       style: {
-  //         width: '80px', backgroundColor: '#0B4266', color: 'white'
-  //       },
-  //     },
-  //     onOk() {
-  //       // Logic to delete the task if user confirms
-  //       const updatedTaskList = taskList.filter(task => task.idx !== idx);
+      onOk() {
+        // Logic to delete the task if user confirms
+        const updatedTaskList = taskList.filter(task => (task.idx !== idx)); //&&(task.userId==addTask.userId)
     
-  //       // Reindex the idx starting from 1
-  //       const reindexedTaskList = updateSlNo(updatedTaskList);
+        // Reindex the idx starting from 1
+        const reindexedTaskList = updateSlNo(updatedTaskList, true);
     
-  //       setTaskList(reindexedTaskList);
-  //       setFilteredTasks(reindexedTaskList);
+        setTaskList(reindexedTaskList);
+        setFilteredTasks(reindexedTaskList);
     
-  //       // Update localStorage
-  //       localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
-  //     },
-  //     onCancel() {
-  //       // Logic if user cancels deletion
-  //     },
-  //   });
-  // }, [taskList]);
-
-  
-  
-  // const handleOverallSubmit = () => {
-  //   // Assuming you have an API endpoint for approval requests
-  //   //const apiUrl = 'http://localhost:3000/approvalrequests';
-
-  //   // Prepare the data to be sent
-  //   const requestData = filteredTasks.map(task => ({
-  //     date: task.date,
-  //     userId: task.userId,
-  //     task: task.task,
-  //     startTime: task.startTime,
-  //     endTime: task.endTime,
-  //     totalHours: task.totalHours,
-  //     description: task.description,
-  //     reportingTo: task.reportingTo,
-  //     idx: task.idx,
-  //   }));
-  //   // Navigate to the approvalrequests component with the data
-  //   navigate('/approvalrequests', { state: { requestData } });
-  //   // Make the HTTP POST request to the /approvalrequests endpoint
-  //   // fetch(apiUrl, {
-  //   //   method: 'POST',
-  //   //   headers: {
-  //   //     'Content-Type': 'application/json',
-  //   //   },
-  //   //   body: JSON.stringify(requestData),
-  //   // })
-  //   //   .then(response => {
-  //   //     if (!response.ok) {
-  //   //       console.log("network response was not okay");
-  //   //       throw new Error('Network response was not ok');
-          
-  //   //     }
-  //   //     return response.json();
-  //   //   })
-  //   //   .then(data => {
-  //   //     // Handle the success response from the server
-  //   //     console.log('Submission successful:', data);
-  //   //     // You may want to show a success message or redirect the user
-  //   //     // Show success notification
-  //   //     notification.success({
-  //   //       message: 'Submission Successful',
-  //   //       description: 'Task details submitted successfully!',
-  //   //     });
-  //   //   })
-  //   //   .catch(error => {
-  //   //     // Handle errors during the fetch
-  //   //     console.error('Error during submission:', error);
-  //   //     // Show error notification
-  //   //     notification.error({
-  //   //       message: 'Submission Failed',
-  //   //       description: 'There was an error submitting the task details.',
-  //   //     });
-  //   //     // You may want to show an error message to the user
-  //   //   });
-  // };
-
-//   const handleOverallSubmit = () => {
-//     // Prepare the data to be sent
-//     const requestData: Task[] = filteredTasks.map(task => ({
-//         date: task.date,
-//         userId: task.userId,
-//         task: task.task,
-//         startTime: task.startTime,
-//         endTime: task.endTime,
-//         totalHours: task.totalHours,
-//         description: task.description,
-//         reportingTo: task.reportingTo,
-//         idx: task.idx,
-//     }));
-
-//     // Set the success notification
-//     notification.success({
-//         message: 'Submission Successful',
-//         description: 'Task details submitted successfully!',
-//     });
-//     navigate('/approvalrequests')
-//     // Set the approvalRequestsData state
-//     console.log("handleOverAllsubmit", requestData);
-//     setApprovalRequestsData(requestData);
-//     localStorage.setItem('requestedOn', addTask.date);
-//     // Store the approvalRequestsData in local storage
-//     localStorage.setItem('approvalRequestsData', JSON.stringify(requestData));
-
-//     // Retrieve rejectedKeys from local storage
-//     const rejectedKeysString = localStorage.getItem('rejectedKeys');
-//     console.log("rejectedKeysString",rejectedKeysString);
-//     if (rejectedKeysString) {
-//       let parsedRejectedKeys: RecentRejected[] = JSON.parse(rejectedKeysString);
-//       console.log("rejectedKeys", parsedRejectedKeys);
-//       // Check if 'submit' exists in rejectedKeys
-//       const date = requestData.length > 0 ? requestData[0].date : '';
-//       if (parsedRejectedKeys.some((key) => key.date === date)) {
-//         // Remove 'date' from rejectedKeys
-//         const updatedRejectedKeys = parsedRejectedKeys.filter((key) => key.date !== date);
-
-//         // Update rejectedKeys in local storage
-//         localStorage.setItem('rejectedKeys', JSON.stringify(updatedRejectedKeys));
-//     }
-//     }
-// };
-
-
-
-const handleOverallSubmit = () => {
-
-  // Filter tasks where userId matches addTask.userId
-  const tasksToSend: Task[] = filteredTasks.filter(task => task.userId === addTask.userId);
-    // Prepare the data to be sent
-    const requestData: Task[] = tasksToSend.map(task => ({
-        date: task.date,
-        userId: task.userId,
-        workLocation: task.workLocation,
-        task: task.task,
-        title:task.title,
-        startTime: task.startTime,
-        endTime: task.endTime,
-        totalHours: task.totalHours,
-        description: task.description,
-        reportingTo: task.reportingTo,
-        idx: task.idx,
-    }));
-
-    // Group tasks by date
-    const groupedTasks: { [date: string]: Task[] } = {};
-    requestData.forEach(task => {
-        if (groupedTasks.hasOwnProperty(task.date)) {
-            groupedTasks[task.date].push(task);
-        } else {
-            groupedTasks[task.date] = [task];
-        }
+        // Update localStorage
+        localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
+      },
+      onCancel() {
+        // Logic if user cancels deletion
+      },
     });
-
-        // Determine the key based on the filterOption
-    let key: string;
-    if (filterOption === "Date") {
-        key = currentDate.format("MMMM YYYY"); // Format Dayjs object to "February 2024"
-    } else if (filterOption === 'Week') {
-        key = currentWeek.startOf('week').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
-    } else {
-        key = currentMonth.startOf('month').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
-    }
-
-    let date: string[] = [];
-    if (filterOption === "Date") {
-        date.push(currentDate.format('YYYY-MM-DD')); // Format Dayjs object to "February 2024"
-    } else if (filterOption === 'Week') {
-        const fromDate = currentWeek.startOf('week').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
-        const toDate = currentWeek.endOf('week').format("YYYY-MM-DD");
-        date.push(fromDate);
-        date.push(toDate);
-    } else {
-        const fromDate = currentMonth.startOf('month').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
-        const toDate = currentMonth.endOf('month').format("YYYY-MM-DD");
-        date.push(fromDate);
-        date.push(toDate);
-    }
-
-    // Retrieve requestedOn from local storage
-    const requestedOnString = localStorage.getItem('requestedOn');
-    const requestedOn: RequestedOn = requestedOnString ? JSON.parse(requestedOnString) : {};
-
-    // Update requestedOn with the new date
-    requestedOn[key] = date;
-
-    // Update requestedOn in local storage
-    localStorage.setItem('requestedOn', JSON.stringify(requestedOn));
+  }, [taskList, selectedKeysToHide]);
 
 
-    // Store the approvalRequestsData in local storage as an object
-    const approvalRequestedData: { [date: string]: Task[] } = groupedTasks;
-    localStorage.setItem('approvalRequestedData', JSON.stringify(approvalRequestedData));
+  const handleOverallSubmit = () => {
 
-    // Assuming userId is available in your component's scope
+    // Filter tasks where userId matches addTask.userId
+    const tasksToSend: Task[] = filteredTasks.filter(task => task.userId === addTask.userId);
+      // Prepare the data to be sent
+      const requestData: Task[] = tasksToSend.map(task => ({
+          date: task.date,
+          userId: task.userId,
+          workLocation: task.workLocation,
+          task: task.task,
+          title:task.title,
+          startTime: task.startTime,
+          endTime: task.endTime,
+          totalHours: task.totalHours,
+          description: task.description,
+          reportingTo: task.reportingTo,
+          idx: task.idx,
+      }));
 
-    // Retrieve rejectedKeys from local storage for the specific userId
-    const rejectedKeysString = localStorage.getItem('rejectedKeys');
-    console.log("rejectedKeysString", rejectedKeysString);
+      // Group tasks by date
+      const groupedTasks: { [date: string]: Task[] } = {};
+      requestData.forEach(task => {
+          if (groupedTasks.hasOwnProperty(task.date)) {
+              groupedTasks[task.date].push(task);
+          } else {
+              groupedTasks[task.date] = [task];
+          }
+      });
 
-    if (rejectedKeysString) {
-        const parsedRejectedKeys: RejectedKeys = JSON.parse(rejectedKeysString);
-        console.log("rejectedKeys", parsedRejectedKeys);
+          // Determine the key based on the filterOption
+      let key: string;
+      if (filterOption === "Date") {
+          key = currentDate.format("MMMM YYYY"); // Format Dayjs object to "February 2024"
+      } else if (filterOption === 'Week') {
+          key = currentWeek.startOf('week').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
+      } else {
+          key = currentMonth.startOf('month').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
+      }
 
-        // Check if userId exists in rejectedKeys
-        if (parsedRejectedKeys.hasOwnProperty(userId)) {
-            // Get the rejectedKeys for the specific userId
-            const userRejectedKeys = parsedRejectedKeys[userId];
+      let date: string[] = [];
+      if (filterOption === "Date") {
+          date.push(currentDate.format('YYYY-MM-DD')); // Format Dayjs object to "February 2024"
+      } else if (filterOption === 'Week') {
+          const fromDate = currentWeek.startOf('week').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
+          const toDate = currentWeek.endOf('week').format("YYYY-MM-DD");
+          date.push(fromDate);
+          date.push(toDate);
+      } else {
+          const fromDate = currentMonth.startOf('month').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
+          const toDate = currentMonth.endOf('month').format("YYYY-MM-DD");
+          date.push(fromDate);
+          date.push(toDate);
+      }
 
-            // Check if 'submit' exists in rejectedKeys for the specific user
-            const date = requestData.length > 0 ? requestData[0].date : '';
-            if (userRejectedKeys.some((key) => key.date === date)) {
-                // Remove 'date' from rejectedKeys for the specific user
-                const updatedRejectedKeys = userRejectedKeys.filter((key) => key.date !== date);
+      // Retrieve requestedOn from local storage
+      const requestedOnString = localStorage.getItem('requestedOn');
+      const requestedOn: RequestedOn = requestedOnString ? JSON.parse(requestedOnString) : {};
 
-                // Update rejectedKeys in local storage for the specific user
-                parsedRejectedKeys[userId] = updatedRejectedKeys;
-                localStorage.setItem('rejectedKeys', JSON.stringify(parsedRejectedKeys));
-            }
-        }
-    }
+      // Update requestedOn with the new date
+      requestedOn[key] = date;
 
-    // Set the success notification
-    notification.success({
-        message: 'Submission Successful',
-        description: 'Task details submitted successfully!',
-    });
+      // Update requestedOn in local storage
+      localStorage.setItem('requestedOn', JSON.stringify(requestedOn));
 
-    // Navigate to approval requests page
-    navigate('/approvalrequests');
-};
+
+      // Store the approvalRequestsData in local storage as an object
+      const approvalRequestedData: { [date: string]: Task[] } = groupedTasks;
+      localStorage.setItem('approvalRequestedData', JSON.stringify(approvalRequestedData));
+
+      // Assuming userId is available in your component's scope
+
+      // Retrieve rejectedKeys from local storage for the specific userId
+      const rejectedKeysString = localStorage.getItem('rejectedKeys');
+      console.log("rejectedKeysString", rejectedKeysString);
+
+      if (rejectedKeysString) {
+          const parsedRejectedKeys: RejectedKeys = JSON.parse(rejectedKeysString);
+          console.log("rejectedKeys", parsedRejectedKeys);
+
+          // Check if userId exists in rejectedKeys
+          if (parsedRejectedKeys.hasOwnProperty(userId)) {
+              // Get the rejectedKeys for the specific userId
+              const userRejectedKeys = parsedRejectedKeys[userId];
+
+              // Check if 'submit' exists in rejectedKeys for the specific user
+              const date = requestData.length > 0 ? requestData[0].date : '';
+              if (userRejectedKeys.some((key) => key.date === date)) {
+                  // Remove 'date' from rejectedKeys for the specific user
+                  const updatedRejectedKeys = userRejectedKeys.filter((key) => key.date !== date);
+
+                  // Update rejectedKeys in local storage for the specific user
+                  parsedRejectedKeys[userId] = updatedRejectedKeys;
+                  localStorage.setItem('rejectedKeys', JSON.stringify(parsedRejectedKeys));
+              }
+          }
+      }
+
+      // Set the success notification
+      notification.success({
+          message: 'Submission Successful',
+          description: 'Task details submitted successfully!',
+      });
+
+      // Navigate to approval requests page
+      navigate('/approvalrequests');
+  };
 
   const columns: ColumnsType<Task> = [
     {
