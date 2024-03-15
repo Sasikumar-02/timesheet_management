@@ -12,7 +12,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
 import DashboardLayout from '../Dashboard/Layout'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'
 import { TaskObject } from './ApprovalRequest';
@@ -21,7 +21,6 @@ import ApprovalRequest from './ApprovalRequest';
 import '../Styles/ApprovalRequest.css';
 import '../Styles/AddTask.css';
 import type { ThemeConfig } from "antd";
-import { Pie } from 'react-chartjs-2';
 import Chart from 'react-apexcharts';
 //import { Chart } from 'chart.js/auto';
 import { ApexOptions } from 'apexcharts';
@@ -93,7 +92,8 @@ const MonthTasks: React.FC = () => {
     const [rejectKeys, setRejectKeys]= useState<RejectedKeys>({});
     const [rejectDates, setRejectDates]= useState<RejectedKeys>({});
     const [hoveredRow, setHoveredRow] = useState<DateTask | null>(null); // Initialize hoveredRow with DateTask or null
-    const [chartData, setChartData] = useState<{ labels: string[]; series: number[] }>({ labels: [], series: [] }); // Initialize chartData with appropriate types
+    //const [chartData, setChartData] = useState<{ labels: string[]; series: number[] }>({ labels: [], series: [] }); // Initialize chartData with appropriate types
+    const [chartData, setChartData] = useState<{ name: string, value: number }[]>([]);
     console.log("received data", formattedMonth,userId, tasksForClickedMonth)
     const [modalVisible, setModalVisible] = useState(false);
     const [clickedRecord, setClickedRecord] = useState<DateTask | null>(null);
@@ -133,42 +133,64 @@ const MonthTasks: React.FC = () => {
         }
     };
     // Function to prepare data for the pie chart
-    const preparePieChartData = () => {
-        // Initialize an object to store total hours per task
-        const taskHoursPerDay: { [key: string]: number } = {};
+    // const preparePieChartData = () => {
+    //     // Initialize an object to store total hours per task
+    //     const taskHoursPerDay: { [key: string]: number } = {};
     
-        // Iterate over each day's tasks data
+    //     // Iterate over each day's tasks data
+    //     monthTasksData.forEach(dateTask => {
+    //         const tasks = dateTask.task;
+    
+    //         // Iterate over each task for the current day
+    //         tasks.forEach(task => {
+    //             const taskName = task.task;
+    //             const totalHours = parseFloat(task.totalHours || '0');
+    
+    //             // Accumulate total hours for each task
+    //             taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
+    //         });
+    //     });
+    
+    //     // Extract task names and total hours as series data for the pie chart
+    //     const seriesData = Object.values(taskHoursPerDay);
+    //     console.log("seriesData", seriesData);
+    //     const labels = Object.keys(taskHoursPerDay);
+    //     console.log("seriesData labels", labels);
+        
+    //     // Set up options for the pie chart
+    //     const options: ChartOptions = {
+    //         chart: {
+    //             type: 'pie',
+    //         },
+    //         labels: labels,
+    //         colors: [], // Set colors as an empty array if not provided dynamically
+    //     };
+    
+    //     setChartOptions(options);
+    //     setChartSeries(seriesData);
+    // };    
+
+    const preparePieChartData = () => {
+        const taskHoursPerDay: { [key: string]: number } = {};
         monthTasksData.forEach(dateTask => {
             const tasks = dateTask.task;
-    
-            // Iterate over each task for the current day
+
             tasks.forEach(task => {
                 const taskName = task.task;
                 const totalHours = parseFloat(task.totalHours || '0');
-    
-                // Accumulate total hours for each task
+
                 taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
             });
         });
-    
-        // Extract task names and total hours as series data for the pie chart
-        const seriesData = Object.values(taskHoursPerDay);
-        console.log("seriesData", seriesData);
-        const labels = Object.keys(taskHoursPerDay);
-        console.log("seriesData labels", labels);
-        
-        // Set up options for the pie chart
-        const options: ChartOptions = {
-            chart: {
-                type: 'pie',
-            },
-            labels: labels,
-            colors: [], // Set colors as an empty array if not provided dynamically
-        };
-    
-        setChartOptions(options);
-        setChartSeries(seriesData);
-    };    
+
+        const data = Object.entries(taskHoursPerDay).map(([taskName, totalHours]) => ({
+            name: taskName,
+            value: totalHours
+        }));
+
+        setChartData(data);
+    };
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
 
       // Function to extract date from tasks
       function extractDateFromTasks(tasks: Task[]): string | null {
@@ -502,6 +524,39 @@ const MonthTasks: React.FC = () => {
         }
     }, [monthTaskDatas, monthTasksData]); // Add monthTasksData to the dependency array
 
+    // const handleRowHover = (record: DateTask) => {
+    //     setHoveredRow(record); // Ensure hoveredRow is initialized correctly
+        
+    //     // Initialize an object to store total hours for each task name
+    //     const taskTotalHours: { [key: string]: number } = {};
+        
+    //     // Calculate total hours for each task name
+    //     record.task.forEach(task => {
+    //         const totalHoursForTask = parseFloat(task.totalHours || '0');
+    //         // Accumulate total hours for each task name
+    //         taskTotalHours[task.task] = (taskTotalHours[task.task] || 0) + totalHoursForTask;
+    //     });
+        
+    //     // Calculate total hours for all tasks
+    //     let totalHours = Object.values(taskTotalHours).reduce((acc, curr) => acc + curr, 0);
+        
+    //     // If total hours are less than 9, consider them as 9
+    //     totalHours = Math.max(totalHours, 9);
+    //     console.log("totalHours", totalHours);
+        
+    //     // Calculate percentages for each task based on total hours
+    //     const percentages = Object.entries(taskTotalHours).map(([taskName, taskTotalHours]) => ({
+    //         taskName,
+    //         percentage: ((taskTotalHours / totalHours) * 100).toFixed(2),
+    //     }));
+    //     console.log("percentage", percentages);
+    //     // Update chart data state
+    //     setChartData({
+    //         labels: percentages.map(entry => entry.taskName),
+    //         series: percentages.map(entry => parseFloat(entry.percentage)),
+    //     });
+    // };
+    
     const handleRowHover = (record: DateTask) => {
         setHoveredRow(record); // Ensure hoveredRow is initialized correctly
         
@@ -529,12 +584,11 @@ const MonthTasks: React.FC = () => {
         }));
         console.log("percentage", percentages);
         // Update chart data state
-        setChartData({
-            labels: percentages.map(entry => entry.taskName),
-            series: percentages.map(entry => parseFloat(entry.percentage)),
-        });
-    };
+        const labels = percentages.map(entry => entry.taskName);
+        const series = percentages.map(entry => parseFloat(entry.percentage));
     
+        setChartData(labels.map((label, index) => ({ name: label, value: series[index] })));
+    };
     
     const handleRowLeave = () => {
         setHoveredRow(null); // Clear the hovered row
@@ -1229,7 +1283,7 @@ const MonthTasks: React.FC = () => {
         </Menu>
       );
 
-    const getColumn = (formattedMonth: string) => {
+   
         const column: ColumnsType<DateTask> = [
             {
                 title: 'Date',
@@ -1407,8 +1461,7 @@ const MonthTasks: React.FC = () => {
             Table.EXPAND_COLUMN
         ];
     
-        return column;
-    };
+    
     
 
     const innerColumn: ColumnsType<Task> = [
@@ -1542,7 +1595,7 @@ const MonthTasks: React.FC = () => {
                             borderRadius: '5px', 
                             padding: '46px', 
                             width: '48%', 
-                            height: '100%', 
+                            height: '350px', 
                             boxSizing: 'border-box',
                             display: 'flex', 
                             justifyContent: 'center', 
@@ -1550,7 +1603,7 @@ const MonthTasks: React.FC = () => {
                             border: '1px solid white' // Set border to white
                         }}>
                             
-                            <Chart
+                            {/* <Chart
                                 options={{
                                     ...chartOptions,
                                     chart: {
@@ -1561,8 +1614,25 @@ const MonthTasks: React.FC = () => {
                                 series={chartSeries}
                                 type="pie"
                                 width="380"
-                            />
-
+                            /> */}
+                            <PieChart width={400} height={400} style={{background: 'white'}}>
+                                <Pie
+                                    dataKey="value"
+                                    isAnimationActive={false}
+                                    data={chartData}
+                                    cx={200}
+                                    cy={200}
+                                    outerRadius={120}
+                                    fill="#8884d8"
+                                    label
+                                >
+                                    {chartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                {/* <Legend /> */}
+                            </PieChart>
                         </div>
                         <div style={{ 
                             transition: 'box-shadow .3s', 
@@ -1618,10 +1688,10 @@ const MonthTasks: React.FC = () => {
                             }}
                             onRow={(record: DateTask) => ({
                                 onClick: () => handleRowClick(record),
-                                onMouseEnter: () => handleRowHover(record),
-                                onMouseLeave: handleRowLeave,
+                                // onMouseEnter: () => handleRowHover(record),
+                                // onMouseLeave: handleRowLeave,
                             })}
-                            columns={getColumn(formattedMonth)} 
+                            columns={column} 
                             className='table-striped-rows approvalrequests-table'
                             dataSource={monthTasksData}
                             pagination={false}
