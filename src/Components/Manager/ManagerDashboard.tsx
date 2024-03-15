@@ -756,8 +756,8 @@ const ManagerDashboard = () => {
             </div>
           </div>
       </div>
-        <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-          <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+        <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center', }}>
+          <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%', display:'flex', justifyContent:'center', alignItems:'center'}}>
               {/* <ApexCharts
                   options={{
                       chart: {
@@ -770,7 +770,9 @@ const ManagerDashboard = () => {
                   width={600}
                   height={300}
               /> */}
-              <Doughnut data={data} />
+               <div style={{width: '300px', height: '300px'}}>
+                <Doughnut data={data} style={{boxSizing: 'border-box',display: 'block',height:'300px',width: '300px'}} width={200} height={200}/>
+              </div>
           </div>
           <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
               <ApexCharts

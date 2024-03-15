@@ -28,10 +28,12 @@ import { ApexOptions } from 'apexcharts';
 import { theme } from "antd";
 import { DateTask } from '../Employee/AddTask';
 import { saveAs } from 'file-saver';
+// import * as XLSX from 'xlsx';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { toPng } from 'html-to-image';
+import * as ExcelJS from 'exceljs';
 export interface SelectedKeys {
     [userId: string]: string[];
 }
@@ -65,7 +67,10 @@ const config: ThemeConfig = {
     };
 }
 
-
+    interface ChartImage {
+        name: string;
+        data: string;
+    }
 
 interface ApprovalRequestsProps{
     setSelectedKeys: React.Dispatch<React.SetStateAction<string[]>>;
@@ -99,8 +104,34 @@ const MonthTasks: React.FC = () => {
             type: 'pie', // or any other default chart type
         },
     });
-      
+    const [chartImages, setChartImages] = useState<ChartImage[]>([]);
     const [chartSeries, setChartSeries] = useState<number[]>([]);
+    useEffect(() => {
+        preparePieChartImage();
+        prepareLineChartImage();
+    }, [monthTasksData]);
+
+    const preparePieChartImage = () => {
+        // Your pie chart logic to render on a canvas
+        const chartCanvas = document.getElementById('pie-chart-container') as HTMLCanvasElement;
+        if (chartCanvas) {
+            html2canvas(chartCanvas).then(canvas => {
+                const imageData = canvas.toDataURL('image/png');
+                setChartImages(prevImages => [...prevImages, { name: 'PieChart.png', data: imageData }]);
+            });
+        }
+    };
+
+    const prepareLineChartImage = () => {
+        // Your line chart logic to render on a canvas
+        const chartCanvas = document.getElementById('line-chart-container') as HTMLCanvasElement;
+        if (chartCanvas) {
+            html2canvas(chartCanvas).then(canvas => {
+                const imageData = canvas.toDataURL('image/png');
+                setChartImages(prevImages => [...prevImages, { name: 'LineChart.png', data: imageData }]);
+            });
+        }
+    };
     // Function to prepare data for the pie chart
     const preparePieChartData = () => {
         // Initialize an object to store total hours per task
@@ -122,7 +153,9 @@ const MonthTasks: React.FC = () => {
     
         // Extract task names and total hours as series data for the pie chart
         const seriesData = Object.values(taskHoursPerDay);
+        console.log("seriesData", seriesData);
         const labels = Object.keys(taskHoursPerDay);
+        console.log("seriesData labels", labels);
         
         // Set up options for the pie chart
         const options: ChartOptions = {
@@ -207,7 +240,77 @@ const MonthTasks: React.FC = () => {
     }, []);
     
     
-
+    const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
+        return new Promise((resolve, reject) => {
+            // Get chart containers
+            const pieChartContainer = document.getElementById('pie-chart-container') as HTMLCanvasElement;
+            const lineChartContainer = document.getElementById('line-chart-container') as HTMLCanvasElement;
+    
+            // Create promises for each chart export
+            const pieChartPromise = html2canvas(pieChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
+            const lineChartPromise = html2canvas(lineChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
+    
+            // Wait for both promises to resolve
+            Promise.all([pieChartPromise, lineChartPromise])
+                .then(([pieCanvas, lineCanvas]) => {
+                    // Convert canvas elements to PNG images
+                    const pieChartImage = pieCanvas.toDataURL('image/png');
+                    const lineChartImage = lineCanvas.toDataURL('image/png');
+    
+                    // Resolve with the images
+                    resolve({ pieChartImage, lineChartImage });
+                })
+                .catch(error => {
+                    reject(error); // Reject if there's an error exporting the charts
+                });
+        });
+    };
+    
+  
+    // const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
+    //     return new Promise((resolve, reject) => {
+    //         // Get chart containers
+    //         const pieChartContainer = document.getElementById('pie-chart-container') as HTMLDivElement;
+    //         const lineChartContainer = document.getElementById('line-chart-container') as HTMLDivElement;
+    
+    //         // Set explicit dimensions for the chart containers
+    //         const containerWidth = pieChartContainer.offsetWidth;
+    //         const containerHeight = pieChartContainer.offsetHeight;
+    //         const reducedWidth = containerWidth * 0.45; // You can adjust the reduction percentage as needed
+    //         const reducedHeight = containerHeight * 0.7; // You can adjust the reduction percentage as needed
+    //         pieChartContainer.style.width = reducedWidth + 'px';
+    //         pieChartContainer.style.height = reducedHeight + 'px';
+    //         lineChartContainer.style.width = containerWidth + 'px';
+    //         lineChartContainer.style.height = containerHeight + 'px';
+    
+    //         // Create promises for each chart export
+    //         const pieChartPromise = html2canvas(pieChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
+    //         const lineChartPromise = html2canvas(lineChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
+    
+    //         // Wait for both promises to resolve
+    //         Promise.all([pieChartPromise, lineChartPromise])
+    //             .then(([pieCanvas, lineCanvas]) => {
+    //                 // Convert canvas elements to PNG images
+    //                 const pieChartImage = pieCanvas.toDataURL('image/png');
+    //                 const lineChartImage = lineCanvas.toDataURL('image/png');
+    
+    //                 // Resolve with the images
+    //                 resolve({ pieChartImage, lineChartImage });
+    //             })
+    //             .catch(error => {
+    //                 reject(error); // Reject if there's an error exporting the charts
+    //             })
+    //             .finally(() => {
+    //                 // Reset the styles
+    //                 pieChartContainer.style.width = '';
+    //                 pieChartContainer.style.height = '';
+    //                 lineChartContainer.style.width = '';
+    //                 lineChartContainer.style.height = '';
+    //             });
+    //     });
+    // };
+    
+    
 
     const handleRowSelection = (selectedRowKeys: React.Key[]) => {
         setSelectedRows(selectedRowKeys as string[]);
@@ -533,24 +636,24 @@ const MonthTasks: React.FC = () => {
     // Function to export as PDF
     // const exportToPDF = () => {
     //     try {
-    //         const chartContainer1 = document.getElementById('pie-chart-container'); // Get pie chart container element
-    //         const chartContainer2 = document.getElementById('line-chart-container'); // Get line chart container element
-    //         if (!chartContainer1 || !chartContainer2) return;
+            // const chartContainer1 = document.getElementById('pie-chart-container'); // Get pie chart container element
+            // const chartContainer2 = document.getElementById('line-chart-container'); // Get line chart container element
+            // if (!chartContainer1 || !chartContainer2) return;
 
-    //         html2canvas(chartContainer1).then(canvas1 => { // Convert pie chart container to canvas
-    //             const imgData1 = canvas1.toDataURL('image/png'); // Convert canvas to image data
-    //             const pdf = new jsPDF(); // Create new PDF document
-    //             pdf.addImage(imgData1, 'PNG', 10, 10, 100, 100); // Add pie chart to PDF
+            // html2canvas(chartContainer1).then(canvas1 => { // Convert pie chart container to canvas
+            //     const imgData1 = canvas1.toDataURL('image/png'); // Convert canvas to image data
+            //     const pdf = new jsPDF(); // Create new PDF document
+            //     pdf.addImage(imgData1, 'PNG', 10, 10, 100, 100); // Add pie chart to PDF
 
-    //             // Add page break
-    //             pdf.addPage();
+            //     // Add page break
+            //     pdf.addPage();
 
-    //             html2canvas(chartContainer2).then(canvas2 => { // Convert line chart container to canvas
-    //                 const imgData2 = canvas2.toDataURL('image/png'); // Convert canvas to image data
-    //                 pdf.addImage(imgData2, 'PNG', 10, 10, 180, 100); // Add line chart to PDF
-    //                 pdf.save(`charts_and_table_${moment().format('YYYY-MM-DD_HH-mm-ss')}.pdf`); // Save PDF
-    //             });
-    //         });
+            //     html2canvas(chartContainer2).then(canvas2 => { // Convert line chart container to canvas
+            //         const imgData2 = canvas2.toDataURL('image/png'); // Convert canvas to image data
+            //         pdf.addImage(imgData2, 'PNG', 10, 10, 180, 100); // Add line chart to PDF
+            //         pdf.save(`charts_and_table_${moment().format('YYYY-MM-DD_HH-mm-ss')}.pdf`); // Save PDF
+            //     });
+            // });
     //     } catch (error) {
     //         console.error('Error exporting to PDF:', error);
     //     }
@@ -675,15 +778,15 @@ const MonthTasks: React.FC = () => {
 
     const handleExportOptionForPDF = (key: string) => {
         if (key === 'all' || selectedRows.length === 0) {
-            // Notify if no rows are selected
-            if (selectedRows.length === 0) {
-                message.warning('Please select rows to export.');
-                return;
-            }
+            // // Notify if no rows are selected
+            // if (selectedRows.length === 0) {
+            //     message.warning('Please select rows to export.');
+            //     return;
+            // }
             // Proceed with export
-            exportToPDF();
+            exportCharts();
         } else {
-            exportToPDF();
+            exportCharts();
         }
     };
 
@@ -693,157 +796,417 @@ const MonthTasks: React.FC = () => {
           <Menu.Item key="all">Export All</Menu.Item>
         </Menu>
       );
-    
 
-    const exportToExcel = () => {
-        try {
-            
-            console.log("exportToExcel - selectedRows", selectedRows);
-            const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
-            console.log("exportToExcel - dataToExport", dataToExport);
-            
-            const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'totalHours', 'extraHours'];
-            
-            const data = dataToExport.map(row => {
-                const rowData: any[] = [];
-                rowData.push(row.task[0].userId); // Add userId
-                rowData.push(row.task[0].date); // Add Date
-                // Initialize task data to 0 if missing
-                const taskData: { [key: string]: number } = {
-                    'Meeting': 0,
-                    'Project': 0,
-                    'Learning': 0,
-                    'Training': 0
-                };
-    
-                // Populate task data with actual values if available
-                row.task.forEach(task => {
-                    taskData[task.task] = parseFloat(task.totalHours || '0');
-                });
-    
-                // Push task data into rowData
-                rowData.push(taskData['Meeting']);
-                rowData.push(taskData['Project']);
-                rowData.push(taskData['Learning']);
-                rowData.push(taskData['Training']);
-    
-                // Calculate totalHours and extraHours
-                const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + val, 0);
-                const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-    
-                rowData.push(totalHours);
-                rowData.push(extraHours);
-    
-                return rowData;
-            });
-    
-            const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet([header, ...data]);
-            const workbook: XLSX.WorkBook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-    
-            const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-            const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-    
-            saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
-        } catch (error) {
-            console.error('Error exporting to Excel:', error);
+      // Function to convert date to "Month Year" format
+        function formatDateToMonthYear(dateString: any) {
+            const [year, month] = dateString.split('-');
+            const date = new Date(year, month - 1); // Months are zero-based in JavaScript
+            const monthName = date.toLocaleString('default', { month: 'long' });
+            return `${monthName} ${year}`;
         }
-    };
     
-    // const exportToExcel = async (selectedRows: string[], monthTasksData: DateTask[]) => {
-    //     try {
-    //         const pieChartContainer = document.getElementById('pie-chart-container');
-    //         const lineChartContainer = document.getElementById('line-chart-container');
+        // const exportToExcel = () => {
+        //     try {
+        //         console.log("exportToExcel - selectedRows", selectedRows);
+        //         const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
+        //         console.log("exportToExcel - dataToExport", dataToExport);
+        //         let date = '';
+        //         const header = ['UserId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'TotalHours', 'ExtraHours'];
+                
+        //         const data = dataToExport.map(row => {
+        //             const rowData:any[] = [];
+        //             rowData.push(row.task[0].userId); // Add userId
+        //             rowData.push(row.task[0].date); // Add Date
+        //             date = row.task[0].date;
+        //             // Initialize task data to 0 if missing
+        //             const taskData: { [key: string]: number } = {
+        //                 'Meeting': 0,
+        //                 'Project': 0,
+        //                 'Learning': 0,
+        //                 'Training': 0
+        //             };
+        
+        //             // Populate task data with actual values if available
+        //             row.task.forEach(task => {
+        //                 taskData[task.task] = parseFloat(task.totalHours || '0');
+        //             });
+        
+        //             // Push task data into rowData
+        //             rowData.push(taskData['Meeting']);
+        //             rowData.push(taskData['Project']);
+        //             rowData.push(taskData['Learning']);
+        //             rowData.push(taskData['Training']);
+        
+        //             // Calculate totalHours and extraHours
+        //             const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + val, 0);
+        //             const extraHours = totalHours > 9 ? totalHours - 9 : 0;
+        
+        //             rowData.push(totalHours);
+        //             rowData.push(extraHours);
+        
+        //             return rowData;
+        //         });
+        
+        //         // Create a workbook and add a worksheet
+        //         const workbook = new ExcelJS.Workbook();
+        //         const worksheet = workbook.addWorksheet('Sheet1');
+        
+        //         worksheet.views = [{
+        //             showGridLines: false
+        //         }];
+                
+        //         // Determine the length of the header array
+        //         const headerLength = header.length;
+        
+        //         // Add Timesheet row with background color, bold, and 24px font size
+        //         const timesheetRow = worksheet.addRow(['TimeSheet']);
+        //         timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
+        //         timesheetRow.fill = {
+        //             type: 'pattern',
+        //             pattern: 'solid',
+        //             fgColor: { argb: '0B4266' } // Blue color
+        //         };
+        
+        //        // Add Name and Month rows with specified values
+        //         const nameRow = worksheet.addRow([]);
+        //         nameRow.getCell(1).value = 'Name:';
+        //         nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+        //         nameRow.getCell(2).value = 'Sasi Kumar';
+        
+        //         const monthRow = worksheet.addRow([]);
+        //         monthRow.getCell(1).value = 'Month:';
+        //         monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
+        //         monthRow.getCell(2).value = formatDateToMonthYear(date); // Dynamically convert date to "Month Year" format
+                    
+        //         // Add empty rows
+        //         for (let i = 0; i < 4; i++) {
+        //             worksheet.addRow([]);
+        //         }
+        //         // Add a row with horizontal gridline (6th row)
+        //         const gridlineRow = worksheet.addRow(Array(headerLength).fill('')); // Add empty content for each column
+        //         gridlineRow.eachCell(cell => {
+        //             cell.border = {
+        //                 bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+        //             };
+        //         });
+        
+        //         // Add empty row after the gridline row
+        //         worksheet.addRow([]);
+                    
+        //         // Add header row with styles starting from 8th row
+        //         const headerRow = worksheet.addRow(header);
+        //         headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
+        
+        //         // Set background color for header cells
+        //         headerRow.eachCell(cell => {
+        //             cell.fill = {
+        //                 type: 'pattern',
+        //                 pattern: 'solid',
+        //                 fgColor: { argb: '0B4266' } // Blue color
+        //             };
+        //         });
+        
+        //         // Add data rows
+        //         data.forEach(rowData => {
+        //             const row = worksheet.addRow(rowData);
+        //             // Set border and text alignment for data rows
+        //             row.eachCell(cell => {
+        //                 cell.border = {
+        //                     top: { style: 'thin' },
+        //                     left: { style: 'thin' },
+        //                     bottom: { style: 'thin' },
+        //                     right: { style: 'thin' }
+        //                 };
+        //                 cell.alignment = { horizontal: 'left' }; // Align text to the left
+        //             });
+        //         });
+        
+        //         // Add pie chart
+        //         const chartContainer1 = document.getElementById('pie-chart-container'); // Get pie chart container element
+        //         const chartContainer2 = document.getElementById('line-chart-container'); // Get line chart container element
+        //         if (!chartContainer1 || !chartContainer2) return;
+        
+        //         // Add pie chart
+        //         const pieChartPromise = html2canvas(chartContainer1).then(canvas1 => {
+        //             const imgData1 = canvas1.toDataURL('image/png'); // Convert canvas to image data
+        //             const imgId1 = workbook.addImage({
+        //                 base64: imgData1,
+        //                 extension: 'png',
+        //             });
+        //             worksheet.addImage(imgId1,{
+        //                 tl: { col: 1, row: 0 } as ExcelJS.Anchor,
+        //                 br: { col: 3, row: 0 } as ExcelJS.Anchor,
+        //                 editAs: 'absolute'
+        //             });
+        //         });
+
+        //         // Add line chart
+        //         const lineChartPromise = html2canvas(chartContainer2).then(canvas2 => {
+        //             const imgData2 = canvas2.toDataURL('image/png'); // Convert canvas to image data
+        //             const imgId2 = workbook.addImage({
+        //                 base64: imgData2,
+        //                 extension: 'png',
+        //             });
+        //             worksheet.addImage(imgId2, {
+        //                 tl: { col: 1, row: 0 } as ExcelJS.Anchor,
+        //                 br: { col: 3, row: 0 } as ExcelJS.Anchor,
+        //                 editAs: 'oneCell', // Specify the editAs property to indicate how the image should be anchored
+        //             });
+        //         });
+        
+        //         // Set column widths based on header length
+        //         worksheet.columns.forEach((column, index) => {
+        //             if (index < headerLength) {
+        //                 column.width = 24; // Adjust width as needed
+        //             } else {
+        //                 column.hidden = true; // Hide columns beyond the header length
+        //             }
+        //         });
+        
+        //         // Add a row with horizontal gridline (6th row)
+        //         const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns.length).fill('')); // Add empty content for each column
+        //         gridlineRowEnd.eachCell(cell => {
+        //             cell.border = {
+        //                 bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+        //             };
+        //         });
+        
+        //         worksheet.addRow([]);
+        //         worksheet.addRow([]);
+        //         worksheet.addRow([]);
+        //         // Insert a gridline above "Approved By"
+        //         const approveGridline = worksheet.addRow(['']); // Add empty content for each column
+        //         approveGridline.eachCell(cell => {
+        //             cell.border = {
+        //                 bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+        //             };
+        //         });
+        //         const approveRow = worksheet.addRow([]);
+        //         approveRow.getCell(1).value = 'Approved By';
+        //         approveRow.getCell(1).font = { bold: true }; 
+        //         const approveName = worksheet.addRow([]);
+        //         approveName.getCell(1).value = 'Name: Srinivasan M';
+        //         approveName.getCell(1).font = { bold: true }; 
+        //         worksheet.addRow([]);
+        
+        //         // Add a row with horizontal gridline (6th row)
+        //         const gridlineRowEndBy = worksheet.addRow(Array(worksheet.columns.length).fill('')); // Add empty content for each column
+        //         gridlineRowEndBy.eachCell(cell => {
+        //             cell.border = {
+        //                 bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+        //             };
+        //         });
+        //         // Generate Excel file
+        //         // Wait for both promises to resolve
+        //         Promise.all([pieChartPromise, lineChartPromise]).then(() => {
+        //             // Once both charts are added, generate Excel file
+        //             workbook.xlsx.writeBuffer().then(buffer => {
+        //                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+        //                 saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+        //             });
+        //         });
+                        
+        
+        //     } catch (error) {
+        //         console.error('Error exporting to Excel:', error);
+        //     }
+        // };
+        
     
-    //         if (!pieChartContainer || !lineChartContainer) {
-    //             console.error('Pie chart container or line chart container not found.');
-    //             return;
-    //         }
-    
-    //         const pieChartCanvas = await html2canvas(pieChartContainer);
-    //         const pieChartImgData = pieChartCanvas.toDataURL('image/png');
-    
-    //         const lineChartCanvas = await html2canvas(lineChartContainer);
-    //         const lineChartImgData = lineChartCanvas.toDataURL('image/png');
-    
-    //         console.log("exportToExcel - selectedRows", selectedRows);
-    //         const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
-    //         console.log("exportToExcel - dataToExport", dataToExport);
-    
-    //         const header = ['userId', 'Date', 'Meeting', 'Project', 'Learning', 'Training', 'totalHours', 'extraHours'];
-    
-    //         const data = dataToExport.map(row => {
-    //             const rowData: any[] = [];
-    //             rowData.push(row.task[0].userId); // Add userId
-    //             rowData.push(row.task[0].date); // Add Date
-    //             // Initialize task data to 0 if missing
-    //             const taskData: { [key: string]: number } = {
-    //                 'Meeting': 0,
-    //                 'Project': 0,
-    //                 'Learning': 0,
-    //                 'Training': 0
-    //             };
-    
-    //             // Populate task data with actual values if available
-    //             row.task.forEach(task => {
-    //                 taskData[task.task] = parseFloat(task.totalHours || '0');
-    //             });
-    
-    //             // Push task data into rowData
-    //             rowData.push(taskData['Meeting']);
-    //             rowData.push(taskData['Project']);
-    //             rowData.push(taskData['Learning']);
-    //             rowData.push(taskData['Training']);
-    
-    //             // Calculate totalHours and extraHours
-    //             const totalHours = rowData.slice(2, 6).reduce((acc, val) => acc + val, 0);
-    //             const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-    
-    //             rowData.push(totalHours);
-    //             rowData.push(extraHours);
-    
-    //             return rowData;
-    //         });
-    
-    //         // Convert chart images into base64 strings and include them in the worksheet
-    //         const worksheet = XLSX.utils.json_to_sheet([header, ...data]);
-    
-    //         // Add pie chart image
-    //         const pieChartImageArray = pieChartImgData.split(',');
-    //         XLSX.utils.sheet_add_dom(worksheet, {
-    //             type: 'image',
-    //             position: {
-    //                 width: '250px',
-    //                 height: '150px',
-    //                 top: '20px',
-    //                 left: '20px',
-    //             },
-    //             content: pieChartImageArray[1],
-    //         });
-    
-    //         // Add line chart image
-    //         const lineChartImageArray = lineChartImgData.split(',');
-    //         XLSX.utils.sheet_add_dom(worksheet, {
-    //             type: 'image',
-    //             position: {
-    //                 width: '250px',
-    //                 height: '150px',
-    //                 top: '20px',
-    //                 left: '20px',
-    //             },
-    //             content: lineChartImageArray[1],
-    //         });
-    
-    //         const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
-    
-    //         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    //         const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-    
-    //         saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
-    //     } catch (error) {
-    //         console.error('Error exporting to Excel:', error);
-    //     }
-    // };
-    
+        const exportToExcel = async () => {
+            try {
+                let imgId1: number;
+                let imgId2: number;
+                console.log("exportToExcel - selectedRows", selectedRows);
+                const dataToExport = selectedRows.length > 0 ? monthTasksData.filter(row => selectedRows.includes(row.key)) : [];
+                console.log("exportToExcel - dataToExport", dataToExport);
+                let date = '';
+                let userId = '';
+                const header = ['Date', 'Work Location', 'Task', 'Title', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];
+                
+                const data = dataToExport.map((row: DateTask) => {
+                    date = row.task[0].date;
+                    userId = row.task[0].userId;
+                    return row.task.map((task: Task) => {
+                        return [
+                            task.date || '',
+                            task.workLocation || '',
+                            task.task || '',
+                            task.title || '',
+                            task.startTime || '',
+                            task.endTime || '',
+                            task.totalHours || '',
+                            task.description || '',
+                            task.reportingTo || ''
+                        ];
+                    });
+                });
+                // Flatten the array
+                const flattenedData = data.flat();            
+        
+                // Create a workbook and add a worksheet
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('Sheet1');
+        
+                worksheet.views = [{
+                    showGridLines: false
+                }];
+        
+                // Determine the length of the header array
+                const headerLength = header.length;
+        
+                // Add Timesheet row with background color, bold, and 24px font size
+                const timesheetRow = worksheet.addRow(['TimeSheet']);
+                timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
+                timesheetRow.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: '0B4266' } // Blue color
+                };
+        
+                // Add Name and Month rows with specified values
+                const nameRow = worksheet.addRow([]);
+                nameRow.getCell(1).value = 'Name:';
+                nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+                nameRow.getCell(2).value = 'Sasi Kumar';
+                const userIdRow = worksheet.addRow([]);
+                userIdRow.getCell(1).value = 'UserID:';
+                userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+                userIdRow.getCell(2).value = userId;
+        
+                const monthRow = worksheet.addRow([]);
+                monthRow.getCell(1).value = 'Month:';
+                monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
+                monthRow.getCell(2).value = formatDateToMonthYear(date); // Dynamically convert date to "Month Year" format
+                    
+                // Add empty rows
+                for (let i = 0; i < 1; i++) {
+                    worksheet.addRow([]);
+                }
+
+                // Call exportCharts to get the images
+                const { pieChartImage, lineChartImage } = await exportCharts();
+
+                // Calculate the current row number
+                const currentRow = worksheet.rowCount + 2;
+
+                // Add the images to the worksheet
+                const pieChartImageId = workbook.addImage({
+                    base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
+                    extension: 'png',
+                });
+
+                const lineChartImageId = workbook.addImage({
+                    base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
+                    extension: 'png',
+                });
+
+                // Add both images to the same row
+                worksheet.addImage(pieChartImageId, {
+                    tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+                    br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
+                });
+
+                worksheet.addImage(lineChartImageId, {
+                    tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+                    br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
+                });
+                // Add a row with horizontal gridline (6th row)
+                const gridlineRow = worksheet.addRow(Array(headerLength).fill('')); // Add empty content for each column
+                gridlineRow.eachCell(cell => {
+                    cell.border = {
+                        bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+                    };
+                });
+        
+                // Add empty row after the gridline row
+                worksheet.addRow([]);
+                    
+                // Add header row with styles starting from 8th row
+                const headerRow = worksheet.addRow(header);
+                headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
+        
+                // Set background color for header cells
+                headerRow.eachCell(cell => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: '0B4266' } // Blue color
+                    };
+                });
+        
+                // Add data rows
+                flattenedData.forEach(rowData => {
+                    const row = worksheet.addRow(rowData);
+                    // Set border and text alignment for data rows
+                    row.eachCell(cell => {
+                        cell.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' }
+                        };
+                        cell.alignment = { horizontal: 'left' }; // Align text to the left
+                    });
+                });
+        
+                // Set column widths based on header length
+                worksheet.columns.forEach((column, index) => {
+                    if (index < headerLength) {
+                        column.width = 23; // Adjust width as needed
+                    } else {
+                        column.hidden = true; // Hide columns beyond the header length
+                    }
+                });
+        
+                // Add a row with horizontal gridline (6th row)
+                const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns.length).fill('')); // Add empty content for each column
+                gridlineRowEnd.eachCell(cell => {
+                    cell.border = {
+                        bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+                    };
+                });
+        
+                worksheet.addRow([]);
+                worksheet.addRow([]);
+                
+
+                worksheet.addRow([]);
+                // Insert a gridline above "Approved By"
+                const approveGridline = worksheet.addRow(['']); // Add empty content for each column
+                approveGridline.eachCell(cell => {
+                    cell.border = {
+                        bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+                    };
+                });
+                const approveRow = worksheet.addRow([]);
+                approveRow.getCell(1).value = 'Approved By';
+                approveRow.getCell(1).font = { bold: true }; 
+                const approveName = worksheet.addRow([]);
+                approveName.getCell(1).value = 'Name: Srinivasan M';
+                approveName.getCell(1).font = { bold: true }; 
+                worksheet.addRow([]);
+        
+                // Add a row with horizontal gridline (6th row)
+                const gridlineRowEndBy = worksheet.addRow(Array(worksheet.columns.length).fill('')); // Add empty content for each column
+                gridlineRowEndBy.eachCell(cell => {
+                    cell.border = {
+                        bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+                    };
+                });
+        
+                
+        
+                // Generate Excel file
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+                saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+        
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+            }
+        };
+        
     const handleExportOption = (key: string) => {
         if (key === 'all' || selectedRows.length === 0) {
           // Notify if no rows are selected
@@ -1174,6 +1537,7 @@ const MonthTasks: React.FC = () => {
                     <div  style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 20px', alignItems: 'center' }}>
                         <div id='pie-chart-container' style={{ 
                             transition: 'box-shadow .3s',
+                            background: 'white',
                             boxShadow: '0 0 4px rgba(33,33,33,.2)',  
                             borderRadius: '5px', 
                             padding: '46px', 
@@ -1182,21 +1546,66 @@ const MonthTasks: React.FC = () => {
                             boxSizing: 'border-box',
                             display: 'flex', 
                             justifyContent: 'center', 
-                            alignItems: 'center' 
+                            alignItems: 'center',
+                            border: '1px solid white' // Set border to white
                         }}>
-                            <Chart options={chartOptions} series={chartSeries} type="pie" width="380" />
+                            
+                            <Chart
+                                options={{
+                                    ...chartOptions,
+                                    chart: {
+                                        ...chartOptions.chart,
+                                        background: 'white' // Set background color to white
+                                    }
+                                }}
+                                series={chartSeries}
+                                type="pie"
+                                width="380"
+                            />
+
                         </div>
-                        <div id='line-chart-container' style={{ transition: 'box-shadow .3s',
-                            boxShadow: '0 0 4px rgba(33,33,33,.2)',  borderRadius: '5px', padding: '20px', width: '48%', boxSizing: 'border-box' }}>
-                            <LineChart width={700} height={300} data={chartDatas} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis label={{ value: 'Percentage of Extra Hours Worked', angle: -90, position: 'insideMiddle', style: { paddingRight: '5px' } }} />
-                                <Tooltip />
-                                <Legend />
-                                <Line type="monotone" dataKey="percentage" stroke="#8884d8" />
-                            </LineChart>
+                        <div style={{ 
+                            transition: 'box-shadow .3s', 
+                            background: 'white',
+                            boxShadow: '0 0 4px rgba(33,33,33,.2)',  
+                            borderRadius: '5px', 
+                            padding: '20px', 
+                            width: '48%', 
+                            boxSizing: 'border-box',
+                            overflowX: 'auto' // Enable horizontal scrolling if needed
+                        }}>
+                            <div id='line-chart-container'>
+                                <LineChart 
+                                    width={700} 
+                                    height={300} 
+                                    data={chartDatas} 
+                                    margin={{ top: 50, right: 30, left: 20, bottom: 70 }} // Adjust margin bottom to allow more space for x-axis labels
+                                    style={{ background: 'white' }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis 
+                                        dataKey="date" 
+                                        angle={-90} // Rotate the labels vertically
+                                        textAnchor="end" // Anchor the text at the end of the tick
+                                        tick={{ fontSize: '8px' }} // Optionally, adjust font size for better readability
+                                    />
+
+                                    <YAxis 
+                                        label={{ 
+                                            value: 'Percentage of Extra Hours Worked', 
+                                            angle: -90, 
+                                            position: 'insideMiddle', 
+                                            style: { fontSize: 12, paddingRight: '5px' } // Reduce font size for better readability
+                                        }} 
+                                    />
+
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="percentage" stroke="#8884d8" />
+                                </LineChart>
+                            </div>
                         </div>
+
                     </div>
 
                     <div style={{fontWeight:'bold', color:'#0B4266',fontSize:'20px',textAlign:'center', margin:'10px 20px'}}>{formattedMonth}</div>
