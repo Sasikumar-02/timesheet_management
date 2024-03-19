@@ -114,30 +114,37 @@ const ManagerDashboard = () => {
     }
   }, []);
 
-    useEffect(() => {
-      const newTitleCounts: TitleCount = {};
-      // Iterate through groupedTasks to calculate title counts
-      console.log("card groupedTasks", groupedTasks);
-      Object.values(groupedTasks)?.forEach(userTasks => {
-        console.log("card userTasks", userTasks);
-          Object.values(userTasks)?.forEach(monthTasks => {
-            console.log("card monthTasks", monthTasks);
-              Object.values(monthTasks.tasks)?.forEach(dayTasks => {
-                console.log("card dayTasks", dayTasks);
-                  dayTasks.tasks.forEach((task: Task) => {
-                      const title = task.title;
-                      if (newTitleCounts[title]) {
-                          newTitleCounts[title]++;
-                      } else {
-                          newTitleCounts[title] = 1;
-                      }
-                  });
-              });
-          });
-      });
-      console.log("card newTitleCounts", newTitleCounts);
-      setTitleCounts(newTitleCounts);
-  }, [groupedTasks]);
+  useEffect(() => {
+    const newTitleCounts: TitleCount = {};
+    const userIdsPerTitle: { [title: string]: string } = {};
+
+    Object.values(groupedTasks)?.forEach(userTasks => {
+        Object.values(userTasks)?.forEach(monthTasks => {
+            Object.values(monthTasks.tasks)?.forEach(dayTasks => {
+                dayTasks.tasks.forEach((task: Task) => {
+                    const title = task.title;
+                    const userId = task.userId;
+
+                    // Check if userId is the same for the specific title
+                    if (!userIdsPerTitle[title] || userIdsPerTitle[title] !== userId) {
+                        if (newTitleCounts[title]) {
+                            newTitleCounts[title]++;
+                        } else {
+                            newTitleCounts[title] = 1;
+                        }
+
+                        // Update userIdsPerTitle for the specific title
+                        userIdsPerTitle[title] = userId;
+                    }
+                });
+            });
+        });
+    });
+
+    setTitleCounts(newTitleCounts);
+}, [groupedTasks]);
+
+
 
 
   function getWeekOfMonth(date: dayjs.Dayjs): number {

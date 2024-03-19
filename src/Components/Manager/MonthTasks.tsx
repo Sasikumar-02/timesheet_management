@@ -170,26 +170,44 @@ const MonthTasks: React.FC = () => {
     //     setChartSeries(seriesData);
     // };    
 
-    const preparePieChartData = () => {
+    // Update preparePieChartData to accept a filter parameter
+    const preparePieChartData = (filter: string[]) => {
         const taskHoursPerDay: { [key: string]: number } = {};
-        monthTasksData.forEach(dateTask => {
-            const tasks = dateTask.task;
-
-            tasks.forEach(task => {
-                const taskName = task.task;
-                const totalHours = parseFloat(task.totalHours || '0');
-
-                taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
+        if(filter.length!==0){
+            monthTasksData.forEach(dateTask => {
+                // Check if dateTask.key is included in the filter
+                if (filter.includes(dateTask.key)) {
+                    const tasks = dateTask.task;
+        
+                    tasks.forEach(task => {
+                        const taskName = task.task;
+                        const totalHours = parseFloat(task.totalHours || '0');
+        
+                        taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
+                    });
+                }
             });
-        });
-
+        }
+        else{
+            monthTasksData.forEach(dateTask => {
+                const tasks = dateTask.task;
+                tasks.forEach(task => {
+                    const taskName = task.task;
+                    const totalHours = parseFloat(task.totalHours || '0');
+    
+                    taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
+                });
+            });
+        }
         const data = Object.entries(taskHoursPerDay).map(([taskName, totalHours]) => ({
             name: taskName,
             value: totalHours
         }));
-
+    
         setChartData(data);
     };
+    
+
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
 
       // Function to extract date from tasks
@@ -242,9 +260,8 @@ const MonthTasks: React.FC = () => {
     }
     
     useEffect(() => {
-        // Prepare data for the pie chart when monthTasksData changes
-        preparePieChartData();
-    }, [monthTasksData]);
+        preparePieChartData(selectedRows); // Call preparePieChartData with selectedRows as filter
+    }, [monthTasksData, selectedRows]);
 
     useEffect(() => {
         setMonthTasks(tasksForClickedMonth);
@@ -1602,7 +1619,6 @@ const MonthTasks: React.FC = () => {
                             alignItems: 'center',
                             border: '1px solid white' // Set border to white
                         }}>
-                            
                             {/* <Chart
                                 options={{
                                     ...chartOptions,
