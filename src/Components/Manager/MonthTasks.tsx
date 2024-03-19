@@ -1593,7 +1593,7 @@ const MonthTasks: React.FC = () => {
                             background: 'white',
                             boxShadow: '0 0 4px rgba(33,33,33,.2)',  
                             borderRadius: '5px', 
-                            padding: '46px', 
+                            // padding: '46px', 
                             width: '48%', 
                             height: '350px', 
                             boxSizing: 'border-box',
@@ -1615,14 +1615,15 @@ const MonthTasks: React.FC = () => {
                                 type="pie"
                                 width="380"
                             /> */}
-                            <PieChart width={400} height={400} style={{background: 'white'}}>
+                            <PieChart width={1000} height={350} style={{background: 'white'}}>
                                 <Pie
                                     dataKey="value"
                                     isAnimationActive={false}
                                     data={chartData}
-                                    cx={200}
-                                    cy={200}
-                                    outerRadius={120}
+                                    style={{width: '500px',height: '100%'}}
+                                    cx={'50%'}
+                                    cy={'50%'}
+                                    outerRadius={160}
                                     fill="#8884d8"
                                     label
                                 >

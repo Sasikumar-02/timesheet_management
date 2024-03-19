@@ -13,6 +13,7 @@ interface TaskRequestedOn {
 const Notification: React.FC = () => {
   const [taskRequestedOn, setTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
+  const [userRole, setUserRole]= useState<String|null>('');
 
   // Fetch data from localStorage when component mounts
   useEffect(() => {
@@ -22,6 +23,11 @@ const Notification: React.FC = () => {
       setTaskRequestedOn(parsedData);
     }
   }, []);
+
+  useEffect(()=>{
+    const role =localStorage.getItem('role');
+    setUserRole(role);
+  })
 
   // Function to handle approval of task request
   const handleApprove = (userId: string, month: string, date: string) => {
@@ -64,40 +70,47 @@ const Notification: React.FC = () => {
 };
 
 
-  const notificationCount = Object.keys(taskRequestedOn).length;
+ 
+  let notificationMenu:any = null;
+  let notificationCount:number=0;
 
-  const notificationMenu = (
-    <div>
-      <Menu style={{ marginRight: "-40px", marginTop: "-20px" }}>
-        <Menu.Item key="notifications">
-          {Object.entries(taskRequestedOn).map(([userId, months]) => (
-            <div key={userId}>
-              {Object.entries(months).map(([month, dates]) => (
-                <div key={month}>
-                  {dates.map((date) => (
-                    <div key={date}>
-                      <p>
-                        <span style={{ marginRight: '5px' }}>
-                          {userId}: {date}
-                        </span>
-                        <CheckOutlined
-                          style={{ color: 'green', fontWeight: 'bold' }}
-                          onClick={() => handleApprove(userId, month, date)}
-                        />
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ))}
-        </Menu.Item>
-      </Menu>
-    </div>
-  );
+  if (userRole === 'ROLE_MANAGER') {
+    notificationCount = Object.keys(taskRequestedOn).length;
+    notificationMenu = (
+      <div>
+        <Menu style={{ marginRight: "-40px", marginTop: "-20px" }}>
+          <Menu.Item key="notifications">
+            {Object.entries(taskRequestedOn).map(([userId, months]) => (
+              <div key={userId}>
+                {Object.entries(months).map(([month, dates]) => (
+                  <div key={month}>
+                    {dates.map((date) => (
+                      <div key={date}>
+                        <p>
+                          <span style={{ marginRight: '5px' }}>
+                            {userId}: {date}
+                          </span>
+                          <CheckOutlined
+                            style={{ color: 'green', fontWeight: 'bold' }}
+                            onClick={() => handleApprove(userId, month, date)}
+                          />
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </Menu.Item>
+        </Menu>
+      </div>
+    );
+  } else{
+    notificationMenu=null;
+  }
 
   return (
-    <Dropdown overlay={notificationMenu} trigger={["click"]}>
+    <Dropdown overlay={() => notificationMenu} trigger={["click"]}>
       <div className="notification-menu" style={{ cursor: 'pointer' }}>
         <Badge className="flex" count={notificationCount}>
           <svg

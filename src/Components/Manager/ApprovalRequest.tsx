@@ -33,7 +33,6 @@ import {
   DownOutlined,
   UpOutlined,
 } from "@ant-design/icons";
-import DashboardLayout from '../Dashboard/Layout';
 import { Task } from '../Employee/AddTask';
 import { groupBy } from 'lodash';
 import { ConstructionOutlined } from '@mui/icons-material';
@@ -42,8 +41,6 @@ import { RequestedOn } from '../Employee/AddTask';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
 import { SelectedKeys, RejectedKeys, RecentRejected } from './MonthTasks';
-// Define the type for RowSelectMethod
-type RowSelectMethod = 'checkbox' | 'radio';
 
 const config: ThemeConfig = {
   token: {
@@ -57,19 +54,6 @@ const config: ThemeConfig = {
     task: Task[];
   }
 
-// interface GroupedTasks {
-//   key: string;
-//   slNo?: number;
-//   month: string;
-//   tasks: { 
-//     [date: string]: {
-//       key: string;
-//       tasks: Task[]; 
-//     } 
-//   }; 
-//   daysFilled: number;
-//   totalDaysInMonth: number;
-// }
 
 export interface TaskObject {
   [date: string]: {
@@ -94,9 +78,6 @@ export interface GroupedTasks {
   totalDaysInMonth: number;
 }
 
-interface ApprovalRequestsProps {
-  selectedKeys: string[]; // Define the type for selectedKeys prop
-}
 
 const ApprovalRequest:React.FC = () => { 
   const userId = '1234'; // Replace 'YOUR_USER_ID' with the actual user id you want to check
@@ -801,7 +782,7 @@ const ApprovalRequest:React.FC = () => {
     };//not in use
      
   return (
-    <>
+    <ConfigProvider theme={config}>
       <div>
           <Table
             rowSelection={{
@@ -895,7 +876,7 @@ const ApprovalRequest:React.FC = () => {
           </Modal>
         </div>
       </Modal>
-    </>
+    </ConfigProvider>
   );
   
 }

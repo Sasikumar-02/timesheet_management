@@ -31,7 +31,7 @@ export interface TaskRequestedOn {
 
 
 export interface Task {
-  key?:string;
+ // key?:string;
   idx: number; 
   date: string;
   userId: string;
@@ -43,7 +43,7 @@ export interface Task {
   totalHours: string;
   description: string;
   reportingTo: string;
-  slNo?: number;
+  //slNo?: number;
 }
 
 interface PieChartData {
