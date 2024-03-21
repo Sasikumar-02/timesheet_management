@@ -295,8 +295,6 @@ const AddTask: React.FC = () => {
     }
   };
   
-
-  
   useEffect(() => {
     const storedTaskListString = localStorage.getItem('taskList');
     const storedTaskList = storedTaskListString ? JSON.parse(storedTaskListString) : [];
@@ -464,6 +462,15 @@ const AddTask: React.FC = () => {
 
   const handleFormSubmit = () => {
     const userId = addTask.userId;
+
+    // Check if any field is empty
+    if (!addTask.startTime || !addTask.endTime || !addTask.workLocation || !addTask.task || !addTask.title || !addTask.description || !addTask.reportingTo) {
+        notification.warning({
+            message: 'Missing Information',
+            description: 'Please fill in all fields before submitting the task.',
+        });
+        return; // Abort submission
+    }
 
     // Extract start and end time from the addTask object
     const startTime = dayjs(addTask.startTime, 'HH:mm'); // Change to 24-hour format
@@ -1508,7 +1515,7 @@ const AddTask: React.FC = () => {
                 Clear
               </Button>
               {isEdited ? (
-              <Button id={addTask.totalHours? 'submit-addtask-active':'submit-addtask'} onClick={handleFormSubmit}>
+              <Button id={addTask.totalHours? 'submit-addtask-active':'submit-addtask'} onClick={handleFormSubmit} disabled={isSubmitting}>
                 Save
               </Button>
             ):(
