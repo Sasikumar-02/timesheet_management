@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
-import { Input, TimePicker, Select, notification, DatePicker, Button, Modal, ConfigProvider} from 'antd';
+import { Input, TimePicker, Select, notification, DatePicker, Button, Modal, Col,
+  ConfigProvider,
+  Form,
+  Row,
+  Typography,} from 'antd';
+import * as yup from "yup";
+import { ErrorMessage, Formik, FormikFormProps, FormikHelpers, Field } from "formik";
 import { SearchOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -29,9 +35,7 @@ export interface TaskRequestedOn {
   [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
 }
 
-
-export interface Task {
- // key?:string;
+type FieldType= {
   idx: number; 
   date: string;
   userId: string;
@@ -43,8 +47,23 @@ export interface Task {
   totalHours: string;
   description: string;
   reportingTo: string;
-  //slNo?: number;
 }
+
+    export interface Task {
+    // key?:string;
+      idx: number; 
+      date: string;
+      userId: string;
+      workLocation: string;
+      task: string;
+      title: string;
+      startTime: string;
+      endTime: string;
+      totalHours: string;
+      description: string;
+      reportingTo: string;
+      //slNo?: number;
+    }
 
 interface PieChartData {
   options: {
@@ -126,16 +145,16 @@ const AddTask: React.FC = () => {
     }
   }, [addTask.date, addTask.userId, taskList]); // this useEffect is for button enable or disable
 
- const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
-  return tasks.map((task, index) => ({
-    ...task,
-    slNo: index + 1,
-    idx: deleteTask ? index + 1 : task.idx
-  }));
-};
-const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
-const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
-const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
+  const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
+    return tasks.map((task, index) => ({
+      ...task,
+      slNo: index + 1,
+      idx: deleteTask ? index + 1 : task.idx
+    }));
+  };
+  const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
+  const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
+  const workLocation = ['Work from Home', 'Work From Office'];
 
   useEffect(() => {
     const updateFormWidth = () => {
@@ -230,12 +249,12 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
   
   const handleInputChange = (field: keyof Task, value: string) => {
     if (field === 'date') {
-      if(filterOption==='Month'){
-        
+      if (filterOption === 'Month') {
+        // Handle if filterOption is 'Month'
       }
       const selectedDate = dayjs(value);
       if (selectedDate.isAfter(dayjs(), 'day')) {
-        // Display a notification
+        // Display a notification for selecting future dates
         notification.warning({
           message: 'Warning',
           description: 'Cannot select a future date.',
@@ -251,22 +270,32 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
     // Keep userId constant
     if (field === 'userId') {
       setAddTask((prevTask) => ({ ...prevTask, [field]: value }));
-    } else {
+    } else if (field === 'startTime' || field === 'endTime') {
       // Update startTime or endTime with the new value
-      const updatedTime = value || dayjs().format('hh:mm A');
+      const updatedTime = value || dayjs().format('HH:mm'); // Change to 24-hour HH:mm format
       setAddTask((prevTask) => ({ ...prevTask, [field]: updatedTime }));
-      // Calculate the duration and update totalHours
-      const updatedStartTime = field === 'startTime' ? updatedTime : addTask.startTime || dayjs().format('hh:mm A');
-      const updatedEndTime = field === 'endTime' ? updatedTime : addTask.endTime || dayjs().format('hh:mm A');
-      const duration = dayjs(updatedEndTime, 'hh:mm A').diff(dayjs(updatedStartTime, 'hh:mm A'), 'hour', true);
-      setAddTask((prevTask) => ({
-        ...prevTask,
-        startTime: field === 'startTime' ? updatedTime : addTask.startTime,
-        endTime: field === 'endTime' ? updatedTime : addTask.endTime,
-        totalHours: duration.toFixed(2),
-      }));
+  
+      // Calculate the duration and update totalHours only if both startTime and endTime are updated
+      if (field === 'startTime' && addTask.endTime) {
+        const duration = dayjs(addTask.endTime, 'HH:mm').diff(dayjs(updatedTime, 'HH:mm'), 'hour', true); // Change to 24-hour HH:mm format
+        setAddTask((prevTask) => ({
+          ...prevTask,
+          totalHours: duration.toFixed(2),
+        }));
+      } else if (field === 'endTime' && addTask.startTime) {
+        const duration = dayjs(value, 'HH:mm').diff(dayjs(addTask.startTime, 'HH:mm'), 'hour', true); // Change to 24-hour HH:mm format
+        setAddTask((prevTask) => ({
+          ...prevTask,
+          totalHours: duration.toFixed(2),
+        }));
+      }
+    } else {
+      // For other fields, just update the state with the new value
+      setAddTask((prevTask) => ({ ...prevTask, [field]: value }));
     }
   };
+  
+
   
   useEffect(() => {
     const storedTaskListString = localStorage.getItem('taskList');
@@ -281,12 +310,6 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
     setTaskList(updatedTaskList);
     setFilteredTasks(updatedTaskList);
   }, [deletedTask]); // Include deletedTask in the dependency array
-
-
-  const handleFormOnSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    handleFormSubmit();
-  };
 
   useEffect(() => {
     // Update addTask with the current date
@@ -442,6 +465,30 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
   const handleFormSubmit = () => {
     const userId = addTask.userId;
 
+    // Extract start and end time from the addTask object
+    const startTime = dayjs(addTask.startTime, 'HH:mm'); // Change to 24-hour format
+    const endTime = dayjs(addTask.endTime, 'HH:mm'); // Change to 24-hour format
+
+    // Check if the end time is greater than the start time
+    if (endTime.isBefore(startTime)) {
+        notification.warning({
+            message: 'Invalid Time',
+            description: 'End time should be greater than start time.',
+        });
+        return; // Abort submission
+    }
+
+    // Calculate the total hours and validate if it's less than 0
+    const totalHours = endTime.diff(startTime, 'hours', true); // Calculate the difference in hours
+    if (totalHours < 0) {
+        notification.warning({
+            message: 'Invalid Time',
+            description: 'Total hours cannot be negative.',
+        });
+        return; // Abort submission
+    }
+
+
     // Check if the addTask date is included in selectedKeysToHide
     if (selectedKeysToHide.includes(addTask.date)) {
       notification.warning({
@@ -451,10 +498,10 @@ const workLocation = ['Work Location', 'Work from Home', 'Work From Office'];
       return;
   }
 
-  const taskRequestedOn = localStorage.getItem('taskRequestedOn');
-  const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
-const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
-console.log("approvedRequestedOn", approvedRequestedOn);  
+    const taskRequestedOn = localStorage.getItem('taskRequestedOn');
+    const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
+    const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
+    console.log("approvedRequestedOn", approvedRequestedOn);  
     // Check if the date is not in the taskList and it's before the currentDate
     // const currentDateFormatted = dayjs().format('YYYY-MM-DD');
     // if (
@@ -474,23 +521,23 @@ console.log("approvedRequestedOn", approvedRequestedOn);
       (!approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) &&
       (!taskList.find(task => task.userId === addTask.userId && task.date === addTask.date) &&
       dayjs(addTask.date).isBefore(currentDateFormatted))
-  ) {
+    ) {
       notification.warning({
           message: 'Restricted',
           description: 'Cannot add task for a date before the current date and not present in the task list.',
       });
       return;
-  }
+    }
   
   
 
     // Check for overlapping tasks in the specified time range
     const overlappingTask = taskList.find(task => {
       if(task.userId !== addTask.userId) return false;
-      const newTaskStartTime = dayjs(addTask.startTime, 'hh:mm A');
-      const newTaskEndTime = dayjs(addTask.endTime, 'hh:mm A');
-      const taskStartTime = dayjs(task.startTime, 'hh:mm A');
-      const taskEndTime = dayjs(task.endTime, 'hh:mm A');
+      const newTaskStartTime = dayjs(addTask.startTime, 'HH:mm'); // Change to 24-hour format
+      const newTaskEndTime = dayjs(addTask.endTime, 'HH:mm'); // Change to 24-hour format
+      const taskStartTime = dayjs(task.startTime, 'HH:mm'); // Change to 24-hour format
+      const taskEndTime = dayjs(task.endTime, 'HH:mm'); // Change to 24-hour format
     
       // Check if the new task overlaps with any existing task
       return (
@@ -557,7 +604,7 @@ console.log("approvedRequestedOn", approvedRequestedOn);
     setIsEdited(false);
     setIsFormSubmitted(true);
     setIsDateChanged(true);
-};
+  };
 
   const handleRequestForm = () => {
     const userId = addTask.userId;
@@ -998,6 +1045,32 @@ console.log("approvedRequestedOn", approvedRequestedOn);
        
   ]
 
+    // Define validation schema using Yup
+  const validationSchema = yup.object().shape({
+    date: yup.string().required('Date is required'),
+    userId: yup.string().required('User ID is required'),
+    workLocation: yup.string().required('Work Location is required'),
+    task: yup.string().required('Task is required'),
+    title: yup.string().required('Title is required'),
+    startTime: yup.string().required('Start Time is required'),
+    endTime: yup.string()
+      .required('End Time is required')
+      .test(
+        'is-greater',
+        'End Time must be greater than Start Time',
+        function (value) {
+          const { startTime } = this.parent;
+          return value && startTime && value > startTime;
+        }
+      ),
+      totalHours: yup.number()
+      .required('Total Hours is required')
+      .positive('Total Hours must be greater than 0')
+      .moreThan(0, 'Total Hours must be greater than 0'),
+    description: yup.string().required('Description is required'),
+    reportingTo: yup.string().required('Reporting To is required'),
+  });
+
   return (
     <ConfigProvider theme={config}>
       <div className='createuser-main'>
@@ -1020,7 +1093,33 @@ console.log("approvedRequestedOn", approvedRequestedOn);
             )
           }
         </div>
-        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( <form onSubmit={handleFormOnSubmit}>
+        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( 
+        <Formik
+        initialValues={{
+          date: dayjs(currentDate).format('YYYY-MM-DD'),
+          userId: '',
+          workLocation: '',
+          task: '',
+          title: '',
+          startTime: '',
+          endTime: '',
+          totalHours: '',
+          description: '',
+          reportingTo: '',
+        }}
+        validationSchema={validationSchema}
+        onSubmit={handleFormSubmit}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          isSubmitting,
+        }) => (
+          <Form name='basic' layout='vertical' autoComplete='off'  onFinish={handleSubmit}>
             <div>
               {isFormEnabled && (
                 <CloseCircleOutlined
@@ -1042,8 +1141,9 @@ console.log("approvedRequestedOn", approvedRequestedOn);
                       /> */}
                       <Input
                         type='date'
+                        required
                         placeholder='Enter your Employee ID'
-                        style={{height:'50%'}}
+                        style={{height:'60%'}}
                         value={currentDate.format('YYYY-MM-DD')} 
                         // value={
                         //   filterOption === 'Month'
@@ -1071,48 +1171,90 @@ console.log("approvedRequestedOn", approvedRequestedOn);
                         onChange={(e) => handleInputChange('userId', e.target.value)}  
                       />
                     </div> */}
-                    <div className='create-layout-addtask'>
-                      <div>
-                        <label style={{color:'#0B4266'}} htmlFor='task'><span style={{color:'red', paddingRight:'5px'}}>*</span>Work Location</label>
-                      </div>
-                      <div style={{height:'50%'}}>
-                        <select
-                          id='task'
-                          style={{height:'100%'}}
-                          value={addTask.workLocation}
-                          onChange={(e) => handleInputChange('workLocation', e.target.value)}
-                        >
-                          {workLocation.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                      
-                    </div>
+                    <Field name="workLocation">
+                      {({ field, form }:{field:any, form:any}) => (
+                        <div className='create-layout-addtask'>
+                          <div>
+                            <label style={{color:'#0B4266'}} htmlFor='task'>
+                              <span style={{color:'red', paddingRight:'5px'}}>*</span>
+                              Work Location
+                            </label>
+                          </div>
+                          <div style={{height:'60%'}}>
+                            <Select
+                              {...field}
+                              id='task'
+                              style={{height:'100%', width:'100%', marginTop:'10px'}}
+                              value={addTask.workLocation }
+                              onChange={(value) => {
+                                form.setFieldValue('workLocation', value); // Manually set field value
+                                handleInputChange('workLocation', value); // Handle input change
+                              }}
+                              onBlur={() => form.setFieldTouched('workLocation', true)} // Manually set field as touched
+                            >
+                              <Option value="" disabled selected>
+                                Work Location
+                              </Option>
+                              {workLocation.map((option) => (
+                                <Option key={option} value={option}>
+                                  {option}
+                                </Option>
+                              ))}
+                            </Select>
+                            <Typography.Text
+                              type="danger"
+                              style={{ wordBreak: "break-word", textAlign:'left' }}
+                            >
+                              {form.errors.workLocation && form.touched.workLocation && (
+                                <span>{form.errors.workLocation}</span>
+                              )}
+                            </Typography.Text>
+                          </div>
+                        </div>
+                      )}
+                    </Field>
                   </div>
                   <div className='section-addtask' style={{width:'125%'}}>
-                    <div className='create-layout-addtask'>
-                      <div>
-                        <label style={{color:'#0B4266'}} htmlFor='task'><span style={{color:'red', paddingRight:'5px'}}>*</span>Task</label>
-                      </div>
-                      <div style={{height:'50%'}}>
-                        <select
-                          id='task'
-                          style={{height:'100%'}}
-                          value={addTask.task}
-                          onChange={(e) => handleInputChange('task', e.target.value)}
-                        >
-                          {taskOptions.map((option) => (
-                              <option key={option} value={option}>
+                    
+                  <Field name="task">
+                    {({ field, form }:{field: any, form: any}) => (
+                      <div className='create-layout-addtask'>
+                        <div>
+                          <label style={{color:'#0B4266'}} htmlFor='task'>
+                            <span style={{color:'red', paddingRight:'5px'}}>*</span>
+                            Task
+                          </label>
+                        </div>
+                        <div style={{height:'60%'}}>
+                          <Select
+                            {...field}
+                            id='task'
+                            style={{height:'100%', width:'100%', marginTop:'10px'}}
+                            value={addTask.task || 'Task'}
+                            onChange={(value) => {
+                              form.setFieldValue('task', value); // Manually set field value
+                              handleInputChange('task', value); // Handle input change
+                            }}
+                            onBlur={() => form.setFieldTouched('task', true)} // Manually set field as touched
+                          >
+                            {taskOptions.map((option) => (
+                              <Option key={option} value={option}>
                                 {option}
-                              </option>
+                              </Option>
                             ))}
-                        </select>
+                          </Select>
+                          <Typography.Text
+                            type="danger"
+                            style={{ wordBreak: "break-word", textAlign:'left' }}
+                          >
+                            {form.errors.task && form.touched.task && (
+                              <span>{form.errors.task}</span>
+                            )}
+                          </Typography.Text>
+                        </div>
                       </div>
-                      
-                    </div>
+                    )}
+                  </Field>
                     {addTask.task === 'Meeting' && (
                           // <div className='section-addtask' style={{width:'61%'}}>
                           //   <div className='create-layout-addtask'>
@@ -1136,21 +1278,21 @@ console.log("approvedRequestedOn", approvedRequestedOn);
                           // </div>
                           <div className='create-layout-addtask'>
                               <div>
-                                <label style={{ color:'#0B4266' }} htmlFor='title'><span style={{color:'red', paddingRight:'5px'}}>*</span>Meeting</label>
+                                <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
                               </div>
-                              <div style={{height:'50%'}}>
-                                <select
+                              <div style={{height:'60%'}}>
+                                <Select
                                   id='task'
-                                  style={{height:'100%'}}
-                                  value={addTask.title}
-                                  onChange={(e) => handleInputChange('title', e.target.value)}
+                                  style={{height:'100%', width:'100%',marginTop:'10px'}}
+                                  value={addTask.title || 'Meeting'}
+                                  onChange={(value) => handleInputChange('title', value)}
                                 >
                                   {meetingTitle.map((option, index) => (  // Use 'index' as the key
-                                    <option key={index} value={option}>
+                                    <Option key={index} value={option}>
                                       {option}
-                                    </option>
+                                    </Option>
                                   ))}
-                                </select>
+                                </Select>
                               </div>
                           </div>
                     )}
@@ -1177,66 +1319,103 @@ console.log("approvedRequestedOn", approvedRequestedOn);
                       // </div>
                       <div className='create-layout-addtask'>
                       <div>
-                        <label style={{ color:'#0B4266' }} htmlFor='title'><span style={{color:'red', paddingRight:'5px'}}>*</span>{addTask.task}</label>
+                        <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
                       </div>
-                      <div style={{height:'50%'}}>
-                        <select
+                      <div style={{height:'60%'}}>
+                        <Select
                           id='task'
-                          style={{height:'100%'}}
-                          value={addTask.title}
-                          onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
+                          style={{height:'100%',width:'100%', marginTop:'10px'}}
+                          value={addTask.title || 'Project'}
+                          onChange={(value) => handleInputChange('title', value)}  // Corrected 'title' to 'task'
                         >
                           {projectTitle.map((option, index) => (  // Use 'index' as the key
-                            <option key={index} value={option}>
+                            <Option key={index} value={option}>
                               {option}
-                            </option>
+                            </Option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
                     </div>
                     )}
 
                   </div>
-                  
                   <div className='section-addtask' style={{width:'125%',height: '110px'}}>
-                      <div className='create-layout-addtask-left'>
+                    <div className='create-layout-addtask-left'>
                         <div>
-                          <label htmlFor='startTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>Start Time</label>
+                            <label htmlFor='startTime'>
+                                <span style={{color:'red', paddingRight:'5px'}}>*</span>
+                                Start Time
+                            </label>
                         </div>
-                        <TimePicker
-                          style={{height:'40%'}}
-                          value={
-                            addTask.startTime
-                              ? dayjs(addTask.startTime, 'hh:mm A') // Convert to dayjs here
-                              : null
-                          }
-                          onChange={(time, timeString) =>
-                            handleInputChange('startTime', timeString)
-                          }
-                          className='timepicker'
-                          format='hh:mm A' // Set the format to include AM/PM
-                        />
-                      </div>
+                        <Field name="startTime">
+                            {({ field, form }:{field:any, form:any}) => (
+                                <div style={{height:'650%'}}>
+                                    <TimePicker
+                                        style={{height:'41.133340000000004px'}}
+                                        {...field}
+                                        value={
+                                            addTask.startTime
+                                            ? dayjs(addTask.startTime, 'HH:mm') // Change the format to 24-hour HH:mm
+                                            : null
+                                        }
+                                        onChange={(time, timeString) => {
+                                            form.setFieldValue('startTime', timeString); // Manually set field value
+                                            handleInputChange('startTime', timeString); // Handle input change
+                                        }}
+                                        className='timepicker'
+                                        format='HH:mm' // Change the format to 24-hour HH:mm
+                                        onBlur={() => form.setFieldTouched('startTime', true)} // Manually set field as touched
+                                    />
+                                    <Typography.Text
+                                        type="danger"
+                                        style={{ wordBreak: "break-word", textAlign:'left' }}
+                                    >
+                                        {form.errors.startTime && form.touched.startTime && (
+                                            <span>{form.errors.startTime}</span>
+                                        )}
+                                    </Typography.Text>
+                                </div>
+                            )}
+                        </Field>
+                    </div>
+
                       <div className='create-layout-addtask'>
-                        <div>
-                          <label style={{color:'#0B4266'}} htmlFor='endTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>End Time</label>
-                        </div>
-                        <TimePicker
-                          style={{height:'40%'}}
-                          value={
-                            addTask.endTime
-                              ? dayjs(addTask.endTime, 'HH:mm A') // Convert to dayjs here
-                              : null
-                          }
-                          onChange={(time, timeString) =>
-                            handleInputChange('endTime', timeString)
-                          }
-                          className='timepicker'
-                          format='hh:mm A' 
-                          rootClassName='timer'
-                        />
+                          <div>
+                              <label style={{color:'#0B4266'}} htmlFor='endTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>End Time</label>
+                          </div>
+                          <Field name="startTime">
+                            {({ field, form }:{field:any, form:any}) => (
+                                <div>
+                                    <TimePicker
+                                        style={{height:'41.133340000000004px'}}
+                                        {...field}
+                                        value={
+                                            addTask.endTime
+                                            ? dayjs(addTask.endTime, 'HH:mm') // Change the format to 24-hour HH:mm
+                                            : null
+                                        }
+                                        onChange={(time, timeString) => {
+                                            form.setFieldValue('endTime', timeString); // Manually set field value
+                                            handleInputChange('endTime', timeString); // Handle input change
+                                        }}
+                                        className='timepicker'
+                                        format='HH:mm' // Change the format to 24-hour HH:mm
+                                        onBlur={() => form.setFieldTouched('endTime', true)} // Manually set field as touched
+                                    />
+                                    <Typography.Text
+                                        type="danger"
+                                        style={{ wordBreak: "break-word", textAlign:'left' }}
+                                    >
+                                        {form.errors.endTime && form.touched.endTime && (
+                                            <span>{form.errors.endTime}</span>
+                                        )}
+                                    </Typography.Text>
+                                </div>
+                            )}
+                        </Field>
                       </div>
                   </div>
+
                   <div className='section-addtask' style={{width:'125%', marginBottom:'30px'}}>
                       
                     <div className='create-layout-addtask-left  '>
@@ -1255,33 +1434,55 @@ console.log("approvedRequestedOn", approvedRequestedOn);
                         <div className='create-layout-reportingTo'>
                           <label style={{color:'#0B4266'}} htmlFor='reportingTo'><span style={{color:'red', paddingRight:'5px'}}>*</span>Reporting To</label>
                         </div>
-                        <select
+                        <Select
                           id='reportingTo-addtask'
-                          style={{height:'60%'}}
+                          style={{height:'60%', width:'100%'}}
                           value={addTask.reportingTo}
-                          onChange={(e) => handleInputChange('reportingTo', e.target.value)}
+                          onChange={(value) => handleInputChange('reportingTo', value)}
                         >
-                          <option value=''>Select Reporting To</option>
+                          <Option value='' disabled selected>Select Reporting To</Option>
                           {reportingOptions.map((option) => (
-                            <option key={option} value={option}>
+                            <Option key={option} value={option}>
                               {option}
-                            </option>
+                            </Option>
                           ))}
-                        </select>
+                        </Select>
                       </div> 
                   </div>  
                   <div>
-                  <div className='create-layout-description'>
+                  <Field name="description">
+                    {({ field, form }:{field:any, form: any}) => (
+                      <div className='create-layout-description'>
                         <div>
-                          <label style={{color:'#0B4266'}}><span style={{color:'red', paddingRight:'5px'}}>*</span>Description</label>
+                          <label style={{color:'#0B4266'}} htmlFor='description'>
+                            <span style={{color:'red', paddingRight:'5px'}}>*</span>
+                            Description
+                          </label>
                         </div>
-                        <textarea
-                          value={addTask.description}
-                          onChange={(e) => handleInputChange('description', e.target.value)}
-                          className='description-input'
-                          style={{width:'240%'}}
-                        />
-                  </div>
+                        <div>
+                          <textarea
+                            {...field}
+                            id='description'
+                            name='description'
+                            className='description-input'
+                            style={{ width: '240%' }}
+                            value={addTask.description}
+                            onChange={(e) => handleInputChange('description', e.target.value)}
+                            onBlur={() => form.setFieldTouched('workLocation', true)} // Manually set field as touched
+                          />
+                          <Typography.Text
+                            type="danger"
+                            style={{ wordBreak: "break-word", textAlign:'left' }}
+                          >
+                            {form.errors.description && form.touched.description && (
+                              <span>{form.errors.description}</span>
+                            )}
+                          </Typography.Text>
+                        </div>
+                      </div>
+                    )}
+                  </Field>
+
                   </div>
                 </div>
                 <div className='chart-container' style={{ marginLeft: "150px",width:'750px'}}>
@@ -1317,7 +1518,10 @@ console.log("approvedRequestedOn", approvedRequestedOn);
             )}
             </div>
 
-        </form>):null}
+        </Form>
+        )}  
+        </Formik>
+        ):null}
         <>
         <div>
           <div style={{ display:'flex', justifyContent:'space-between', margin:'10px 20px' }}>
