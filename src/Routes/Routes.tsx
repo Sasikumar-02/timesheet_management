@@ -1,35 +1,5 @@
-// import Approval from "../Pages/Admin/Approval";
-// import Collaborate from "../Pages/User/Collaborate";
-// import CollaborateDetails from "../Pages/User/CollaborateDetails";
-// //import Dashboard from "../Pages/Admin/Home";
-// import Employee from "../Pages/Admin/Employee";
-// import EmployeeDetails from "../Pages/Admin/EmployeeDetails";
-// import OptionSwitch from "../Components/OptionSwitch";
-// import ProjectDetails from "../Pages/Admin/Projects/Forms/ProjectDetails";
-// import ProjectList from "../Pages/Admin/Projects/ProjectList";
-// import ProjectOnboardForm from "../Pages/Admin/Projects/Forms/ProjectOnboardForm";
-// import { ReactNode } from "react";
-// import { Roles } from "../Utils/Roles";
-// import UserDashboard from '../Pages/User/UserDashboard'
-// //import UserProfile from "../Pages/User/UserProfile";
-// import UserProjectDetails from "../Pages/User/UserProjectDetails";
-// //import ManagerDashboard from "../Pages/Manager/ManagerDashboard";
-// import ListOfEmployees from "../Pages/Manager/EmployeeListOfManager";
-// import EmployeeListDetails from "../Pages/Admin/EmployeeTableList";
-// import UserProfileList from "../Pages/Admin/UserProfileList";
-// import UserProjectList from "../Pages/User/ProjectDetails";
-// import ViewerEmployeeTable from "../Pages/Viewer/ViewerEmployeeTable";
-// import ViewerEmployeeDetails from "../Pages/Viewer/ViewerEmployeeDetails";
-// import ViewerProjectList from "../Pages/Viewer/ViewerProjectList";
-// import ViewerProjectDetails from "../Pages/Viewer/ViewerProjectDetails";
-// import CertificateApproval from "../Pages/Manager/Certificate";
-// import jwtDecode from "jwt-decode";
-// import UserIndividualProject from "../Pages/User/UserIndividualProject";
-// import EmployeeProjectDetails from "../Pages/Admin/EmployeeProjectDetails";
-
 import React, { useState, useEffect } from "react";
 import { Roles } from "../Utils/Roles";
-import usePieChartData from "./UsePieChartData";
 
 import AdminDashboard from "../Components/Admin/Admindashboard";
 import CreateUser from "../Components/Admin/CreateUser";
@@ -48,6 +18,8 @@ import MonthTasks from "../Components/Manager/MonthTasks";
 
 import { Task } from "../Components/Employee/AddTask";
 import Calendar from "../Components/Employee/Calendar";
+import UserMonthlyTask from "../Components/Employee/UserMonthlyTask";
+import UserEveryDateTask from "../Components/Employee/UserEveryDateTask";
 
 interface RouteBase {
   path: string;
@@ -62,6 +34,16 @@ export const HrRoutes: ProtectedRoutes[] = [
   {
     path: "/hr/dashboard",
     element: <AdminDashboard />,
+    roles: Roles.ROLE_HR,
+  },
+  {
+    path: "/hr/manager/dashboard",
+    element: <ManagerDashboard />,
+    roles: Roles.ROLE_HR,
+  },
+  {
+    path: "/hr/manager/employee/dashboard",
+    element: <Dashboard />,
     roles: Roles.ROLE_HR,
   },
   {
@@ -97,11 +79,11 @@ export const ManagerRoutes: ProtectedRoutes[] = [
     element: <ManagerDashboard />,
     roles: Roles.ROLE_MANAGER,
   },
-//   {
-//     path: "/employee/dashboard",
-//     element: <Dashboard />,
-//     roles: Roles.ROLE_MANAGER,
-//   },
+  {
+    path: "/manager/employee/dashboard",
+    element: <Dashboard />,
+    roles: Roles.ROLE_MANAGER,
+  },
   {
     path: "/manager/approvalrequest",
     element: <ApprovalRequest />,
@@ -130,7 +112,6 @@ export const ManagerRoutes: ProtectedRoutes[] = [
 ];
 
 export const UserRoutes: ProtectedRoutes[] = [
-   
     {
       path: "/employee/dashboard",
       element: <Dashboard />,
@@ -142,12 +123,18 @@ export const UserRoutes: ProtectedRoutes[] = [
       roles: Roles.ROLE_EMPLOYEE,
     },
     {
+      path: "/employee/monthlytask",
+      element: <UserMonthlyTask/>,
+      roles: Roles.ROLE_EMPLOYEE,
+    },
+    {
       path:"/employee/calendar", 
       element:<Calendar />,
       roles: Roles.ROLE_EMPLOYEE
+    },
+    {
+      path:"/employee/monthtasks",
+      element:<UserEveryDateTask/>,
+      roles:Roles.ROLE_EMPLOYEE
     }
 ];
-
-
-
-

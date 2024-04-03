@@ -67,6 +67,14 @@ const Sidebar: React.FC = () => {
               >
                 <Link to="/employee/addtask">Add Task</Link>
               </Menu.Item>
+              <Menu.Item
+                id="menu"
+                key="5"
+                icon={<ScheduleSendOutlined />}
+                className={Location.pathname === "/employee/monthlytask" ? "active" : ""}
+              >
+                <Link to="/employee/monthlytask">Task View</Link>
+              </Menu.Item>
             </>
           );
         case 'ROLE_HR':

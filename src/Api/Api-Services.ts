@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const api = axios.create({
+const apik = axios.create({
   baseURL: process.env.REACT_APP_API_KEY,
  
 });
 
-api.interceptors.request.use(
+apik.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
     if (token) {
@@ -18,4 +18,4 @@ api.interceptors.request.use(
   }
 );
 
-export default api;
+export default apik;

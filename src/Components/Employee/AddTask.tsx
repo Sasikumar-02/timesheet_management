@@ -3,14 +3,18 @@ import { Input, TimePicker, Select, notification, DatePicker, Button, Modal, Col
   ConfigProvider,
   Form,
   Row,
-  Typography,} from 'antd';
+  Typography,
+  message,} from 'antd';
 import * as yup from "yup";
 import { ErrorMessage, Formik, FormikFormProps, FormikHelpers, Field } from "formik";
+import { useFormikContext } from 'formik';
 import { SearchOutlined } from '@mui/icons-material';
+import api from '../../Api/Api-Service';
 import dayjs from 'dayjs';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import '../Styles/CreateUser.css';
+import axios from 'axios';
 import DashboardLayout from '../Dashboard/Layout';
 import Chart from 'react-apexcharts';
 import '../Styles/AddTask.css';
@@ -19,12 +23,19 @@ import { ColumnsType } from "antd/es/table";
 import ApprovalRequest from '../Manager/ApprovalRequest';
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
 import Dashboard from './Dashboard';
-import { RecentRejected, SelectedKeys, RejectedKeys } from '../Manager/MonthTasks';
+// import { RecentRejected, SelectedKeys, RejectedKeys } from '../Manager/MonthTasks';
 import asset from '../../assets/images/asset.svg';
 import type { ThemeConfig } from "antd";
+import TextArea from 'antd/es/input/TextArea';
+import { values } from 'lodash';
+import moment from 'moment';
+
+// Declare setFieldValue outside of Formik
+let setFieldValue: Function;
 export interface DateTask{
   key: string;
-  task: Task[];
+  tasks: Task[];
+  status?: string;
 }
 
 export interface RequestedOn {
@@ -35,13 +46,24 @@ export interface TaskRequestedOn {
   [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
 }
 
-type FieldType= {
-  idx: number; 
+type FieldType={
+  date?: string;
+  workLocation?: string;
+  task?: string;
+  project?: string;
+  startTime?: string;
+  endTime?: string;
+  totalHours?: string;
+  description?: string;
+  reportingTo?: string;
+}
+export interface Task {
+  userId?:string;
+  task_id?:string;
   date: string;
-  userId: string;
   workLocation: string;
   task: string;
-  title: string;
+  project: string;
   startTime: string;
   endTime: string;
   totalHours: string;
@@ -49,21 +71,14 @@ type FieldType= {
   reportingTo: string;
 }
 
-    export interface Task {
-    // key?:string;
-      idx: number; 
-      date: string;
-      userId: string;
-      workLocation: string;
-      task: string;
-      title: string;
-      startTime: string;
-      endTime: string;
-      totalHours: string;
-      description: string;
-      reportingTo: string;
-      //slNo?: number;
-    }
+interface ProjectDetails {
+  projectName: string;
+}
+
+interface UserManager {
+  reportingManagerName: string;
+  reportingManagerId: string;
+}
 
 interface PieChartData {
   options: {
@@ -86,11 +101,19 @@ const config: ThemeConfig = {
 };
 
 const AddTask: React.FC = () => {
-  const userId = '1234';
+  const [reportingTo, setReportingTo] = useState<UserManager[]>([]);
+  const [reportingToID, setReportingToID] = useState('1234');
+  const [startTime, setStartTime]= useState('');
+  const [endTime, setEndTime] = useState('');
+  const [totalHours, setTotalHours]=useState('');
+  const [userProject, setProjectUser]= useState([]);
+  const [editTaskId, setEditTaskId]= useState<any>();
   const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
   const {confirm}= Modal;
   const location = useLocation();
+  // Define a state variable to hold the currently edited task
+  //const [editedTask, setEditedTask] = useState<Task | null>(null);
   const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
   const [deletedTask, setDeletedTask] = useState(false);
   const [formWidth, setFormWidth] = useState(800);
@@ -101,21 +124,20 @@ const AddTask: React.FC = () => {
   const [cancelButton, setCancelButton] = useState(false);
   const [isDateChanged, setIsDateChanged] = useState(false);
   const [addTask, setAddTask] = useState<Task>({
-    idx: 1, // Set initial idx
     date: currentDate.format('YYYY-MM-DD'),
-    userId: userId,
     workLocation: '',
     task: '',
-    title: '',
+    project: '',
     startTime: '',
     endTime: '',
     totalHours: '',
     description: '',
-    reportingTo: '',
+    reportingTo: reportingToID,
   });
   const [deletedTaskIdx, setDeletedTaskIdx] = useState<number | null>(null);
   const [taskList, setTaskList] = useState<Task[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
+  //const [reportingOptions, setReportingOptions]= useState<any>('');
   const reportingOptions = ['ManagerA', 'ManagerB', 'ManagerC'];
   const taskOptions = ['Task','Project','Learning','Training','Meeting'];
   const [filterOption, setFilterOption] = useState('Date');
@@ -127,34 +149,247 @@ const AddTask: React.FC = () => {
   const [pieChartDataInForm, setPieChartDataInForm] = useState<PieChartData>({ options: { labels: [] }, series: [] });
   // Define a loading state
   const [loading, setLoading] = useState(true);
-
+  const [count, setCount] = useState(0);
+  const [descCount, setDescCount]=useState(0);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  useEffect(() => {
-    const userId = addTask.userId;
-    const currentDate = dayjs(addTask.date);
-    const month = currentDate.format('YYYY-MM');
-    const currentDateFormatted = currentDate.format('YYYY-MM-DD');
-    const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
-    const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
-  
-    // Check if the date is in the taskList or approvedTaskRequestedOn
-    if (taskList.find(task => task.userId === userId && task.date === addTask.date)|| approvedRequestedOn[userId]?.[month]?.includes(addTask.date)|| dayjs(addTask.date).isSame(dayjs().format('YYYY-MM-DD'))) {
-      setIsButtonDisabled(true);
-    } else {
-      setIsButtonDisabled(false);
+  const [projectData, setProjectData] = useState<ProjectDetails[]>([
+    {
+      projectName: "Other"
     }
-  }, [addTask.date, addTask.userId, taskList]); // this useEffect is for button enable or disable
+  ]);
+  const [refetch, setRefetch] = useState<boolean>(false);
+  const [initialValue, setInitialValue] = useState<any>({
+    timeSheetId: 0,
+    date: '', // Set to an empty string initially
+    workLocation: '',
+    task: '',
+    project: '',
+    startTime: '',
+    endTime: '',
+    totalHours: '',
+    description: '',
+    reportingTo: '', // Set default value to reportingManagerId if available
+  });
+  
+  // Assuming currentDate, currentWeek, and currentMonth are already defined
+  useEffect(() => {
+    if(!isEdited){
+      if (filterOption === 'Date') {
+        setInitialValue({
+          ...initialValue,
+          date: currentDate.format('YYYY-MM-DD'),
+        });
+      } else if (filterOption === 'Week') {
+        setInitialValue({
+          ...initialValue,
+          date: currentWeek.format('YYYY-MM-DD'),
+        });
+      } else if (filterOption === 'Month') {
+        setInitialValue({
+          ...initialValue,
+          date: currentMonth.format('YYYY-MM-DD'),
+        });
+      }
+    }
+  }, [filterOption, isEdited, currentDate, currentMonth, currentWeek]); // Run this effect whenever filterOption changes
+  
+  
+
+  const userId = localStorage.getItem('userId');
+
+  // useEffect(()=>{
+  //   if(!isEdited){
+  //     setInitialValue({
+  //       timeSheetId: 0,
+  //       date: currentDate.format('YYYY-MM-DD'),
+  //       workLocation: '',
+  //       task: '',
+  //       project: '',
+  //       startTime: '',
+  //       endTime: '',
+  //       totalHours: '',
+  //       description: '',
+  //       reportingTo: '', // Set default value to reportingManagerId if available
+  //     })
+  //   }
+  // },[currentDate, currentMonth, currentWeek, filterOption, isEdited])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userId = localStorage.getItem('userId');
+        const response = await api.get(`${process.env.REACT_APP_API_KEY}/api/v1/admin/employee-list`);
+        if (response.status !== 200) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = response.data.response.data;
+  
+        console.log('Fetched data:', data);
+        
+        const employee = data.find((emp: any) => emp.userId === userId);
+        console.log("employee", employee);
+        if (employee) {
+          // Assuming reportingTo is an array
+          const reportingManager: UserManager = {
+            reportingManagerName: employee.reportingMangerName,
+            reportingManagerId: employee.reportingManagerId,
+          };
+          setReportingTo([reportingManager]);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+  
+    fetchData(); // Call the fetchData function
+  }, []);
+  console.log(reportingTo)
+  console.log("final-filterTaask", filteredTasks);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await api.get('/api/v1/project/get-project-of-user/' + userId);
+        console.log("userId", userId);
+        const data = response.data.response.data;
+        console.log("fetchData", data);
+  
+        // Initialize an empty array to store updated projects
+        const updatedProjects: any[] = [];
+  
+        // Loop through each project to update only the projectName
+        data.forEach((project: any) => {
+          // Store the updated project with modified projectName in the array
+          const updatedProject = {
+            ...project,
+            projectName: project?.projectName, // Replace "New Project Name" with the desired value
+          };
+          console.log("updatedProject", updatedProject);
+          updatedProjects.push(updatedProject);
+        });
+      } catch (error: any) {
+        if (error.response?.status === 403) {
+          message.error("Session expired. Redirecting to login page...", 5, () => {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("role");
+            navigate("/login");
+          });
+        }
+      }
+    };
+    fetchData();
+  }, []);
+  
+
+  // Effect hook to fetch tasks when the component mounts
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        // Fetch tasks from the API
+        const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
+        console.log("response-fulldata", response.data.response.data);
+        let filteredTasks: any[]=[];
+        if(filterOption==='Date'){
+          let date = dayjs(currentDate).format('YYYY-MM-DD');
+          console.log('response-date', date);
+          console.log("response-currentDate", currentDate);
+          // Filter tasks based on currentDate
+          filteredTasks = response.data.response.data.filter((task:any) => {
+            // Assuming the task has a date property named "date"
+            // Modify this condition according to your task structure
+            return task.date === date; 
+        });
+        } 
+        else if(filterOption==='Week'){
+          const startOfWeek = currentWeek.startOf('week');
+          const endOfWeek = currentWeek.endOf('week');
+          filteredTasks = response.data.response.data.filter(
+            (task:any) =>
+              (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
+              (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) 
+              
+          ); 
+        }
+        else{
+          const startOfMonth = currentMonth.startOf('month');
+          const endOfMonth = currentMonth.endOf('month');
+          filteredTasks = response.data.response.data.filter(
+            (task:any) =>
+              (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
+              (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth)) 
+              
+          ); 
+        }
+        console.log("response-filteredData", filteredTasks);
+        // Update the state with the filtered tasks
+        setFilteredTasks(filteredTasks);
+      } catch (error) {
+        // Handle errors
+        console.error('Error fetching tasks:', error);
+        // You can also show a notification or perform other error handling here
+      }
+    };
+    // Call the fetchTasks function
+    fetchTasks();
+  }, [refetch, currentDate, currentWeek, currentMonth, filterOption]); // Empty dependency array to fetch tasks only once when the component mounts
+  
+
+
+  // Function to calculate and update totalHours
+
+
+  const updateTotalHours = (startTime: any, endTime: any, setFieldValue: Function) => {
+    if (startTime && endTime) {
+      const start = dayjs(startTime, 'HH:mm');
+      console.log("upatedTotalHours-start", start);
+      const end = dayjs(endTime, 'HH:mm');
+      console.log("upatedTotalHours-end", end);
+      const duration = end.diff(start, 'minute', true); // Calculate difference in minutes
+      console.log("upatedTotalHours-duration", duration);
+      const hours = Math.floor(duration / 60); // Extract hours
+      console.log("upatedTotalHours-hours", hours);
+      const minutes = duration % 60; // Extract remaining minutes
+      console.log("upatedTotalHours-minutes", minutes);
+      const formattedDuration = hours + (minutes / 100); // Combine hours and minutes
+      console.log("upatedTotalHours-formattedDuration", formattedDuration);
+      console.log("upatedTotalHours-formattedDuration", formattedDuration.toFixed(2));
+      setFieldValue("totalHours", formattedDuration.toFixed(2)); // Update totalHours
+    }
+};
+
+const calculateTotalHours = (startTime: any, endTime: any) => {
+  if (!startTime || !endTime) return ''; // Handle cases where either start or end time is missing
+  const start = dayjs(startTime, 'HH:mm');
+      console.log("calculateTotalHours-start", start);
+      const end = dayjs(endTime, 'HH:mm');
+      console.log("calculateTotalHours-end", end);
+      const duration = end.diff(start, 'minute', true); // Calculate difference in minutes
+      console.log("calculateTotalHours-duration", duration);
+      const hours = Math.floor(duration / 60); // Extract hours
+      console.log("calculateTotalHours-hours", hours);
+      const minutes = duration % 60; // Extract remaining minutes
+      console.log("calculateTotalHours-minutes", minutes);
+      const formattedDuration = hours + (minutes / 100); // Combine hours and minutes
+      console.log("calculateTotalHours-formattedDuration", formattedDuration);
+      console.log("calculateTotalHours-formattedDuration", formattedDuration.toFixed(2));
+      return formattedDuration.toFixed(2); // Format hours and minutes
+};
+
+  
+  useEffect(() => {
+    const newTotalHours = calculateTotalHours(startTime, endTime);
+    console.log("newtotalHours", newTotalHours);
+    setTotalHours(newTotalHours);
+  }, [startTime, endTime]);
+
 
   const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
     return tasks.map((task, index) => ({
-      ...task,
-      slNo: index + 1,
-      idx: deleteTask ? index + 1 : task.idx
+      ...task
     }));
   };
   const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
   const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
-  const workLocation = ['Work from Home', 'Work From Office'];
+  const workLocation = ['Work From Home', 'Office', 'Client Location', 'On-Duty'];
 
   useEffect(() => {
     const updateFormWidth = () => {
@@ -182,19 +417,6 @@ const AddTask: React.FC = () => {
     height:'540px'
   };
 
-  useEffect(() => {
-    const storedKeysString: string | null = localStorage.getItem('selectedKeys');
-    if (storedKeysString !== null) {
-        const storedKeys: SelectedKeys = JSON.parse(storedKeysString);
-        if (storedKeys.hasOwnProperty(userId)) {
-            setSelectedKeysToHide(storedKeys[userId]);
-        } else {
-            console.log("User ID not found in stored keys");
-        }
-    } else {
-        console.log("else-useEffect", storedKeysString);
-    }
-  }, []); //getting the selectedKeys
 
   useEffect(() => {
     // Calculate data for the pie chart
@@ -246,141 +468,9 @@ const AddTask: React.FC = () => {
     width="380"
   />
 
-  
-  const handleInputChange = (field: keyof Task, value: string) => {
-    if (field === 'date') {
-      if (filterOption === 'Month') {
-        // Handle if filterOption is 'Month'
-      }
-      const selectedDate = dayjs(value);
-      if (selectedDate.isAfter(dayjs(), 'day')) {
-        // Display a notification for selecting future dates
-        notification.warning({
-          message: 'Warning',
-          description: 'Cannot select a future date.',
-        });
-        // Set the selected date to today
-        setCurrentDate(dayjs());
-      } else {
-        // Update the state with the selected date
-        setCurrentDate(selectedDate);
-      }
-    }
-  
-    // Keep userId constant
-    if (field === 'userId') {
-      setAddTask((prevTask) => ({ ...prevTask, [field]: value }));
-    } else if (field === 'startTime' || field === 'endTime') {
-      // Update startTime or endTime with the new value
-      const updatedTime = value || dayjs().format('HH:mm'); // Change to 24-hour HH:mm format
-      setAddTask((prevTask) => ({ ...prevTask, [field]: updatedTime }));
-  
-      // Calculate the duration and update totalHours only if both startTime and endTime are updated
-      if (field === 'startTime' && addTask.endTime) {
-        const duration = dayjs(addTask.endTime, 'HH:mm').diff(dayjs(updatedTime, 'HH:mm'), 'hour', true); // Change to 24-hour HH:mm format
-        setAddTask((prevTask) => ({
-          ...prevTask,
-          totalHours: duration.toFixed(2),
-        }));
-      } else if (field === 'endTime' && addTask.startTime) {
-        const duration = dayjs(value, 'HH:mm').diff(dayjs(addTask.startTime, 'HH:mm'), 'hour', true); // Change to 24-hour HH:mm format
-        setAddTask((prevTask) => ({
-          ...prevTask,
-          totalHours: duration.toFixed(2),
-        }));
-      }
-    } else {
-      // For other fields, just update the state with the new value
-      setAddTask((prevTask) => ({ ...prevTask, [field]: value }));
-    }
-  };
-  
-  useEffect(() => {
-    const storedTaskListString = localStorage.getItem('taskList');
-    const storedTaskList = storedTaskListString ? JSON.parse(storedTaskListString) : [];
-
-    // Filter tasks based on the userId
-    //const userTaskList = storedTaskList.filter((task:Task)=> task.userId === userId);
-
-    // Assuming deletedTask is a state variable
-    const updatedTaskList = updateSlNo(storedTaskList, deletedTask);
-
-    setTaskList(updatedTaskList);
-    setFilteredTasks(updatedTaskList);
-  }, [deletedTask]); // Include deletedTask in the dependency array
-
-  useEffect(() => {
-    // Update addTask with the current date
-    if (!isEdited) {
-      // Update addTask with the current date only when not in edit mode
-      setAddTask((prevAddTask) => ({
-        ...prevAddTask,
-        date: dayjs(currentDate).format('YYYY-MM-DD'),
-    }));
-  }
-    //setFilteredTasks(taskList);
-    // Filter tasks based on the filterOption and currentDate when they change
-    if(!isDateChanged){
-    let filtered: Task[] = [];
-
-    if (searchInput) {
-      // If there is a search input, filter tasks based on date or month
-      const searchDate = dayjs(searchInput);
-      filtered = taskList.filter((task) => {
-          if (filterOption === 'Date') {
-            return ((dayjs(task.date).isSame(searchDate, 'day'))&&(task.userId===userId));
-            } else if (filterOption === 'Week') {
-              const startOfWeek = currentWeek.startOf('week');
-              const endOfWeek = currentWeek.endOf('week');
-              return (
-                (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-                (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) &&
-                task.userId===userId
-              );
-            } else if (filterOption === 'Month') {
-              // Format the searchInput in the same way as the task date
-              const formattedSearchMonth = searchDate.format('MMMM');
-              return ((dayjs(task.date).format('MMMM') === formattedSearchMonth) && (task.userId===userId));
-            }
-        return false;
-      });
-    }  else {
-      // If no search input, apply the regular filtering based on filterOption and currentDate
-      if (filterOption === 'Date') {
-        filtered = taskList.filter((task) => 
-          task.date === dayjs(currentDate).format('YYYY-MM-DD') && task.userId===userId);
-        console.log("useEffect-date", filtered)
-      } else if (filterOption === 'Week') {
-        const startOfWeek = currentWeek.startOf('week');
-        const endOfWeek = currentWeek.endOf('week');
-        filtered = taskList.filter(
-          (task) =>
-            (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-            (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) &&
-            task.userId ===userId
-        );
-        console.log("useeffect-week", filtered);
-      } else if (filterOption === 'Month') {
-        const startOfMonth = currentMonth.startOf('month');
-        const endOfMonth = currentMonth.endOf('month');
-        filtered = taskList.filter(
-          (task) =>
-            (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
-            (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth)) && 
-            (task.userId === userId)
-        );
-        console.log("useeffect", filtered);
-      }
-    }
-
-    setFilteredTasks(updateSlNo(filtered, deletedTask));
-  }
-  setIsDateChanged(false);
-  //  console.log("useeffect filtered-task", filteredTasks);
-  }, [isEdited, filterOption, currentDate, currentMonth, currentWeek, taskList, searchInput, isDateChanged]);
-
   const handleFilterChange = (value: any) => {
     setFilterOption(value);
+    setRefetch((prevState: any) =>  !prevState);
   };
 
   const handleLeftArrowClick = () => {
@@ -388,7 +478,7 @@ const AddTask: React.FC = () => {
       console.log("handleLeftArrowClick -prev", currentDate);
       const previousDate = currentDate.subtract(1, 'day');
       console.log("handleLeftArrowClick previousDate",previousDate)
-      setCurrentDate(previousDate);
+      setCurrentDate(dayjs(previousDate));
 
     } else if (filterOption === 'Week') {
       const previousWeekStart = currentWeek.subtract(1, 'week').startOf('week');
@@ -446,109 +536,57 @@ const AddTask: React.FC = () => {
     if (!isFormEnabled) {
       setAddTask({
         date: dayjs(currentDate).format('YYYY-MM-DD'),
-        userId:userId,
         workLocation: '',
         task: '',
-        title:'',
+        project:'',
         startTime: '',
         endTime: '',
         totalHours:'',
         description: '',
-        reportingTo: '',
-        idx: addTask.idx,
+        reportingTo: reportingToID,
       });
     }
   };
 
-  const handleFormSubmit = () => {
-    const userId = addTask.userId;
+  // Function to handle editing a task
+  const handleEditTask = async (record: any) => {
+    console.log("after - filteredTasks", filteredTasks);
+    console.log("clicked", record);
+    // const newFitleredTasks = filteredTasks.filter((task:any)=> task.timeSheetId !==record.timeSheetId)
+    // setFilteredTasks(newFitleredTasks);
+    setEditTaskId(record?.timeSheetId);
+    setInitialValue({
+      date: record.date,
+      workLocation: record.workLocation,
+      task: record.task,
+      project: record.project,
+      startTime: record.startTime,
+      endTime: record.endTime,
+      totalHours: record.totalHours,
+      description: record.description,
+      reportingTo: record.reportingTo, // Set default value to reportingManagerId if available
+    });
+    setIsEdited(true);
+  };
 
-    // Check if any field is empty
-    if (!addTask.startTime || !addTask.endTime || !addTask.workLocation || !addTask.task || !addTask.title || !addTask.description || !addTask.reportingTo) {
-        notification.warning({
-            message: 'Missing Information',
-            description: 'Please fill in all fields before submitting the task.',
-        });
-        return; // Abort submission
-    }
-
-    // Extract start and end time from the addTask object
-    const startTime = dayjs(addTask.startTime, 'HH:mm'); // Change to 24-hour format
-    const endTime = dayjs(addTask.endTime, 'HH:mm'); // Change to 24-hour format
-
-    // Check if the end time is greater than the start time
-    if (endTime.isBefore(startTime)) {
-        notification.warning({
-            message: 'Invalid Time',
-            description: 'End time should be greater than start time.',
-        });
-        return; // Abort submission
-    }
-
-    // Calculate the total hours and validate if it's less than 0
-    const totalHours = endTime.diff(startTime, 'hours', true); // Calculate the difference in hours
-    if (totalHours < 0) {
-        notification.warning({
-            message: 'Invalid Time',
-            description: 'Total hours cannot be negative.',
-        });
-        return; // Abort submission
-    }
-
-
-    // Check if the addTask date is included in selectedKeysToHide
-    if (selectedKeysToHide.includes(addTask.date)) {
-      notification.warning({
-          message: 'Restricted',
-          description: `The Task Approved: ${addTask.date} & Restrict to Add New Task`,
-      });
-      return;
-  }
-
-    const taskRequestedOn = localStorage.getItem('taskRequestedOn');
-    const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
-    const approvedRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
-    console.log("approvedRequestedOn", approvedRequestedOn);  
-    // Check if the date is not in the taskList and it's before the currentDate
-    // const currentDateFormatted = dayjs().format('YYYY-MM-DD');
-    // if (
-    //     (!taskList.find(task => (task.userId===addTask.userId) && (task.date === addTask.date)) && dayjs(addTask.date).isBefore(currentDateFormatted))
-    // ) {
-    //     notification.warning({
-    //         message: 'Restricted',
-    //         description: 'Cannot add task for a date before the current date and not present in the task list.',
-    //     });
-    //     return;
-    // }
-
-    const currentDateFormatted = dayjs().format('YYYY-MM-DD');
-    // Check if the date is not present in the approvedRequestedOn and satisfies the condition
-    console.log("approvedRequestedOn", approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date));
-    if (
-      (!approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) &&
-      (!taskList.find(task => task.userId === addTask.userId && task.date === addTask.date) &&
-      dayjs(addTask.date).isBefore(currentDateFormatted))
-    ) {
-      notification.warning({
-          message: 'Restricted',
-          description: 'Cannot add task for a date before the current date and not present in the task list.',
-      });
-      return;
-    }
-  
-  
-
+  // Function to handle submitting the form (including both adding and editing tasks)
+  const handleFormSubmit = async (values: any, { setSubmitting, resetForm }: FormikHelpers<any>) => {
+    console.log("handleFormSubmit-filteredTasks", filteredTasks);
+    console.log("handleFormSubmit-values", values)
     // Check for overlapping tasks in the specified time range
-    const overlappingTask = taskList.find(task => {
-      if(task.userId !== addTask.userId) return false;
-      const newTaskStartTime = dayjs(addTask.startTime, 'HH:mm'); // Change to 24-hour format
-      const newTaskEndTime = dayjs(addTask.endTime, 'HH:mm'); // Change to 24-hour format
+
+    const overlappingTask = filteredTasks.find((task:any )=> {
+      
+      let date = dayjs(currentDate).format('YYYY-MM-DD');
+      console.log('handleFormSubmit-date', date);
+      const newTaskStartTime = dayjs(values.startTime, 'HH:mm'); // Change to 24-hour format
+      const newTaskEndTime = dayjs(values.endTime, 'HH:mm'); // Change to 24-hour format
       const taskStartTime = dayjs(task.startTime, 'HH:mm'); // Change to 24-hour format
       const taskEndTime = dayjs(task.endTime, 'HH:mm'); // Change to 24-hour format
     
       // Check if the new task overlaps with any existing task
       return (
-        !isEdited && task.date === addTask.date &&
+        task.date === date &&
         (
           ((newTaskStartTime.isSame(taskStartTime) || newTaskStartTime.isAfter(taskStartTime)) && newTaskStartTime.isBefore(taskEndTime)) ||
           ((newTaskEndTime.isSame(taskStartTime) || newTaskEndTime.isAfter(taskStartTime)) && newTaskEndTime.isBefore(taskEndTime)) ||
@@ -556,7 +594,7 @@ const AddTask: React.FC = () => {
         )
       );
     });
-      
+    console.log("handleFormSubmit", overlappingTask);
     if (overlappingTask) {
       notification.warning({
         message: 'Restricted',
@@ -565,205 +603,101 @@ const AddTask: React.FC = () => {
       return;
     }
 
-    if (isEdited) {
-      // If editing, update the existing task
-      const updatedTaskList = taskList.map(task =>
-        (task.idx === addTask.idx) && (task.userId === addTask.userId)
-         ? { ...addTask } : task
-      );
-      setTaskList(updatedTaskList);
-      setFilteredTasks(updateSlNo(updatedTaskList, deletedTask));
-      localStorage.setItem('taskList', JSON.stringify(updatedTaskList));
-      setIsEdited(false);
-    } else {
-      // Update the taskList
-      const updatedTaskList = [
-        ...taskList,
-        { ...addTask, idx: taskList.length + 1 }
-      ];
-      setTaskList(updatedTaskList);
-      setFilteredTasks(updateSlNo(updatedTaskList, deletedTask));
-      localStorage.setItem('taskList', JSON.stringify(updatedTaskList));
-    }
-
-    // After successful submission, remove the date from approvedRequestedOn
-  // if (approvedRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date)) {
-  //   const updatedApprovedRequestedOn = { ...approvedRequestedOn };
-  //   const index = updatedApprovedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')].indexOf(addTask.date);
-  //   updatedApprovedRequestedOn[userId][dayjs(addTask?.date).format('YYYY-MM')].splice(index, 1);
-  //   localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApprovedRequestedOn));
-  // }
-  
-    // Clear the form with the default date and reset idx
-    setAddTask({
-      idx: taskList.length + 2, // Set a new idx
-      date: dayjs(currentDate).format('YYYY-MM-DD'),
-      userId: userId,
-      workLocation: '',
-      task: '',
-      title:'',
-      startTime: '',
-      endTime: '',
-      totalHours: '',
-      description: '',
-      reportingTo: '',
-    });
-    setIsEdited(false);
-    setIsFormSubmitted(true);
-    setIsDateChanged(true);
-  };
-
-  const handleRequestForm = () => {
-    const userId = addTask.userId;
-    const month = dayjs(addTask.date).format('YYYY-MM');
-    const currentDateFormatted = dayjs().format('YYYY-MM-DD');
-    const approvedRequestedOnString = localStorage.getItem('approveTaskRequestedOn');
-    const approvedTaskRequestedOn: TaskRequestedOn = approvedRequestedOnString ? JSON.parse(approvedRequestedOnString) : {};
-    if (
-      !taskList.find(task => task.userId === userId && task.date === addTask.date) &&
-      dayjs(addTask.date).isBefore(currentDateFormatted) && !(approvedTaskRequestedOn[userId]?.[dayjs(addTask?.date).format('YYYY-MM')]?.includes(addTask.date))
-    ) {
-      const taskRequestedOn: TaskRequestedOn = JSON.parse(localStorage.getItem('taskRequestedOn') || '{}');
-      
-
-      if (!taskRequestedOn[userId]) {
-        taskRequestedOn[userId] = {};
-      }
-
-      if (!taskRequestedOn[userId][month]) {
-        taskRequestedOn[userId][month] = [];
-      }
-
-      let datesToRequest: string[] = [];
-
-      if (filterOption === 'Month') {
-        // Get the first and last dates of the month
-        const firstDayOfMonth = dayjs(addTask.date).startOf('month');
-        const lastDayOfMonth = dayjs(addTask.date).endOf('month');
-        const presentDate = dayjs().format('YYYY-MM-DD');
-        // Generate all dates in the month
-        let currentDate = firstDayOfMonth;
-        while (
-          (currentDate.isSame(lastDayOfMonth, 'day') || currentDate.isBefore(lastDayOfMonth, 'day')) &&
-          !currentDate.isAfter(presentDate)
-        ) {
-          const currentDateFormatted = currentDate.format('YYYY-MM-DD');
-          if (
-            !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
-            !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
-          ) {
-            // Check if the date is not already present in both approvedTaskRequestedOn and taskList
-            if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
-              datesToRequest.push(currentDateFormatted);
-            }
-          }
-          currentDate = currentDate.add(1, 'day');
-        }
-      } else if (filterOption === 'Week') {
-        // Get the first and last dates of the week
-        const startOfWeek = dayjs(addTask.date).startOf('week');
-        const endOfWeek = dayjs(addTask.date).endOf('week');
-        const presentDate = dayjs().format('YYYY-MM-DD');
-        // Generate all dates in the week
-        let currentDate = startOfWeek;
-        while (
-          (currentDate.isSame(endOfWeek, 'day') || currentDate.isBefore(endOfWeek, 'day')) &&
-          !currentDate.isAfter(presentDate)
-        ) {
-          const currentDateFormatted = currentDate.format('YYYY-MM-DD');
-          if (
-            !taskList.some(task => task.userId === userId && task.date === currentDateFormatted) &&
-            !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDateFormatted)
-          ) {
-            // Check if the date is not already present in both approvedTaskRequestedOn and taskList
-            if (!taskRequestedOn[userId][month].includes(currentDateFormatted)) {
-              datesToRequest.push(currentDateFormatted);
-            }
-          }
-          currentDate = currentDate.add(1, 'day');
-        }
-      } else if (filterOption === 'Date') {
-        // Generate dates for the specific date option
-        const currentDate = dayjs(addTask.date).format('YYYY-MM-DD');
-        if (
-          !taskList.some(task => task.userId === userId && task.date === currentDate) &&
-          !approvedTaskRequestedOn[userId]?.[month]?.includes(currentDate)
-        ) {
-          // Check if the date is not already present in both approvedTaskRequestedOn and taskList
-          if (!taskRequestedOn[userId][month].includes(currentDate)) {
-            datesToRequest.push(currentDate);
-          }
-        }
-      }
-
-      taskRequestedOn[userId][month] = taskRequestedOn[userId][month].concat(datesToRequest);
-
-      localStorage.setItem('taskRequestedOn', JSON.stringify(taskRequestedOn));
-
-      // Display notification
-      notification.success({
-        message: `The request for ${addTask.date} has been sent.`,
-        placement: 'topRight',
-      });
-    } 
-  };
-
-  const handleClearSubmit = () => {
-    // Clear the form with the default date and set idx
-    setAddTask({
-      date: dayjs(addTask.date).format('YYYY-MM-DD'),
-      userId: userId,
-      workLocation: '',
-      task: '',
-      title:'',
-      startTime: '',
-      endTime: '',
-      totalHours:'',
-      description: '',
-      reportingTo: '',
-      idx: addTask.idx 
-    });
-  }
-  
-  const handleEditTask = (idx: number) => {
-    const taskToEdit = taskList.find((task) => (task.idx === idx) && (task.userId === addTask.userId));
-    if (taskToEdit) {
-      // Check if the date is included in selectedKeysToHide
-      if (selectedKeysToHide.includes(taskToEdit.date)) {
-        // Date is included in selectedKeysToHide, so prevent further action
-        // You can display a message or handle this case according to your application's logic
-        return;
-      }
-
-      setIsEdited(true);
     
-      setAddTask({
-          date: taskToEdit.date,
-          userId: taskToEdit.userId,
-          workLocation:taskToEdit.workLocation,
-          task: taskToEdit.task,
-          title:taskToEdit.title,
-          startTime: taskToEdit.startTime,
-          endTime: taskToEdit.endTime,
-          totalHours: taskToEdit.totalHours,
-          description: taskToEdit.description,
-          reportingTo: taskToEdit.reportingTo,
-          idx: taskToEdit.idx, 
-      });
-
-      // Now, you can perform additional actions or display a modal for editing
-      setCurrentDate(dayjs(taskToEdit.date));
+    
+    try {
+      setSubmitting(true);
+      let response: any;
+      if (isEdited && values) {
+        // If editing an existing task, send a PUT request to the edit-task API endpoint
+        response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
+            date: values?.date,
+            workLocation: values?.workLocation,
+            task: values?.task,
+            project: values?.project,
+            startTime: values?.startTime,
+            endTime: values?.endTime,
+            totalHours: values?.totalHours,
+            description: values?.description,
+            reportingTo: values?.reportingTo,
+        });
+      } else {
+       
+        console.log("inside here");
+        // If adding a new task, send a POST request to the add-task API endpoint
+        response = await api.post('/api/v1/timeSheet/add-task', {
+            date: values?.date,
+            workLocation: values?.workLocation,
+            task: values?.task,
+            project: values?.project,
+            startTime: values?.startTime,
+            endTime: values?.endTime,
+            totalHours: values?.totalHours,
+            description: values?.description,
+            reportingTo: values?.reportingTo,
+        });
+      }
+      console.log("handleformsubmit 1");
+      console.log("response", response.data);
+      // Check the response status
+      if (response.status === 200) {
+        // Handle successful response
+        setRefetch((prevState: any) =>  !prevState);
+        console.log('Task added/edited successfully:', response.data);
+        // Handle any other necessary operations after successful submission
+        // For example, resetting form fields, updating state, etc.
+        setIsEdited(false);
+        resetForm();
+        setInitialValue({
+            timeSheetId: 0,
+            date: currentDate.format('YYYY-MM-DD'),
+            workLocation: '',
+            task: '',
+            project: '',
+            startTime: '',
+            endTime: '',
+            totalHours: '',
+            description: '',
+            reportingTo: '', 
+        })
+        setIsFormSubmitted(true);
+        setIsDateChanged(true);
+      } else {
+        // Handle other response statuses
+        console.error('Failed to add/edit task. Status:', response.status);
+      }
+    } catch (error) {
+      // Handle errors
+      setSubmitting(false);
+      console.error('Error adding/editing task:', error);
+      // You can also show a notification or perform other error handling here
     }
   };
 
-  const handleDeleteTask = useCallback((idx: number) => {
-    const taskToDelete = taskList.find(task => (task.idx === idx));  //&&(task.userId === addTask.userId)
-    
-    if (!taskToDelete || selectedKeysToHide.includes(taskToDelete.date)) {
-      // Task not found or its date is in selectedKeysToHide, do not delete
-      return;
+  const handleOverallSubmit = async () => {
+    try {
+      const response = await api.post('/api/v1/timeSheet/submit-task');
+      console.log("response-handleoverallsubmit", response);
+      if (response.status === 200) {
+        // Display a notification when the task is submitted successfully
+        notification.success({
+          message: 'Success',
+          description: 'Task Submitted Successfully',
+        });
+        console.log('Task overall submitted successfully:', response.data);
+      }
+    } catch (error) {
+      console.log("Error occurred during overall submit:", error);
+      // You can also display an error notification if needed
+      notification.error({
+        message: 'Error',
+        description: 'Failed to submit task. Please try again later.',
+      });
     }
+  };
+  
 
+  const handleDeleteTask = useCallback((task_id:any) => {
     // Display confirmation modal before deleting the task
     confirm({
       title: 'Delete Task',
@@ -780,140 +714,35 @@ const AddTask: React.FC = () => {
           width: '80px', backgroundColor: '#0B4266', color: 'white'
         },
       },
-      onOk() {
+      async onOk() {
         // Logic to delete the task if user confirms
-        const updatedTaskList = taskList.filter(task => (task.idx !== idx)); //&&(task.userId==addTask.userId)
-    
-        // Reindex the idx starting from 1
-        const reindexedTaskList = updateSlNo(updatedTaskList, true);
-    
-        setTaskList(reindexedTaskList);
-        setFilteredTasks(reindexedTaskList);
-    
-        // Update localStorage
-        localStorage.setItem('taskList', JSON.stringify(reindexedTaskList));
+        try {
+          // Make DELETE request to delete the task
+          await api.delete(`/api/v1/timeSheet/delete-task/${task_id}`);
+          setRefetch((refetch)=>!refetch);
+          // Optionally, perform any additional actions after deletion
+          // For example, refetch the tasks or update the UI
+        } catch (error) {
+          // Handle errors
+          console.error('Error deleting task:', error);
+          // You can also show a notification or perform other error handling here
+        }
       },
       onCancel() {
         // Logic if user cancels deletion
       },
     });
-  }, [taskList, selectedKeysToHide]);
-
-  const handleOverallSubmit = () => {
-
-    // Filter tasks where userId matches addTask.userId
-    const tasksToSend: Task[] = filteredTasks.filter(task => task.userId === addTask.userId);
-      // Prepare the data to be sent
-      const requestData: Task[] = tasksToSend.map(task => ({
-          date: task.date,
-          userId: task.userId,
-          workLocation: task.workLocation,
-          task: task.task,
-          title:task.title,
-          startTime: task.startTime,
-          endTime: task.endTime,
-          totalHours: task.totalHours,
-          description: task.description,
-          reportingTo: task.reportingTo,
-          idx: task.idx,
-      }));
-
-      // Group tasks by date
-      const groupedTasks: { [date: string]: Task[] } = {};
-      requestData.forEach(task => {
-          if (groupedTasks.hasOwnProperty(task.date)) {
-              groupedTasks[task.date].push(task);
-          } else {
-              groupedTasks[task.date] = [task];
-          }
-      });
-
-          // Determine the key based on the filterOption
-      let key: string;
-      if (filterOption === "Date") {
-          key = currentDate.format("MMMM YYYY"); // Format Dayjs object to "February 2024"
-      } else if (filterOption === 'Week') {
-          key = currentWeek.startOf('week').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
-      } else {
-          key = currentMonth.startOf('month').format("MMMM YYYY"); // Format Dayjs object to "February 2024"
-      }
-
-      let date: string[] = [];
-      if (filterOption === "Date") {
-          date.push(currentDate.format('YYYY-MM-DD')); // Format Dayjs object to "February 2024"
-      } else if (filterOption === 'Week') {
-          const fromDate = currentWeek.startOf('week').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
-          const toDate = currentWeek.endOf('week').format("YYYY-MM-DD");
-          date.push(fromDate);
-          date.push(toDate);
-      } else {
-          const fromDate = currentMonth.startOf('month').format("YYYY-MM-DD"); // Format Dayjs object to "February 2024"
-          const toDate = currentMonth.endOf('month').format("YYYY-MM-DD");
-          date.push(fromDate);
-          date.push(toDate);
-      }
-
-      // Retrieve requestedOn from local storage
-      const requestedOnString = localStorage.getItem('requestedOn');
-      const requestedOn: RequestedOn = requestedOnString ? JSON.parse(requestedOnString) : {};
-
-      // Update requestedOn with the new date
-      requestedOn[key] = date;
-
-      // Update requestedOn in local storage
-      localStorage.setItem('requestedOn', JSON.stringify(requestedOn));
+  }, []);
 
 
-      // Store the approvalRequestsData in local storage as an object
-      const approvalRequestedData: { [date: string]: Task[] } = groupedTasks;
-      localStorage.setItem('approvalRequestedData', JSON.stringify(approvalRequestedData));
-
-      // Assuming userId is available in your component's scope
-
-      // Retrieve rejectedKeys from local storage for the specific userId
-      const rejectedKeysString = localStorage.getItem('rejectedKeys');
-      console.log("rejectedKeysString", rejectedKeysString);
-
-      if (rejectedKeysString) {
-          const parsedRejectedKeys: RejectedKeys = JSON.parse(rejectedKeysString);
-          console.log("rejectedKeys", parsedRejectedKeys);
-
-          // Check if userId exists in rejectedKeys
-          if (parsedRejectedKeys.hasOwnProperty(userId)) {
-              // Get the rejectedKeys for the specific userId
-              const userRejectedKeys = parsedRejectedKeys[userId];
-
-              // Check if 'submit' exists in rejectedKeys for the specific user
-              const date = requestData.length > 0 ? requestData[0].date : '';
-              if (userRejectedKeys.some((key) => key.date === date)) {
-                  // Remove 'date' from rejectedKeys for the specific user
-                  const updatedRejectedKeys = userRejectedKeys.filter((key) => key.date !== date);
-
-                  // Update rejectedKeys in local storage for the specific user
-                  parsedRejectedKeys[userId] = updatedRejectedKeys;
-                  localStorage.setItem('rejectedKeys', JSON.stringify(parsedRejectedKeys));
-              }
-          }
-      }
-
-      // Set the success notification
-      notification.success({
-          message: 'Submission Successful',
-          description: 'Task details submitted successfully!',
-      });
-
-      // Navigate to approval requests page
-      //navigate('/manager/approvalrequests');
-  };
-
-  const columns: ColumnsType<Task> = [
+  const columns: ColumnsType<any> = [
     {
       title: 'Sl.no',
-      width:'132px',
-      //sorter: (a: Task, b: Task) => (a.slNo && b.slNo ? a.slNo - b.slNo : 0),
+      width: '132px',
       dataIndex: 'slNo',
       key: 'slNo',
       fixed: 'left',
+      render: (text, record, index) => index + 1,
     },
     {
       title: 'Work Location',
@@ -930,10 +759,10 @@ const AddTask: React.FC = () => {
       fixed: 'left',
     },
     {
-      title: 'Title',
+      title: 'Project',
       //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
-      dataIndex: 'title',
-      key: 'title',
+      dataIndex: 'project',
+      key: 'project',
       fixed: 'left',
     },
     {
@@ -977,88 +806,59 @@ const AddTask: React.FC = () => {
       dataIndex: 'reportingTo',
       key: 'reportingTo',
       fixed: 'left',
-    },
-    // {
-    //   title: 'Actions',
-    //   dataIndex: 'actions',
-    //   key: 'actions',
-    //   render: (_, record, index) => {
-    //     const isDateSelected = selectedKeysToHide.includes(record.date); // Assuming record.date represents the date of the task
-    //     return (
-    //       <div>
-    //         <EditOutlined
-    //           onClick={() => handleEditTask(record.idx)}
-    //           style={{
-    //             marginRight: '8px',
-    //             cursor: isDateSelected ? 'not-allowed' : 'pointer',
-    //             color: isDateSelected ? 'grey' : 'blue',
-    //             fontSize: '20px',
-    //           }}
-    //           disabled={isDateSelected}
-    //         />
-    //         <DeleteOutlined
-    //           onClick={() => handleDeleteTask(record.idx)}
-    //           style={{
-    //             cursor: isDateSelected ? 'not-allowed' : 'pointer',
-    //             color: isDateSelected ? 'grey' : 'red',
-    //             fontSize: '20px',
-    //           }}
-    //           disabled={isDateSelected}
-    //         />
-    //       </div>
-    //     );
-    //   },
-    // }    
+    }, 
     {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
       render: (_, record, index) => {
-        const isExistingTask = taskList.some(task => task.idx === record.idx);
+        // const isExistingTask = taskList.some(task => task.task_id === record.task_id);
         const isDateSelected = selectedKeysToHide.includes(record.date);
         
         // Filter tasks by userId
-        const userTasks = taskList.filter(task => task.userId === record.userId);
+        //const userTasks = taskList.filter(task => task.userId === record.userId);
         
         // Check if the user has tasks for the selected date
-        const hasUserTasksForDate = userTasks.some(task => task.date === record.date);
+        //const hasUserTasksForDate = userTasks.some(task => task.date === record.date);
     
         return (
           <div>
             <EditOutlined
-              onClick={() => handleEditTask(record.idx)}
+              onClick={() => handleEditTask(record)}
               style={{
                 marginRight: '8px',
-                cursor: (isDateSelected || !hasUserTasksForDate) ? 'not-allowed' : 'pointer',
-                color: (isDateSelected || !hasUserTasksForDate) ? 'grey' : 'blue', 
+                cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', //|| !hasUserTasksForDate
+                color: (isDateSelected ) ? 'grey' : 'blue', //|| !hasUserTasksForDate
                 fontSize: '20px',
               }}
-              disabled={isDateSelected || !hasUserTasksForDate}
+              disabled={isDateSelected } //|| !hasUserTasksForDate
             />
             <DeleteOutlined
-              onClick={() => handleDeleteTask(record.idx)}
+              onClick={() => handleDeleteTask(record?.timeSheetId)}
               style={{
-                cursor: (isDateSelected || !hasUserTasksForDate) ? 'not-allowed' : 'pointer',
-                color: (isDateSelected || !hasUserTasksForDate) ? 'grey' : 'red',
+                cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', //|| !hasUserTasksForDate
+                color: (isDateSelected ) ? 'grey' : 'red', //|| !hasUserTasksForDate
                 fontSize: '20px',
               }}
-              disabled={isDateSelected || !hasUserTasksForDate}
+              disabled={isDateSelected } //|| !hasUserTasksForDate
             />
           </div>
         );
       },
     }    
     
-       
+      
   ]
+
+  const handleClearForm = (resetForm:any) => {
+    resetForm(); // Reset the form to its initial values
+  };
 
     // Define validation schema using Yup
   const validationSchema = yup.object().shape({
     date: yup.string().required('Date is required'),
-    userId: yup.string().required('User ID is required'),
     workLocation: yup.string().required('Work Location is required'),
     task: yup.string().required('Task is required'),
-    title: yup.string().required('Title is required'),
     startTime: yup.string().required('Start Time is required'),
     endTime: yup.string()
       .required('End Time is required')
@@ -1069,13 +869,13 @@ const AddTask: React.FC = () => {
           const { startTime } = this.parent;
           return value && startTime && value > startTime;
         }
-      ),
+      ),  
       totalHours: yup.number()
       .required('Total Hours is required')
       .positive('Total Hours must be greater than 0')
       .moreThan(0, 'Total Hours must be greater than 0'),
-    description: yup.string().required('Description is required'),
-    reportingTo: yup.string().required('Reporting To is required'),
+      description: yup.string().required('Description is required'),
+      reportingTo: yup.string().required('Reporting To is required'),
   });
 
   return (
@@ -1102,431 +902,423 @@ const AddTask: React.FC = () => {
         </div>
         {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( 
         <Formik
-        initialValues={{
-          date: dayjs(currentDate).format('YYYY-MM-DD'),
-          userId: '',
-          workLocation: '',
-          task: '',
-          title: '',
-          startTime: '',
-          endTime: '',
-          totalHours: '',
-          description: '',
-          reportingTo: '',
-        }}
-        validationSchema={validationSchema}
-        onSubmit={handleFormSubmit}
-      >
+          initialValues={initialValue}
+          validationSchema={validationSchema}
+          onSubmit={handleFormSubmit}
+          enableReinitialize={true}
+        >
         {({
+          
           values,
-          errors,
-          touched,
           handleChange,
+          setFieldValue,
+          setFieldTouched,
           handleBlur,
           handleSubmit,
+          errors,
           isSubmitting,
-        }) => (
-          <Form name='basic' layout='vertical' autoComplete='off'  onFinish={handleSubmit}>
+          resetForm
+        }) => 
+       { console.log(values,errors)
+         return (  
+          <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
             <div>
-              {isFormEnabled && (
+              {(isFormEnabled && filterOption!=='Date')&& (
                 <CloseCircleOutlined
-                  style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'900px' }}
+                  style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'1000px' }}
                   onClick={handleToggleForm} // Call the handleToggleForm function on click
                 />
               )}
-              <div style={{display:'flex', alignItems:'center'}}>
-                <div style={{width:'35%'}}>
-                  <div className='section-addtask' style={{width:'125%'}}>
-                    <div className='create-layout-addtask-left  '>
-                      <div style={{marginBottom:'10px'}}>
-                        <label style={{color:'#0B4266'}} htmlFor='addTaskID'><span style={{color:'red', paddingRight:'5px'}}>*</span>Date</label>
-                      </div>
-                      {/* <input
-                        type="date"
-                        style={{ width: '100%' }}
-                        className='timepicker'
-                      /> */}
-                      <Input
-                        type='date'
-                        required
-                        placeholder='Enter your Employee ID'
-                        style={{height:'60%'}}
-                        value={currentDate.format('YYYY-MM-DD')} 
-                        // value={
-                        //   filterOption === 'Month'
-                        //     ? currentMonth.startOf('month').format('YYYY-MM-DD')
-                        //     : filterOption === 'Week'
-                        //     ? currentWeek.startOf('week').format('YYYY-MM-DD')
-                        //     : currentDate.format('YYYY-MM-DD')
-                        // }
-                        onChange={(e) => handleInputChange('date', e.target.value)}
+              <div style={{display:'flex'}}>
+                <div>
+                  <div style={{display:'flex'}}>
+                  <Form.Item<FieldType>
+                    label="Date"
+                    className="label-strong"
+                    name="date"
+                    required
+                    style={{ padding: "10px" }}
+                  >
+                    <DatePicker
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        format="YYYY-MM-DD" // Set the format of the displayed date
+                        value={
+                          filterOption === 'Week' ? (currentWeek ? dayjs(currentWeek) : null) :
+                          filterOption === 'Month' ? (currentMonth ? dayjs(currentMonth) : null) :
+                          (currentDate ? dayjs(currentDate) : null)
+                        }                        
+                        onChange={(date, dateString) => {
+                          if (date) {
+                            // Update currentDate, currentWeek, or currentMonth based on filterOption
+                            if (filterOption === 'Week') {
+                              setCurrentWeek(date);
+                            } else if (filterOption === 'Month') {
+                              setCurrentMonth(date.startOf('month'));
+                            } else {
+                              setCurrentDate(date);
+                            }
+                            // Set Formik field value
+                            setFieldValue('date', dayjs(dateString).format('YYYY-MM-DD'));
+                          }
+                        }}
+                        onBlur={handleBlur}
+                        disabledDate={(current) => {
+                          // Disable dates after today
+                          return current && current > moment().endOf('day');
+                        }}
                       />
-                      {/* <DatePicker
-                          value={dayjs(currentDate)} // Convert currentDate to Dayjs object
-                          format="YYYY-MM-DD" // Specify the date format
-                          onChange={(date, dateString) => handleInputChange('date', dateString)} // Use dateString to get the selected date
-                          style={{ width: '100%', height:'35%' }} // Adjust the width as needed
-                      /> */}
+                    <div>
+                      <Typography.Text
+                        type="danger"
+                        style={{ wordBreak: "break-word", textAlign:'left' }}
+                      >
+                        <ErrorMessage name="date" />
+                      </Typography.Text>
                     </div>
-                    {/* <div className='create-layout-addtask-left  '>
-                      <div style={{marginBottom:'10px'}}>
-                        <label htmlFor='addTaskID'>User ID</label>
-                      </div>
-                      <Input
-                        placeholder='Enter your Employee ID'
-                        value={addTask.userId}
-                        onChange={(e) => handleInputChange('userId', e.target.value)}  
-                      />
-                    </div> */}
-                    <Field name="workLocation">
-                      {({ field, form }:{field:any, form:any}) => (
-                        <div className='create-layout-addtask'>
-                          <div>
-                            <label style={{color:'#0B4266'}} htmlFor='task'>
-                              <span style={{color:'red', paddingRight:'5px'}}>*</span>
-                              Work Location
-                            </label>
-                          </div>
-                          <div style={{height:'60%'}}>
-                            <Select
-                              {...field}
-                              id='task'
-                              style={{height:'100%', width:'100%', marginTop:'10px'}}
-                              value={addTask.workLocation }
-                              onChange={(value) => {
-                                form.setFieldValue('workLocation', value); // Manually set field value
-                                handleInputChange('workLocation', value); // Handle input change
-                              }}
-                              onBlur={() => form.setFieldTouched('workLocation', true)} // Manually set field as touched
-                            >
-                              <Option value="" disabled selected>
-                                Work Location
-                              </Option>
-                              {workLocation.map((option) => (
-                                <Option key={option} value={option}>
-                                  {option}
-                                </Option>
-                              ))}
-                            </Select>
-                            <Typography.Text
-                              type="danger"
-                              style={{ wordBreak: "break-word", textAlign:'left' }}
-                            >
-                              {form.errors.workLocation && form.touched.workLocation && (
-                                <span>{form.errors.workLocation}</span>
-                              )}
-                            </Typography.Text>
-                          </div>
-                        </div>
-                      )}
-                    </Field>
-                  </div>
-                  <div className='section-addtask' style={{width:'125%'}}>
-                    
-                  <Field name="task">
-                    {({ field, form }:{field: any, form: any}) => (
-                      <div className='create-layout-addtask'>
-                        <div>
-                          <label style={{color:'#0B4266'}} htmlFor='task'>
-                            <span style={{color:'red', paddingRight:'5px'}}>*</span>
-                            Task
-                          </label>
-                        </div>
-                        <div style={{height:'60%'}}>
-                          <Select
-                            {...field}
-                            id='task'
-                            style={{height:'100%', width:'100%', marginTop:'10px'}}
-                            value={addTask.task || 'Task'}
-                            onChange={(value) => {
-                              form.setFieldValue('task', value); // Manually set field value
-                              handleInputChange('task', value); // Handle input change
-                            }}
-                            onBlur={() => form.setFieldTouched('task', true)} // Manually set field as touched
-                          >
-                            {taskOptions.map((option) => (
-                              <Option key={option} value={option}>
-                                {option}
-                              </Option>
-                            ))}
-                          </Select>
-                          <Typography.Text
-                            type="danger"
-                            style={{ wordBreak: "break-word", textAlign:'left' }}
-                          >
-                            {form.errors.task && form.touched.task && (
-                              <span>{form.errors.task}</span>
-                            )}
-                          </Typography.Text>
-                        </div>
-                      </div>
-                    )}
-                  </Field>
-                    {addTask.task === 'Meeting' && (
-                          // <div className='section-addtask' style={{width:'61%'}}>
-                          //   <div className='create-layout-addtask'>
-                          //     <div>
-                          //       <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
-                          //     </div>
-                          //     <div>
-                          //       <select
-                          //         id='task'
-                          //         value={addTask.title}
-                          //         onChange={(e) => handleInputChange('title', e.target.value)}
-                          //       >
-                          //         {meetingTitle.map((option, index) => (  // Use 'index' as the key
-                          //           <option key={index} value={option}>
-                          //             {option}
-                          //           </option>
-                          //         ))}
-                          //       </select>
-                          //     </div>
-                          //   </div>
-                          // </div>
-                          <div className='create-layout-addtask'>
-                              <div>
-                                <label style={{ color:'#0B4266' }} htmlFor='title'>Meeting</label>
-                              </div>
-                              <div style={{height:'60%'}}>
-                                <Select
-                                  id='task'
-                                  style={{height:'100%', width:'100%',marginTop:'10px'}}
-                                  value={addTask.title || 'Meeting'}
-                                  onChange={(value) => handleInputChange('title', value)}
-                                >
-                                  {meetingTitle.map((option, index) => (  // Use 'index' as the key
-                                    <Option key={index} value={option}>
-                                      {option}
-                                    </Option>
-                                  ))}
-                                </Select>
-                              </div>
-                          </div>
-                    )}
-                    {(addTask.task === 'Project'|| addTask.task==='Learning' || addTask.task==='Training') && (
-                      // <div className='section-addtask' style={{width:'61%'}}>
-                      //   <div className='create-layout-addtask'>
-                      //     <div>
-                      //       <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
-                      //     </div>
-                      //     <div>
-                      //       <select
-                      //         id='task'
-                      //         value={addTask.title}
-                      //         onChange={(e) => handleInputChange('title', e.target.value)}  // Corrected 'title' to 'task'
-                      //       >
-                      //         {projectTitle.map((option, index) => (  // Use 'index' as the key
-                      //           <option key={index} value={option}>
-                      //             {option}
-                      //           </option>
-                      //         ))}
-                      //       </select>
-                      //     </div>
-                      //   </div>
-                      // </div>
-                      <div className='create-layout-addtask'>
+                  </Form.Item>
+                    <Form.Item<FieldType>
+                      label="Work Location"
+                      className="label-strong"
+                      name="workLocation"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                      <Select
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        value={values.workLocation}
+                        onChange={(value, option) => {
+                          setFieldValue("workLocation", value); // Update "workLocation" field value
+                        }}
+                        onBlur={() => {
+                          setFieldTouched("workLocation", true); // Mark "workLocation" field as touched
+                        }}
+                      >
+                        <Select.Option value="" disabled>
+                          Select work location
+                        </Select.Option>
+                        {workLocation.map((option) => (
+                          <Select.Option key={option} value={option}>
+                            {option}
+                          </Select.Option>
+                        ))}
+                      </Select>
                       <div>
-                        <label style={{ color:'#0B4266' }} htmlFor='title'>{addTask.task}</label>
-                      </div>
-                      <div style={{height:'60%'}}>
-                        <Select
-                          id='task'
-                          style={{height:'100%',width:'100%', marginTop:'10px'}}
-                          value={addTask.title || 'Project'}
-                          onChange={(value) => handleInputChange('title', value)}  // Corrected 'title' to 'task'
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
                         >
-                          {projectTitle.map((option, index) => (  // Use 'index' as the key
-                            <Option key={index} value={option}>
-                              {option}
-                            </Option>
-                          ))}
-                        </Select>
+                          <ErrorMessage name="workLocation" /> {/* Adjusted to use "workLocation" */}
+                        </Typography.Text>
                       </div>
-                    </div>
-                    )}
-
+                    </Form.Item>
                   </div>
-                  <div className='section-addtask' style={{width:'125%',height: '110px'}}>
-                    <div className='create-layout-addtask-left'>
-                        <div>
-                            <label htmlFor='startTime'>
-                                <span style={{color:'red', paddingRight:'5px'}}>*</span>
-                                Start Time
-                            </label>
-                        </div>
-                        <Field name="startTime">
-                            {({ field, form }:{field:any, form:any}) => (
-                                <div style={{height:'650%'}}>
-                                    <TimePicker
-                                        style={{height:'41.133340000000004px'}}
-                                        {...field}
-                                        value={
-                                            addTask.startTime
-                                            ? dayjs(addTask.startTime, 'HH:mm') // Change the format to 24-hour HH:mm
-                                            : null
-                                        }
-                                        onChange={(time, timeString) => {
-                                            form.setFieldValue('startTime', timeString); // Manually set field value
-                                            handleInputChange('startTime', timeString); // Handle input change
-                                        }}
-                                        className='timepicker'
-                                        format='HH:mm' // Change the format to 24-hour HH:mm
-                                        onBlur={() => form.setFieldTouched('startTime', true)} // Manually set field as touched
-                                    />
-                                    <Typography.Text
-                                        type="danger"
-                                        style={{ wordBreak: "break-word", textAlign:'left' }}
-                                    >
-                                        {form.errors.startTime && form.touched.startTime && (
-                                            <span>{form.errors.startTime}</span>
-                                        )}
-                                    </Typography.Text>
-                                </div>
-                            )}
-                        </Field>
-                    </div>
-
-                      <div className='create-layout-addtask'>
-                          <div>
-                              <label style={{color:'#0B4266'}} htmlFor='endTime'><span style={{color:'red', paddingRight:'5px'}}>*</span>End Time</label>
-                          </div>
-                          <Field name="startTime">
-                            {({ field, form }:{field:any, form:any}) => (
-                                <div>
-                                    <TimePicker
-                                        style={{height:'41.133340000000004px'}}
-                                        {...field}
-                                        value={
-                                            addTask.endTime
-                                            ? dayjs(addTask.endTime, 'HH:mm') // Change the format to 24-hour HH:mm
-                                            : null
-                                        }
-                                        onChange={(time, timeString) => {
-                                            form.setFieldValue('endTime', timeString); // Manually set field value
-                                            handleInputChange('endTime', timeString); // Handle input change
-                                        }}
-                                        className='timepicker'
-                                        format='HH:mm' // Change the format to 24-hour HH:mm
-                                        onBlur={() => form.setFieldTouched('endTime', true)} // Manually set field as touched
-                                    />
-                                    <Typography.Text
-                                        type="danger"
-                                        style={{ wordBreak: "break-word", textAlign:'left' }}
-                                    >
-                                        {form.errors.endTime && form.touched.endTime && (
-                                            <span>{form.errors.endTime}</span>
-                                        )}
-                                    </Typography.Text>
-                                </div>
-                            )}
-                        </Field>
+                  <div style={{display:'flex'}}>
+                    <Form.Item<FieldType>
+                      label="Task"
+                      className="label-strong"
+                      name="task"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                      <Select
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        value={values.task}
+                        onChange={(value, option) => {
+                          setFieldValue("task", value); // Update "workLocation" field value
+                        }}
+                        onBlur={() => {
+                          setFieldTouched("task", true); // Mark "workLocation" field as touched
+                        }}
+                      >
+                        <Select.Option value="" disabled>
+                          Select the task
+                        </Select.Option>
+                        {taskOptions.map((option) => (
+                          <Select.Option key={option} value={option}>
+                            {option}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
+                        >
+                          <ErrorMessage name="task" /> {/* Adjusted to use "workLocation" */}
+                        </Typography.Text>
                       </div>
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                      label="Project"
+                      className="label-strong"
+                      name="project"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                     
+                      <Select
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        value={values.project}
+                        onChange={(value, option) => {
+                          setFieldValue("project", value); // Update "workLocation" field value
+                        }}
+                        onBlur={() => {
+                          setFieldTouched("project", true); // Mark "workLocation" field as touched
+                        }}
+                      >
+                        <Select.Option value="" disabled>
+                          Select the Project
+                        </Select.Option>
+                        {projectData.map((option, index) => (  // Use 'index' as the key
+                          <Option key={index} value={option.projectName}>
+                            {option.projectName}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
+                        >
+                          <ErrorMessage name="reportingTo" /> {/* Display error message if any */}
+                        </Typography.Text>
+                      </div>
+                    </Form.Item>
                   </div>
-
-                  <div className='section-addtask' style={{width:'125%', marginBottom:'30px'}}>
-                      
-                    <div className='create-layout-addtask-left  '>
-                        <div style={{marginBottom:'10px'}}>
-                          <label style={{color:'#0B4266'}} htmlFor='totalHours'><span style={{color:'red', paddingRight:'5px'}}>*</span>Total Hours</label>
-                        </div>
-                        <Input
-                          placeholder='Enter your Total Hours'
-                          style={{height:'65%'}}
-                          value={addTask.totalHours}
-                          onChange={(e) => handleInputChange('totalHours', e.target.value)}
+                  <div style={{display:'flex'}}>
+                    <Form.Item<FieldType>
+                      label="Start Time"
+                      className="label-strong"
+                      name="startTime"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                      <TimePicker
+                          style={{height:'50px', width:'470px'}}
+                          value={values.startTime ? dayjs(values.startTime, 'HH:mm') : null} // Convert string to Dayjs object
+                          onChange={(value) => {
+                            const formattedStartTime = value ? value.format('HH:mm') : '';
+                            setStartTime(formattedStartTime);
+                            setFieldValue("startTime", formattedStartTime); // Update endTime field value
+                            updateTotalHours(formattedStartTime, values.endTime, setFieldValue); // Update totalHours
+                            // Now you can perform any other necessary operations with formattedEndTime
+                          }}
+                          onBlur={() => {
+                            setFieldTouched("startTime", true); 
+                          }}
                           
-                        />
-                      </div>
-                      <div className='create-layout-addtask-reportingTo  '>
-                        <div className='create-layout-reportingTo'>
-                          <label style={{color:'#0B4266'}} htmlFor='reportingTo'><span style={{color:'red', paddingRight:'5px'}}>*</span>Reporting To</label>
-                        </div>
-                        <Select
-                          id='reportingTo-addtask'
-                          style={{height:'60%', width:'100%'}}
-                          value={addTask.reportingTo}
-                          onChange={(value) => handleInputChange('reportingTo', value)}
+                          format='HH:mm' // Change the format to 24-hour HH:mm
+                      />
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
                         >
-                          <Option value='' disabled selected>Select Reporting To</Option>
-                          {reportingOptions.map((option) => (
-                            <Option key={option} value={option}>
-                              {option}
-                            </Option>
-                          ))}
-                        </Select>
-                      </div> 
-                  </div>  
-                  <div>
-                  <Field name="description">
-                    {({ field, form }:{field:any, form: any}) => (
-                      <div className='create-layout-description'>
-                        <div>
-                          <label style={{color:'#0B4266'}} htmlFor='description'>
-                            <span style={{color:'red', paddingRight:'5px'}}>*</span>
-                            Description
-                          </label>
-                        </div>
-                        <div>
-                          <textarea
-                            {...field}
-                            id='description'
-                            name='description'
-                            className='description-input'
-                            style={{ width: '240%' }}
-                            value={addTask.description}
-                            onChange={(e) => handleInputChange('description', e.target.value)}
-                            onBlur={() => form.setFieldTouched('workLocation', true)} // Manually set field as touched
-                          />
-                          <Typography.Text
-                            type="danger"
-                            style={{ wordBreak: "break-word", textAlign:'left' }}
-                          >
-                            {form.errors.description && form.touched.description && (
-                              <span>{form.errors.description}</span>
-                            )}
-                          </Typography.Text>
-                        </div>
+                          <ErrorMessage name="startTime" /> 
+                        </Typography.Text>
                       </div>
-                    )}
-                  </Field>
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                      label="End Time"
+                      className="label-strong"
+                      name="endTime"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                      <TimePicker
+                          style={{height:'50px', width:'470px'}}
+                          value={values.endTime ? dayjs(values.endTime, 'HH:mm') : null} // Convert string to Dayjs object
+                          onChange={(value) => {
+                            const formattedEndTime = value ? value.format('HH:mm') : '';
+                            setEndTime(formattedEndTime);
+                            setFieldValue("endTime", formattedEndTime); // Update endTime field value
+                            updateTotalHours(values.startTime, formattedEndTime, setFieldValue); // Update totalHours
+                            // Now you can perform any other necessary operations with formattedEndTime
+                          }}
+                          onBlur={() => {
+                            setFieldTouched("endTime", true); // Mark "workLocation" field as touched
+                          }}
+                          
+                          format='HH:mm' // Change the format to 24-hour HH:mm
+                      />
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
+                        >
+                          <ErrorMessage name="endTime" /> {/* Adjusted to use "workLocation" */}
+                        </Typography.Text>
+                      </div>
+                    </Form.Item>
+                  </div>
+                  <div style={{display:'flex'}}>
+                    <Form.Item<FieldType>
+                      label="Total Hours"
+                      className="label-strong"
+                      name="totalHours"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                      <Input
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        name="totalHours"
+                        value={values.totalHours}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        readOnly // Optionally, you can set it as readOnly
+                      />
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign:'left' }}
+                        >
+                          <ErrorMessage name="totalHours" />
+                        </Typography.Text>
+                      </div>
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                      label="Reporting To"
+                      className="label-strong"
+                      name="reportingTo"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                     
+                      <Select
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        value={values.reportingTo}
+                        onChange={(value, option) => {
+                          setFieldValue("reportingTo", value); // Update "workLocation" field value
+                        }}
+                        onBlur={() => {
+                          setFieldTouched("reportingTo", true); // Mark "workLocation" field as touched
+                        }}
+                      >
+                        <Select.Option value="" disabled>
+                          Select the Reporting Manager
+                        </Select.Option>
+                        {reportingTo.map((option, index) => (  // Use 'index' as the key
+                          <Option key={index} value={option.reportingManagerId}>
+                            {option.reportingManagerName}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
+                        >
+                          <ErrorMessage name="reportingTo" /> {/* Display error message if any */}
+                        </Typography.Text>
+                      </div>
+                    </Form.Item>
 
+                  </div>
+                  <div style={{display:'flex'}}>
+                    <Form.Item<FieldType>
+                      label="Description"
+                      className="label-strong"
+                      name="description"
+                      required
+                      style={{ padding: "10px" }}
+                    >
+                      <TextArea
+                        style={{
+                          height: "150px",
+                          width: "960px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        name="description"
+                        value={values.description}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      />
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign:'left' }}
+                        >
+                          <ErrorMessage name="description" />
+                        </Typography.Text>
+                      </div>
+                    </Form.Item>
+                  </div>
+                  <div style={{display:'flex', marginLeft:'760px'}}>
+                    <Form.Item>
+                      <Button
+                        //type="primary"
+                        htmlType="button"
+                        style={{ width: "100px", height: "41px"}}
+                        className="Button"
+                        id='cancel-addTask'
+                        onClick={() => handleClearForm(resetForm)}
+                      >
+                        Clear
+                      </Button>
+                    </Form.Item>
+                      <Form.Item>
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          style={{ width: "100%", height: "41px" , marginLeft:'10px'}}
+                          className="Button"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? 'Submitting...' : (isEdited ? 'Save' : 'Add Task')}
+                        </Button>
+                      </Form.Item>
+                    
                   </div>
                 </div>
-                <div className='chart-container' style={{ marginLeft: "150px",width:'750px'}}>
-                  {/* <img
-                  src={asset}
-                  alt="..."
-                  style={{ marginLeft: "auto",width:'750px', height:'200px'}}
-                  /> */}
-                  <Chart
-                      options={pieChartDataInForm.options}
-                      series={pieChartDataInForm.series}
-                      type="pie"
-                      width="480"
-      
-                      
-                  />
-
+                <div style={{display:'flex', alignItems:'center'}}>
+                
+                  <div className='chart-container' style={{ marginLeft: "150px",width:'750px'}}>
+                   
+                    <Chart
+                        options={pieChartDataInForm.options}
+                        series={pieChartDataInForm.series}
+                        type="pie"
+                        width="480"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div className='button' style={{marginBottom:'10px', width:'300px'}}>
-              <Button  id='cancel-addtask' onClick={handleClearSubmit} style={{width:'7%'}}>
-                Clear
-              </Button>
-              {isEdited ? (
-              <Button id={addTask.totalHours? 'submit-addtask-active':'submit-addtask'} onClick={handleFormSubmit} disabled={isSubmitting}>
-                Save
-              </Button>
-            ):(
-              <Button  id={addTask.totalHours? 'submit-addtask-active':'submit-addtask'} onClick={handleFormSubmit}>
-                Add Task
-              </Button>
-            )}
-            </div>
 
         </Form>
-        )}  
+        )}
+        }  
         </Formik>
         ):null}
         <>
@@ -1536,75 +1328,16 @@ const AddTask: React.FC = () => {
               <Button id='submit-icon' onClick={handleLeftArrowClick}> 
                       <LeftOutlined />
                   </Button>
-                  {/* <select 
-                      id='submit' 
-                      style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
-                      onChange={(e) => handleFilterChange(e.target.value)} value={filterOption}
-                  >
-                      <option style={{textAlign:'center'}} value='Date'>Date</option>
-                      <option style={{textAlign:'center'}} value='Week'>Week</option>
-                      <option style={{textAlign:'center'}} value='Month'>Month</option>
-                  </select> */}
+
                   <Button id='submit-icon' onClick={handleRightArrowClick}>
                       <RightOutlined />
                   </Button>
 
             </div>
-            
-            {/* <Input
-            className="search-addtask"
-            placeholder="Search by Date"
-            allowClear
-            suffix={<SearchOutlined style={{ color: "#04172480" }} />}
-            onChange={(e) => {
-            //  console.log("Search input value:", e.target.value);
-              setSearchInput(e.target.value);
-            }}
-          /> */}
+          
          
           <div style={{display:'flex', justifyContent:'flex-end'}}>
-          {/* <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
-            <LeftOutlined />
-          </button> */}
-
-        {/* <Select
-           
-            style={{
-              marginTop: '10px',
-              display: 'flex',
-              padding: '0.5em 2em',
-              border: 'transparent',
-              boxShadow: '2px 2px 4px rgba(0,0,0,0.4)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '10px',
-              borderRadius: '4px',
-              color:'white',
-              background: '#0B4266',
-              cursor: 'pointer',
-              appearance: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-            }}
-            defaultValue="Date"
-            onChange={handleFilterChange}
-        >
-          <Select.Option value="Date">Date</Select.Option>
-          <Select.Option value="Week">Week</Select.Option>
-          <Select.Option value="Month">Month</Select.Option>
-        </Select> */}
-        { !isButtonDisabled && (
-        <Button
-          id='submit-addtask-active'
-          style={{marginRight:'10px'}}
-          onClick={handleRequestForm}
-          disabled={isButtonDisabled}
-        >
-          Request
-        </Button>
-        )
-
-        }
+         
         
         {!cancelButton && !(filterOption === 'Date' && !isFormEnabled) && (
             <Button
@@ -1626,22 +1359,26 @@ const AddTask: React.FC = () => {
                     <Option value='Week'>Week</Option>
                     <Option value='Month'>Month</Option>
                 </Select>
-          {/* <button type='button' id='submit-less' onClick={handleRightArrowClick}>
-            <RightOutlined />
-          </button> */}
+         
           </div>
         </div>
       </div>
-        <Table
-            style={{fontSize:'12px', fontFamily:'poppins', fontWeight:'normal', color: '#0B4266'}}
+
+        <div style={{ overflowX: 'auto', maxHeight: 'calc(80vh - 200px)' }}> 
+          <Table
+            style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266' }}
             className='addtask-table'
             columns={columns}
             dataSource={filteredTasks}
             pagination={false}
           />
-            <Button id='submit-overall' onClick={handleOverallSubmit}>
+          <Button id='submit-overall' 
+            onClick={handleOverallSubmit}
+          >
               Submit
-            </Button>
+          </Button>
+        </div>
+           
         </>
       </div>
     </ConfigProvider>

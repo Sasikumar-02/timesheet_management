@@ -69,10 +69,12 @@ const LoginPage: React.FC = () => {
         const { token } = data?.response?.data;
         const decoded: {
           Role: string;
+          UserId: string;
         } = jwtDecode(token);
         console.log("Decoded token:", decoded); // Log decoded token
         localStorage.setItem("authToken", data?.response?.data.token);
         localStorage.setItem("role", decoded?.Role);
+        localStorage.setItem("userId", decoded?.UserId);
         setSubmitting(false);
         navigate("/");
       } else {
@@ -174,7 +176,7 @@ const LoginPage: React.FC = () => {
                     handleSubmit,
                     isSubmitting,
                   }) => (
-                    <Form
+                    <Form 
                       name="basic"
                       style={{ maxWidth: 600 }}
                       layout="vertical"

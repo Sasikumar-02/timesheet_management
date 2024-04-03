@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ConfigProvider, Input, notification } from 'antd';
+import { ConfigProvider, Input, notification, Select } from 'antd';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import api from '../../Api/Api-Service';
 // import { User } from './CreateUser';
 import DashboardLayout from '../Dashboard/Layout';
 import { ThemeConfig } from 'antd/lib';
+
 const config: ThemeConfig = {
   token: {
     colorPrimary: "#0B4266",
@@ -12,18 +13,19 @@ const config: ThemeConfig = {
   },
 };
 
-export interface User {
-    [key: string]: string | number | undefined;
-    slNo?: number;
-    name: string;
-    userId: string;
-    email: string;
-    designation: string;
-    role: string;
-    reportingTo?: string;
-  }
+  export interface User {
+      [key: string]: string | number | undefined;
+      slNo?: number;
+      name: string;
+      userId: string;
+      email: string;
+      designation: string;
+      role: string;
+      reportingTo: string;
+    }
 const CreateUser: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
+  const { Option } = Select; // Destructure the Option component from Select
   const { state: editUserData } = useLocation();
   const isEdit = Boolean(editUserData);
   const navigate = useNavigate();
@@ -216,19 +218,19 @@ console.log("employees data", employees);
               <div>
                 <label htmlFor='name'><span style={{color:'red', paddingRight:'5px'}}>*</span>Name</label>
               </div>
-              <select
+              <Select
                 id='name'
-                style={{textAlign:'left'}}
+                style={{textAlign:'left', marginTop:'10px', width:'100%'}}
                 value={user.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(value) => handleInputChange('name', value)}
               >
-                <option value=''>Enter your name</option>
+                <Option value=''>Enter your name</Option>
                 {nameOptions.map((option) => (
-                    <option key={option} value={option}>
+                    <Option key={option} value={option}>
                       {option}
-                    </option>
+                    </Option>
                   ))}
-              </select>
+              </Select>
             </div>
 
               <div className='create-layout-addtask'>
@@ -295,6 +297,7 @@ console.log("employees data", employees);
               <input
                 type='radio'
                 className='role-input'
+                style={{width:'20px'}}
                 value='Manager'
                 checked={user.role === 'Human Resource'}
                 onChange={() => handleInputChange('role', 'Human Resource')}
@@ -303,6 +306,7 @@ console.log("employees data", employees);
               <label>
                 <input
                   type='radio'
+                  style={{width:'20px'}}
                   className='role-input'
                   value='Team Leader'
                   checked={user.role === 'Manager'}
@@ -313,6 +317,7 @@ console.log("employees data", employees);
               <label>
                 <input
                   type='radio'
+                  style={{width:'20px'}}
                   className='role-input'
                   value='Team Member'
                   checked={user.role === 'Team Member'}
@@ -326,18 +331,19 @@ console.log("employees data", employees);
                 <div className='create-layout'>
                   <label htmlFor='reportingTo'><span style={{color:'red', paddingRight:'5px'}}>*</span>Reporting To</label>
                 </div>
-                <select
+                <Select
                   id='reportingTo'
+                  style={{height:'120%', width:'25%', marginLeft:'20px'}}
                   value={user.reportingTo}
-                  onChange={(e) => handleInputChange('reportingTo', e.target.value)}
+                  onChange={(value) => handleInputChange('reportingTo', value)}
                 >
-                  <option value=''>Select Reporting To</option>
+                  <Option value=''>Select Reporting To</Option>
                   {reportingOptions.map((option) => (
-                    <option key={option} value={option}>
+                    <Option key={option} value={option}>
                       {option}
-                    </option>
+                    </Option>
                   ))}
-                </select>
+                </Select>
               </div>
             )}
           <div className='button'>
