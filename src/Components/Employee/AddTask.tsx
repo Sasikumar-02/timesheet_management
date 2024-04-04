@@ -160,7 +160,7 @@ const AddTask: React.FC = () => {
   const [refetch, setRefetch] = useState<boolean>(false);
   const [initialValue, setInitialValue] = useState<any>({
     timeSheetId: 0,
-    date: '', // Set to an empty string initially
+    date: dayjs(currentDate).format('YYYY-MM-DD'), // Set to an empty string initially
     workLocation: '',
     task: '',
     project: '',
@@ -577,7 +577,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
 
     const overlappingTask = filteredTasks.find((task:any )=> {
       
-      let date = dayjs(currentDate).format('YYYY-MM-DD');
+      let date = values.date;
       console.log('handleFormSubmit-date', date);
       const newTaskStartTime = dayjs(values.startTime, 'HH:mm'); // Change to 24-hour format
       const newTaskEndTime = dayjs(values.endTime, 'HH:mm'); // Change to 24-hour format
@@ -650,7 +650,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
         resetForm();
         setInitialValue({
             timeSheetId: 0,
-            date: currentDate.format('YYYY-MM-DD'),
+            date: '',
             workLocation: '',
             task: '',
             project: '',
@@ -887,12 +887,12 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           </div>
           { filterOption === 'Month' ? (
             <div style={{display:'flex', justifyContent:'flex-end'}}>
-              <div className='date'>From: {dayjs(currentMonth).format('YYYY-MM-DD')}</div>
+              <div className='date'>From: {dayjs(currentMonth).startOf('month').format('YYYY-MM-DD')}</div>
               <div className='date' style={{ marginLeft: '40px' }}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
             </div>
             ) : filterOption === 'Week' ? (
               <div style={{display:'flex', justifyContent:'flex-end'}}>
-                <div className='date'>From: {dayjs(currentWeek).format('YYYY-MM-DD')}</div>
+                <div className='date'>From: {dayjs(currentWeek).startOf('week').format('YYYY-MM-DD')}</div>
                 <div className='date' style={{ marginLeft: '40px' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
               </div>
             )  : (
@@ -948,10 +948,20 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                         }}
                         format="YYYY-MM-DD" // Set the format of the displayed date
                         value={
-                          filterOption === 'Week' ? (currentWeek ? dayjs(currentWeek) : null) :
-                          filterOption === 'Month' ? (currentMonth ? dayjs(currentMonth) : null) :
-                          (currentDate ? dayjs(currentDate) : null)
-                        }                        
+                            isEdited
+                                ? (values.date ? dayjs(values.date) : null)
+                                : filterOption === 'Week'
+                                ? currentWeek
+                                    ? dayjs(currentWeek)
+                                    : null
+                                : filterOption === 'Month'
+                                ? currentMonth
+                                    ? dayjs(currentMonth)
+                                    : null
+                                : currentDate
+                                ? dayjs(currentDate)
+                                : null
+                        }                 
                         onChange={(date, dateString) => {
                           if (date) {
                             // Update currentDate, currentWeek, or currentMonth based on filterOption
