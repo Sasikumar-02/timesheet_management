@@ -1140,14 +1140,6 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                           </Option>
                         ))}
                       </Select>
-                      <div>
-                        <Typography.Text
-                          type="danger"
-                          style={{ wordBreak: "break-word", textAlign: "left" }}
-                        >
-                          <ErrorMessage name="reportingTo" /> {/* Display error message if any */}
-                        </Typography.Text>
-                      </div>
                     </Form.Item>
                   </div>
                   <div style={{display:'flex'}}>
