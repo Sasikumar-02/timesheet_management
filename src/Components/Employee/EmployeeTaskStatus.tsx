@@ -262,7 +262,7 @@ const EmployeeTaskStatus = () => {
         // Store the clickedDate in localStorage
         localStorage.setItem('clickedDate', clickedDate);
         
-        navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`);
+        navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`, {state:{month, year}});
     };
 
         
