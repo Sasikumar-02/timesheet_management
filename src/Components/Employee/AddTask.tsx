@@ -280,48 +280,58 @@ const AddTask: React.FC = () => {
   }, []);
   
 
-  // Effect hook to fetch tasks when the component mounts
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         // Fetch tasks from the API
         const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
         console.log("response-fulldata", response.data.response.data);
-        let filteredTasks: any[]=[];
-        if(filterOption==='Date'){
+        let filteredTasks: any[] = [];
+        if (filterOption === 'Date') {
           let date = dayjs(currentDate).format('YYYY-MM-DD');
           console.log('response-date', date);
           console.log("response-currentDate", currentDate);
           // Filter tasks based on currentDate
-          filteredTasks = response.data.response.data.filter((task:any) => {
+          filteredTasks = response.data.response.data.filter((task: any) => {
             // Assuming the task has a date property named "date"
             // Modify this condition according to your task structure
-            return task.date === date; 
-        });
-        } 
-        else if(filterOption==='Week'){
+            return task.date === date;
+          });
+        } else if (filterOption === 'Week') {
           const startOfWeek = currentWeek.startOf('week');
           const endOfWeek = currentWeek.endOf('week');
           filteredTasks = response.data.response.data.filter(
-            (task:any) =>
+            (task: any) =>
               (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-              (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek)) 
-              
-          ); 
-        }
-        else{
+              (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
+  
+          );
+        } else {
           const startOfMonth = currentMonth.startOf('month');
           const endOfMonth = currentMonth.endOf('month');
           filteredTasks = response.data.response.data.filter(
-            (task:any) =>
+            (task: any) =>
               (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
-              (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth)) 
-              
-          ); 
+              (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
+  
+          );
         }
+  
         console.log("response-filteredData", filteredTasks);
+  
+        // Find the first task with status "Approved" for each date
+        const approvedDates = filteredTasks.reduce((acc: string[], task: any) => {
+          if (task.taskStatus === "Approved" && !acc.includes(task.date)) {
+            acc.push(task.date);
+          }
+          return acc;
+        }, []);
+  
         // Update the state with the filtered tasks
         setFilteredTasks(filteredTasks);
+        console.log("approvedDates", approvedDates);
+        // Update selectedKeysToHide state with approved dates
+        setSelectedKeysToHide(approvedDates);
       } catch (error) {
         // Handle errors
         console.error('Error fetching tasks:', error);
@@ -586,7 +596,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     
       // Check if the new task overlaps with any existing task
       return (
-        task.date === date &&
+        (!isEdited && task.date === date) &&
         (
           ((newTaskStartTime.isSame(taskStartTime) || newTaskStartTime.isAfter(taskStartTime)) && newTaskStartTime.isBefore(taskEndTime)) ||
           ((newTaskEndTime.isSame(taskStartTime) || newTaskEndTime.isAfter(taskStartTime)) && newTaskEndTime.isBefore(taskEndTime)) ||
@@ -650,7 +660,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
         resetForm();
         setInitialValue({
             timeSheetId: 0,
-            date: '',
+            date: values?.date, // Update date field with submitted value
             workLocation: '',
             task: '',
             project: '',
@@ -815,6 +825,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
         // const isExistingTask = taskList.some(task => task.task_id === record.task_id);
         const isDateSelected = selectedKeysToHide.includes(record.date);
         
+        
         // Filter tasks by userId
         //const userTasks = taskList.filter(task => task.userId === record.userId);
         
@@ -849,6 +860,20 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     
       
   ]
+
+  const getCurrentDate = () => {
+    if (filterOption === 'Date') {
+      return currentDate.format('YYYY-MM-DD');
+    } else if (filterOption === 'Week') {
+      return currentWeek.format('YYYY-MM-DD');
+    } else if (filterOption === 'Month') {
+      return currentMonth.format('YYYY-MM-DD');
+    } else {
+      // Return a default value or handle other cases as needed
+      return ''; // Change this to the appropriate default value
+    }
+  };
+  
 
   const handleClearForm = (resetForm:any) => {
     resetForm(); // Reset the form to its initial values
@@ -968,7 +993,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                             if (filterOption === 'Week') {
                               setCurrentWeek(date);
                             } else if (filterOption === 'Month') {
-                              setCurrentMonth(date.startOf('month'));
+                              setCurrentMonth(date);
                             } else {
                               setCurrentDate(date);
                             }
@@ -1289,10 +1314,11 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                       <Button
                         //type="primary"
                         htmlType="button"
-                        style={{ width: "100px", height: "41px"}}
+                        style={{ width: "100px", height: "41px", cursor: selectedKeysToHide.includes(getCurrentDate()) ? 'not-allowed' : 'pointer'}}
                         className="Button"
                         id='cancel-addTask'
                         onClick={() => handleClearForm(resetForm)}
+                        disabled={selectedKeysToHide.includes(getCurrentDate())} // Disable if currentDate is in selectedKeysToHide
                       >
                         Clear
                       </Button>
@@ -1301,9 +1327,10 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                         <Button
                           type="primary"
                           htmlType="submit"
-                          style={{ width: "100%", height: "41px" , marginLeft:'10px'}}
+                          style={{ width: "100%", height: "41px" , marginLeft:'10px', cursor: selectedKeysToHide.includes(getCurrentDate()) ? 'not-allowed' : 'pointer'}}
                           className="Button"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || selectedKeysToHide.includes(getCurrentDate()) }
+                          title={selectedKeysToHide.includes(getCurrentDate()) ? 'Approved date should not have the access to add the task' : ''}
                         >
                           {isSubmitting ? 'Submitting...' : (isEdited ? 'Save' : 'Add Task')}
                         </Button>
@@ -1382,11 +1409,17 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
             dataSource={filteredTasks}
             pagination={false}
           />
-          <Button id='submit-overall' 
+          <Button
+            id='submit-overall'
             onClick={handleOverallSubmit}
+            disabled={selectedKeysToHide.includes(getCurrentDate())} // Disable if currentDate is in selectedKeysToHide
+            style={{ cursor: selectedKeysToHide.includes(getCurrentDate()) ? 'not-allowed' : 'pointer' }}
+            title={selectedKeysToHide.includes(getCurrentDate()) ? 'Approved date should not have the access to submit the task' : ''}
           >
-              Submit
+            Submit
           </Button>
+
+
         </div>
            
         </>

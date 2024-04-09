@@ -810,9 +810,10 @@ const ApprovalRequest:React.FC = () => {
   return (
     <ConfigProvider theme={config}>
       <div>
-          <div>
+          <div style={{display:'flex', justifyContent:'flex-start'}}>
             <Select
               style={{ width: 120 }}
+              className='regenerateactive'
               placeholder="Select Month"
               value={selectedMonth}
               onChange={handleMonthChange}
@@ -825,6 +826,7 @@ const ApprovalRequest:React.FC = () => {
             </Select>
             <Select
               style={{ width: 80 }}
+              className='regenerateactive'
               placeholder="Select Year"
               value={selectedYear}
               onChange={handleYearChange}
@@ -837,7 +839,7 @@ const ApprovalRequest:React.FC = () => {
             </Select>
 
               <Button
-                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'0px', paddingTop:'8px'}}
+                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'10px', paddingTop:'8px'}}
                   className='regenerateactive'
                   onClick={handleClearFilters}
               >

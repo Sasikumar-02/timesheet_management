@@ -8,6 +8,7 @@ import {
     UpOutlined,
   } from "@ant-design/icons";
 import dayjs from 'dayjs';
+import api from '../../Api/Api-Service';
 import Calendar from './Calendar'; // Import your Calendar component
 import { useNavigate, useLocation } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
@@ -89,22 +90,73 @@ const EmployeeTaskStatus = () => {
         height: 300,
       };
 
+      useEffect(() => {
+        const fetchTasks = async () => {
+          try {
+            // Fetch tasks from the API
+            const startOfMonth = currentMonth.startOf('month');
+            const endOfMonth = currentMonth.endOf('month');
+            const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
+            console.log("response-fulldata", response.data.response.data);
+            let filtered =  response.data.response.data.filter(
+                (task:any) =>
+                    (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
+                    (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
+            );
+            // Initialize variables for counting
+            let approvedCount = 0;
+            let rejectedCount = 0;
+            let pendingCount = 0;
+            let uniqueDates = new Set(); // Set to store unique dates
+      
+            // Iterate through tasks and update counts
+            filtered.forEach((task:any) => {
+              // Check if the task's date is already encountered
+              if (!uniqueDates.has(task.date)) {
+                // If the date is not repeated, update uniqueDates set and count
+                uniqueDates.add(task.date);
+                if (task.taskStatus === "Approved") {
+                  approvedCount++;
+                } else if (task.taskStatus === "Rejected") {
+                  rejectedCount++;
+                } else if (task.taskStatus === "Pending") {
+                  pendingCount++;
+                }
+              }
+            });
+      
+            // Update state variables with counts
+            setAcceptCount(approvedCount);
+            setRejectCount(rejectedCount);
+            setPendingCount(pendingCount);
+      
+            // Calculate total days in the current month
+            const currentDate = new Date();
+            const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const totalDaysInMonth = lastDayOfMonth.getDate();
+      
+            // Calculate missedCount
+            const missedCount = totalDaysInMonth - (approvedCount + rejectedCount + pendingCount);
+      
+            // Update missedCount state variable
+            setMissedCount(missedCount);
+      
+          } catch (error) {
+            // Handle errors
+            console.error('Error fetching tasks:', error);
+            // You can also show a notification or perform other error handling here
+          }
+        };
+      
+        // Call the fetchTasks function
+        fetchTasks();
+      }, [currentDate, currentWeek, currentMonth, filterOption]); // Dependency array to refetch tasks when any of these values change
+      
     useEffect(() => {
         // Fetch recentApproved dates from localStorage
         const recentApprovedFromStorage = JSON.parse(localStorage.getItem("recentApproved") || "[]");
         setRecentApproved(recentApprovedFromStorage);
     }, []);
-
-    useEffect(() => {
-        // Fetch data from localStorage
-        const storedData = localStorage.getItem('recentRejected');
-        if (storedData) {
-            // Parse the stored data
-            const parsedData: RecentRejected[] = JSON.parse(storedData);
-            // Update the state
-            setRecentRejected(parsedData);
-        }
-    }, []); // Empty dependency array to run this effect only once on component mount
 
     useEffect(() => {
         const handleResize = () => {
@@ -118,43 +170,8 @@ const EmployeeTaskStatus = () => {
         };
     }, []);
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']; // Add more colors if needed
-    useEffect(() => {
-        const storedData = localStorage.getItem('taskList');
-        if (storedData) {
-            const parsedData: Task[] = JSON.parse(storedData);
-            const filteredTasks = parsedData.filter((task: Task) => task.userId === userId);
-            setTaskList(filteredTasks);
-        }
-        console.log("storedData", storedData);
-    }, []);
 
-    useEffect(() => {
-        const storedKeysString: string | null = localStorage.getItem('selectedKeys');
-        if (storedKeysString !== null) {
-            const storedKeys: SelectedKeys = JSON.parse(storedKeysString);
-            if (storedKeys.hasOwnProperty(userId)) {
-                setApprovedKeys(storedKeys[userId]);
-            } else {
-                console.log("User ID not found in stored keys");
-            }
-        } else {
-            console.log("else-useEffect", storedKeysString);
-        }
-    }, []);
 
-    useEffect(() => {
-      const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
-      if (storedKeysString !== null) {
-          const storedKeys: RejectedKeys = JSON.parse(storedKeysString);
-          
-          const userRejectedKeys = storedKeys[userId];
-          if (userRejectedKeys) {
-              setRejectedKeys(userRejectedKeys);
-          }
-      } else {
-          console.log("else-useEffect", storedKeysString);
-      }
-  }, []);
 
   useEffect(() => {
     let fromDate:any, toDate:any;
@@ -202,104 +219,104 @@ const EmployeeTaskStatus = () => {
         return new Date(year, month + 1, 0).getDate();
       }
 
-      useEffect(() => {
-        let filtered: Task[] = [];
-        let processedDates = new Set<string>(); // Set to store processed dates
-        if (filterOption === 'Date') {
-            filtered = taskList.filter((task) => task.date === dayjs(currentDate).format('YYYY-MM-DD'));
-        } else if (filterOption === 'Week') {
-            const startOfWeek = currentWeek.startOf('week');
-            const endOfWeek = currentWeek.endOf('week');
-            filtered = taskList.filter(
-                (task) =>
-                    (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-                    (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
-            );
-        } else if (filterOption === 'Month') {
-            const startOfMonth = currentMonth.startOf('month');
-            const endOfMonth = currentMonth.endOf('month');
-            filtered = taskList.filter(
-                (task) =>
-                    (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
-                    (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
-            );
-        }
+    //   useEffect(() => {
+    //     let filtered: Task[] = [];
+    //     let processedDates = new Set<string>(); // Set to store processed dates
+    //     if (filterOption === 'Date') {
+    //         filtered = taskList.filter((task) => task.date === dayjs(currentDate).format('YYYY-MM-DD'));
+    //     } else if (filterOption === 'Week') {
+    //         const startOfWeek = currentWeek.startOf('week');
+    //         const endOfWeek = currentWeek.endOf('week');
+    //         filtered = taskList.filter(
+    //             (task) =>
+    //                 (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
+    //                 (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
+    //         );
+    //     } else if (filterOption === 'Month') {
+            // const startOfMonth = currentMonth.startOf('month');
+            // const endOfMonth = currentMonth.endOf('month');
+    //         filtered = taskList.filter(
+    //             (task) =>
+    //                 (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
+    //                 (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
+    //         );
+    //     }
     
-        let newAcceptCount = 0;
-        let newRejectCount = 0;
-        let newPendingCount = 0;
-        let taskPending: string[] = [];
-        filtered.forEach(task => {
-            const date = dayjs(task.date).format('YYYY-MM-DD');
-            // Check if the date has already been processed
-            if (!processedDates.has(date)) {
-                processedDates.add(date); // Add date to processed dates set
-                if (approvedKeys.includes(task.date)) {
-                    newAcceptCount++;
-                } else if (rejectedKeys.some(rejected => rejected.date === task.date)) {
-                    console.log("rejectedKeys", rejectedKeys);
-                    console.log("logkey", task.date);
-                    newRejectCount++;
-                }
-                 else {
-                    if (!approvedKeys.includes(task.date) && !taskPending.includes(task.date)) {
-                        taskPending.push(task.date);
-                        newPendingCount++;
-                    }
-                }
-            }
-        });
+    //     let newAcceptCount = 0;
+    //     let newRejectCount = 0;
+    //     let newPendingCount = 0;
+    //     let taskPending: string[] = [];
+    //     filtered.forEach(task => {
+    //         const date = dayjs(task.date).format('YYYY-MM-DD');
+    //         // Check if the date has already been processed
+    //         if (!processedDates.has(date)) {
+    //             processedDates.add(date); // Add date to processed dates set
+    //             if (approvedKeys.includes(task.date)) {
+    //                 newAcceptCount++;
+    //             } else if (rejectedKeys.some(rejected => rejected.date === task.date)) {
+    //                 console.log("rejectedKeys", rejectedKeys);
+    //                 console.log("logkey", task.date);
+    //                 newRejectCount++;
+    //             }
+    //              else {
+    //                 if (!approvedKeys.includes(task.date) && !taskPending.includes(task.date)) {
+    //                     taskPending.push(task.date);
+    //                     newPendingCount++;
+    //                 }
+    //             }
+    //         }
+    //     });
     
-        // Get stored pending tasks from localStorage
-        const storedPendingTasks = localStorage.getItem('pendingTask');
-        let storedPendingTasksArray: string[] = [];
-        if (storedPendingTasks) {
-            storedPendingTasksArray = JSON.parse(storedPendingTasks);
-        }
+    //     // Get stored pending tasks from localStorage
+    //     const storedPendingTasks = localStorage.getItem('pendingTask');
+    //     let storedPendingTasksArray: string[] = [];
+    //     if (storedPendingTasks) {
+    //         storedPendingTasksArray = JSON.parse(storedPendingTasks);
+    //     }
     
-        // Remove any dates in stored pending tasks that are now in selectedKeys or rejectedKeys
-        storedPendingTasksArray = storedPendingTasksArray.filter(date => {
-            // Check if the date is not included in approvedKeys or rejectedKeys
-            return !approvedKeys.includes(date) && !rejectedKeys.some(rejected => rejected.date === date);
-        });
+    //     // Remove any dates in stored pending tasks that are now in selectedKeys or rejectedKeys
+    //     storedPendingTasksArray = storedPendingTasksArray.filter(date => {
+    //         // Check if the date is not included in approvedKeys or rejectedKeys
+    //         return !approvedKeys.includes(date) && !rejectedKeys.some(rejected => rejected.date === date);
+    //     });
     
-        // Concatenate new pending tasks and stored pending tasks (without selected or rejected keys)
-        taskPending = [...taskPending, ...storedPendingTasksArray];
+    //     // Concatenate new pending tasks and stored pending tasks (without selected or rejected keys)
+    //     taskPending = [...taskPending, ...storedPendingTasksArray];
     
-        // Remove duplicates from taskPending
-        taskPending = Array.from(new Set(taskPending));
+    //     // Remove duplicates from taskPending
+    //     taskPending = Array.from(new Set(taskPending));
     
-        // Convert array to JSON string
-        const jsonString: string = JSON.stringify(taskPending);
+    //     // Convert array to JSON string
+    //     const jsonString: string = JSON.stringify(taskPending);
     
-        // Store the JSON string in localStorage
-        localStorage.setItem('pendingTask', jsonString);
-        let newMissedCount = 0;
+    //     // Store the JSON string in localStorage
+    //     localStorage.setItem('pendingTask', jsonString);
+    //     let newMissedCount = 0;
     
-        if (filterOption === 'Month') {
-            // Calculate total days in the month
-            const totalDaysInMonth = dayjs(currentMonth).daysInMonth();
-            newMissedCount = totalDaysInMonth - newAcceptCount - newRejectCount - newPendingCount;
-        } else if (filterOption === 'Week') {
-            // Calculate total days in the week
-            const totalDaysInWeek = 7;
-            newMissedCount = totalDaysInWeek - newAcceptCount - newRejectCount - newPendingCount;
-        } else {
-            // For Date filter option, check if the task exists for the selected date
-            const selectedDate = dayjs(currentDate).format('YYYY-MM-DD');
-            const taskExists = filtered.some(task => task.date === selectedDate);
-            if (!taskExists) {
-                newMissedCount = 1;
-            }
-        }
+    //     if (filterOption === 'Month') {
+    //         // Calculate total days in the month
+    //         const totalDaysInMonth = dayjs(currentMonth).daysInMonth();
+    //         newMissedCount = totalDaysInMonth - newAcceptCount - newRejectCount - newPendingCount;
+    //     } else if (filterOption === 'Week') {
+    //         // Calculate total days in the week
+    //         const totalDaysInWeek = 7;
+    //         newMissedCount = totalDaysInWeek - newAcceptCount - newRejectCount - newPendingCount;
+    //     } else {
+    //         // For Date filter option, check if the task exists for the selected date
+    //         const selectedDate = dayjs(currentDate).format('YYYY-MM-DD');
+    //         const taskExists = filtered.some(task => task.date === selectedDate);
+    //         if (!taskExists) {
+    //             newMissedCount = 1;
+    //         }
+    //     }
     
-        setAcceptCount(newAcceptCount);
-        setRejectCount(newRejectCount);
-        setPendingCount(newPendingCount);
-        setMissedCount(newMissedCount);
+    //     setAcceptCount(newAcceptCount);
+    //     setRejectCount(newRejectCount);
+    //     setPendingCount(newPendingCount);
+    //     setMissedCount(newMissedCount);
     
-        setFilteredTasks(filtered);
-    }, [filterOption, currentDate, currentMonth, currentWeek, taskList, approvedKeys, rejectedKeys]);
+    //     setFilteredTasks(filtered);
+    // }, [filterOption, currentDate, currentMonth, currentWeek, taskList, approvedKeys, rejectedKeys]);
     
     useEffect(() => {
         const calculatePerformanceData = () => {
