@@ -139,7 +139,7 @@ const AddTask: React.FC = () => {
   const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
   //const [reportingOptions, setReportingOptions]= useState<any>('');
   const reportingOptions = ['ManagerA', 'ManagerB', 'ManagerC'];
-  const taskOptions = ['Task','Project','Learning','Training','Meeting'];
+  const taskOptions = ['Project','Learning','Training','Meeting', 'Other'];
   const [filterOption, setFilterOption] = useState('Date');
   const [isEdited, setIsEdited]= useState<boolean>(false);
   // State to manage the search input
@@ -266,6 +266,16 @@ const AddTask: React.FC = () => {
           console.log("updatedProject", updatedProject);
           updatedProjects.push(updatedProject);
         });
+        const otherProject = {
+          projectName: "Other",
+          // Add other properties as needed
+        };
+        
+        // Add the "Other" project data object to the updatedProjects array
+        const updatedProjectsWithOther = [...updatedProjects, otherProject];
+        
+        // Set the projectData state with the updated array including the "Other" project
+        setProjectData(updatedProjectsWithOther);
       } catch (error: any) {
         if (error.response?.status === 403) {
           message.error("Session expired. Redirecting to login page...", 5, () => {
@@ -701,7 +711,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       // You can also display an error notification if needed
       notification.error({
         message: 'Error',
-        description: 'Failed to submit task. Please try again later.',
+        description: 'Task already submitted / No task for this date',
       });
     }
   };
@@ -905,7 +915,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
 
   return (
     <ConfigProvider theme={config}>
-      <div className='createuser-main'>
+      <div className='createuser-main' style={{overflow:'hidden'}}>
         <div className='header'>
           <div>
             <h1>Add Task</h1>

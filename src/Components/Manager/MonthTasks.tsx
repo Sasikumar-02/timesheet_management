@@ -498,9 +498,9 @@ console.log("statuses",statuses);
           
           const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
           setStatuses(prev=>!prev);
-          
-          console.log("handleApprove",response.data); // Optionally handle the response data
           setSelectedRows([]);
+          console.log("handleApprove",response.data); // Optionally handle the response data
+          
         } catch (error) {
           console.error('Error occurred:', error);
           // Optionally handle errors

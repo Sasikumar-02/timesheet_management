@@ -55,15 +55,11 @@ interface EmployeeTaskStatusProps{
 const EmployeeTaskStatus = () => {
     const location = useLocation();
     const { state } = location;
-    const userId = state && state.userId ? state.userId : '1234';
-    console.log("locate - userId", userId);
-    const { Option } = Select; // Destructure the Option component from Select
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
     const [currentDate, setCurrentDate] = useState(dayjs());
     const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
     const [currentMonth, setCurrentMonth] = useState(dayjs().startOf('month'));
-    const [taskList, setTaskList] = useState<Task[]>([]);
     const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
     const [approvedKeys, setApprovedKeys]= useState<string[]>([]);
     const [rejectedKeys, setRejectedKeys]= useState<RecentRejected[]>([]);
@@ -82,7 +78,25 @@ const EmployeeTaskStatus = () => {
     const [workFromOfficeCount, setWorkFromOfficeCount] = useState(0);
     const [recentApproved, setRecentApproved] = useState([]);
     const [recentRejected, setRecentRejected] = useState<RecentRejected[]>([]);
-
+    const [monthCounts, setMonthCounts]= useState({
+        acceptedCount:0,
+        notFilledDays:0,
+        pendingCount: 0,
+        rejectedCount: 0
+    });
+    const [pieChartData, setPieChartData]= useState({
+        Learning: 0,
+        Meeting: 0,
+        Training: 0,
+        Project: 0,
+        Other:0
+    })
+    const [doughChartData, setDoughChartData]= useState({
+        ClientLocation: 0,
+        Office: 0,
+        OnDuty: 0,
+        WorkFromHome: 0
+    })
     const chartOptions = {
         maintainAspectRatio: false,
         responsive: true,
@@ -90,68 +104,90 @@ const EmployeeTaskStatus = () => {
         height: 300,
       };
 
+      const data = {
+        labels: Object.keys(doughChartData),
+        datasets: [
+          {
+            data: Object.values(doughChartData),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.8)', // Red
+              'rgba(54, 162, 235, 0.8)', // Blue
+              'rgba(255, 206, 86, 0.8)', // Yellow
+              'rgba(75, 192, 192, 0.8)', // Green
+              'rgba(153, 102, 255, 0.8)', // Purple
+              'rgba(255, 159, 64, 0.8)', // Orange
+            ],
+          },
+        ],
+      };
+      
+
+      const fetchMonthlyReport = async (month:any, year:any) => {
+        try {
+          const response = await api.get('/api/v1/timeSheet/fetch-monthly-report', {
+            params: {
+              month,
+              year
+            }
+          });
+      
+          const responseData = response.data.response.data;
+          const countsObject = {
+            acceptedCount: responseData.acceptedCount,
+            notFilledDays: responseData.notFilledDays,
+            pendingCount: responseData.pendingCount,
+            rejectedCount: responseData.rejectedCount
+          };
+          console.log("response-new", countsObject);
+          setMonthCounts(countsObject);
+        } catch (error) {
+          throw error;
+        }
+      };
+      
       useEffect(() => {
-        const fetchTasks = async () => {
-          try {
-            // Fetch tasks from the API
-            const startOfMonth = currentMonth.startOf('month');
-            const endOfMonth = currentMonth.endOf('month');
-            const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
-            console.log("response-fulldata", response.data.response.data);
-            let filtered =  response.data.response.data.filter(
-                (task:any) =>
-                    (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
-                    (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
-            );
-            // Initialize variables for counting
-            let approvedCount = 0;
-            let rejectedCount = 0;
-            let pendingCount = 0;
-            let uniqueDates = new Set(); // Set to store unique dates
+        const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
+        const year = currentMonth.format('YYYY'); // Get year (e.g., "2024")
       
-            // Iterate through tasks and update counts
-            filtered.forEach((task:any) => {
-              // Check if the task's date is already encountered
-              if (!uniqueDates.has(task.date)) {
-                // If the date is not repeated, update uniqueDates set and count
-                uniqueDates.add(task.date);
-                if (task.taskStatus === "Approved") {
-                  approvedCount++;
-                } else if (task.taskStatus === "Rejected") {
-                  rejectedCount++;
-                } else if (task.taskStatus === "Pending") {
-                  pendingCount++;
-                }
-              }
-            });
-      
-            // Update state variables with counts
-            setAcceptCount(approvedCount);
-            setRejectCount(rejectedCount);
-            setPendingCount(pendingCount);
-      
-            // Calculate total days in the current month
-            const currentDate = new Date();
-            const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-            const totalDaysInMonth = lastDayOfMonth.getDate();
-      
-            // Calculate missedCount
-            const missedCount = totalDaysInMonth - (approvedCount + rejectedCount + pendingCount);
-      
-            // Update missedCount state variable
-            setMissedCount(missedCount);
-      
-          } catch (error) {
-            // Handle errors
-            console.error('Error fetching tasks:', error);
-            // You can also show a notification or perform other error handling here
-          }
-        };
-      
-        // Call the fetchTasks function
-        fetchTasks();
-      }, [currentDate, currentWeek, currentMonth, filterOption]); // Dependency array to refetch tasks when any of these values change
-      
+        fetchMonthlyReport(monthName, year);
+        fetchPieReport(monthName, year);
+        fetchDoughReport(monthName, year);
+      }, [currentMonth]);
+
+   
+    const fetchPieReport=async(month:any, year:any)=>{
+        try{
+            const response = await api.get('/api/v1/timeSheet/monthly-task-distribution',{
+            params:{
+                month,
+                year
+            } 
+        })
+        console.log("response-pie", response.data.response.data.categoryPercentages);
+        setPieChartData(response.data.response.data.categoryPercentages);
+        }
+        catch(err){
+            throw err;
+        }  
+    }
+
+    const fetchDoughReport=async(month:any, year:any)=>{
+        try{
+            const response = await api.get('/api/v1/timeSheet/monthly-location-distribution',{
+            params:{
+                month,
+                year
+            } 
+        })
+        console.log("response-dough", response.data.response.data);
+        setDoughChartData(response.data.response.data.locationPercentages);
+        }
+        catch(err){
+            throw err;
+        }  
+    }
+    
+
     useEffect(() => {
         // Fetch recentApproved dates from localStorage
         const recentApprovedFromStorage = JSON.parse(localStorage.getItem("recentApproved") || "[]");
@@ -171,306 +207,8 @@ const EmployeeTaskStatus = () => {
     }, []);
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']; // Add more colors if needed
 
-
-
-  useEffect(() => {
-    let fromDate:any, toDate:any;
-    if (filterOption === 'Month') {
-      fromDate = dayjs(currentMonth).startOf('month');
-      toDate = dayjs(currentMonth).endOf('month');
-    } else if (filterOption === 'Week') {
-      fromDate = dayjs(currentWeek).startOf('week');
-      toDate = dayjs(currentWeek).endOf('week');
-    } else if (filterOption === 'Date') {
-      fromDate = toDate = dayjs(currentDate);
-    }
-
-    const filteredTasks = taskList.filter(task => {
-      const taskDate = dayjs(task.date);
-      return (taskDate.isSame(fromDate)|| taskDate.isAfter(fromDate)) && (taskDate.isSame(toDate)|| taskDate.isBefore(toDate));
-    });
-
-    const workFromHome = filteredTasks.filter(task => task.workLocation === 'Work from Home');
-    const workFromOffice = filteredTasks.filter(task => task.workLocation === 'Work From Office');
-
-    setWorkFromHomeCount(workFromHome.length);
-    setWorkFromOfficeCount(workFromOffice.length);
-  }, [filterOption, currentDate, currentWeek, currentMonth, taskList]);
-
-//   const data = [
-//     { name: 'Work From Home', value: workFromHomeCount },
-//     { name: 'Work From Office', value: workFromOfficeCount }
-//   ];
-
-    const data = {
-        labels: ['Work from Home', 'Work From Office'],
-        datasets: [
-        {
-            data: [workFromHomeCount, workFromOfficeCount],
-            backgroundColor: ['#FF6384', '#36A2EB'],
-            hoverBackgroundColor: ['#FF6384', '#36A2EB'],
-        },
-        ],
-    };
-
-
-    function getDaysInMonth(month: number, year: number) {
-        // month is 0-based in JavaScript
-        return new Date(year, month + 1, 0).getDate();
-      }
-
-    //   useEffect(() => {
-    //     let filtered: Task[] = [];
-    //     let processedDates = new Set<string>(); // Set to store processed dates
-    //     if (filterOption === 'Date') {
-    //         filtered = taskList.filter((task) => task.date === dayjs(currentDate).format('YYYY-MM-DD'));
-    //     } else if (filterOption === 'Week') {
-    //         const startOfWeek = currentWeek.startOf('week');
-    //         const endOfWeek = currentWeek.endOf('week');
-    //         filtered = taskList.filter(
-    //             (task) =>
-    //                 (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
-    //                 (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
-    //         );
-    //     } else if (filterOption === 'Month') {
-            // const startOfMonth = currentMonth.startOf('month');
-            // const endOfMonth = currentMonth.endOf('month');
-    //         filtered = taskList.filter(
-    //             (task) =>
-    //                 (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
-    //                 (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))
-    //         );
-    //     }
-    
-    //     let newAcceptCount = 0;
-    //     let newRejectCount = 0;
-    //     let newPendingCount = 0;
-    //     let taskPending: string[] = [];
-    //     filtered.forEach(task => {
-    //         const date = dayjs(task.date).format('YYYY-MM-DD');
-    //         // Check if the date has already been processed
-    //         if (!processedDates.has(date)) {
-    //             processedDates.add(date); // Add date to processed dates set
-    //             if (approvedKeys.includes(task.date)) {
-    //                 newAcceptCount++;
-    //             } else if (rejectedKeys.some(rejected => rejected.date === task.date)) {
-    //                 console.log("rejectedKeys", rejectedKeys);
-    //                 console.log("logkey", task.date);
-    //                 newRejectCount++;
-    //             }
-    //              else {
-    //                 if (!approvedKeys.includes(task.date) && !taskPending.includes(task.date)) {
-    //                     taskPending.push(task.date);
-    //                     newPendingCount++;
-    //                 }
-    //             }
-    //         }
-    //     });
-    
-    //     // Get stored pending tasks from localStorage
-    //     const storedPendingTasks = localStorage.getItem('pendingTask');
-    //     let storedPendingTasksArray: string[] = [];
-    //     if (storedPendingTasks) {
-    //         storedPendingTasksArray = JSON.parse(storedPendingTasks);
-    //     }
-    
-    //     // Remove any dates in stored pending tasks that are now in selectedKeys or rejectedKeys
-    //     storedPendingTasksArray = storedPendingTasksArray.filter(date => {
-    //         // Check if the date is not included in approvedKeys or rejectedKeys
-    //         return !approvedKeys.includes(date) && !rejectedKeys.some(rejected => rejected.date === date);
-    //     });
-    
-    //     // Concatenate new pending tasks and stored pending tasks (without selected or rejected keys)
-    //     taskPending = [...taskPending, ...storedPendingTasksArray];
-    
-    //     // Remove duplicates from taskPending
-    //     taskPending = Array.from(new Set(taskPending));
-    
-    //     // Convert array to JSON string
-    //     const jsonString: string = JSON.stringify(taskPending);
-    
-    //     // Store the JSON string in localStorage
-    //     localStorage.setItem('pendingTask', jsonString);
-    //     let newMissedCount = 0;
-    
-    //     if (filterOption === 'Month') {
-    //         // Calculate total days in the month
-    //         const totalDaysInMonth = dayjs(currentMonth).daysInMonth();
-    //         newMissedCount = totalDaysInMonth - newAcceptCount - newRejectCount - newPendingCount;
-    //     } else if (filterOption === 'Week') {
-    //         // Calculate total days in the week
-    //         const totalDaysInWeek = 7;
-    //         newMissedCount = totalDaysInWeek - newAcceptCount - newRejectCount - newPendingCount;
-    //     } else {
-    //         // For Date filter option, check if the task exists for the selected date
-    //         const selectedDate = dayjs(currentDate).format('YYYY-MM-DD');
-    //         const taskExists = filtered.some(task => task.date === selectedDate);
-    //         if (!taskExists) {
-    //             newMissedCount = 1;
-    //         }
-    //     }
-    
-    //     setAcceptCount(newAcceptCount);
-    //     setRejectCount(newRejectCount);
-    //     setPendingCount(newPendingCount);
-    //     setMissedCount(newMissedCount);
-    
-    //     setFilteredTasks(filtered);
-    // }, [filterOption, currentDate, currentMonth, currentWeek, taskList, approvedKeys, rejectedKeys]);
-    
-    useEffect(() => {
-        const calculatePerformanceData = () => {
-            const performanceData = [];
-    
-            if (filterOption === 'Month') {
-                const totalDaysInMonth = dayjs(currentMonth).daysInMonth();
-                const totalWorkingHours = totalDaysInMonth * 9; // Assuming 9 hours of work per day
-    
-                for (let i = 1; i <= totalDaysInMonth; i++) {
-                    const date = dayjs(currentMonth).date(i).format('YYYY-MM-DD');
-                    const tasksForDate = filteredTasks.filter(task => task.date === date);
-                    const totalTaskHours = tasksForDate.reduce((acc, task) => acc + parseFloat(task.totalHours), 0);
-                    const extraHoursPercentage = totalTaskHours < 9 ? 0 : ((totalTaskHours - 9) / totalWorkingHours) * 100;
-                    performanceData.push({ date, percentage: extraHoursPercentage });
-                }
-            } else if (filterOption === 'Week') {
-                const totalDaysInWeek = 7;
-                const totalWorkingHours = totalDaysInWeek * 9; // Assuming 9 hours of work per day
-    
-                for (let i = 0; i < totalDaysInWeek; i++) {
-                    const date = dayjs(currentWeek).add(i, 'day').format('YYYY-MM-DD');
-                    const tasksForDate = filteredTasks.filter(task => task.date === date);
-                    const totalTaskHours = tasksForDate.reduce((acc, task) => acc + parseFloat(task.totalHours), 0);
-                    const extraHoursPercentage = totalTaskHours < 9 ? 0 : ((totalTaskHours - 9) / totalWorkingHours) * 100;
-                    performanceData.push({ date, percentage: extraHoursPercentage });
-                }
-            } else {
-                const selectedDate = dayjs(currentDate).format('YYYY-MM-DD');
-                const tasksForDate = filteredTasks.filter(task => task.date === selectedDate);
-                const totalTaskHours = tasksForDate.reduce((acc, task) => acc + parseFloat(task.totalHours), 0);
-                const extraHoursPercentage = totalTaskHours < 9 ? 0 : ((totalTaskHours - 9) / 9) * 100;
-                performanceData.push({ date: selectedDate, percentage: extraHoursPercentage });
-            }
-    
-            return performanceData;
-        };
-    
-        setPerformanceData(calculatePerformanceData());
-    }, [filterOption, currentDate, currentMonth, currentWeek, filteredTasks]);
-    
     const handleFilterChange = (value: any) => {
         setFilterOption(value);
-    };
-
-    // const calculateTaskPercentages = () => {
-    //     let totalHours = 0;
-    //     const taskHoursMap: { [taskName: string]: number } = {}; // Object to store total hours for each task type
-        
-    //     // Calculate total working hours based on filterOption
-    //     if (filterOption === 'Month') {
-    //         totalHours = dayjs(currentMonth).daysInMonth() * 9; // Assuming 9 hours of work per day
-    //     } else if (filterOption === 'Week') {
-    //         totalHours = 7 * 9; // Assuming 9 hours of work per day for 7 days
-    //     } else {
-    //         totalHours = 9; // Assuming 9 hours of work for the selected date
-    //     }
-        
-    //     // Accumulate total task hours for each task type
-    //     filteredTasks.forEach(task => {
-    //         const taskName = task.task;
-    //         const taskHours = parseFloat(task.totalHours);
-            
-    //         if (!taskHoursMap[taskName]) {
-    //             taskHoursMap[taskName] = 0;
-    //         }
-            
-    //         taskHoursMap[taskName] += taskHours;
-    //     });
-        
-    //     // Calculate percentage for each task type
-    //     const taskPercentages = Object.keys(taskHoursMap).map(taskName => ({
-    //         taskName,
-    //         value: totalHours !== 0 ? (taskHoursMap[taskName] / totalHours) * 100 : 0
-    //     }));
-        
-    //     return taskPercentages;
-    // }; 
-    
-    const calculateOverallPercentages = () => {
-        const totalTasks = acceptCount + rejectCount + pendingCount;
-        const acceptedPercentage = (acceptCount / totalTasks) * 100;
-        const rejectedPercentage = (rejectCount / totalTasks) * 100;
-        const pendingPercentage = (pendingCount / totalTasks) * 100;
-        return [
-            { taskName: 'Accepted', value: acceptedPercentage },
-            { taskName: 'Rejected', value: rejectedPercentage },
-            { taskName: 'Pending', value: pendingPercentage }
-        ];
-    };
-    const calculateTaskPercentages = () => {
-        let totalHours = 0;
-        let taskHoursMap: { [taskName: string]: number } = {}; // Object to store total hours for each task type
-    
-        // Calculate total working hours based on filterOption
-        if (filterOption === 'Month') {
-            totalHours = dayjs(currentMonth).daysInMonth() * 9; // Assuming 9 hours of work per day for the entire month
-        } else if (filterOption === 'Week') {
-            totalHours = 7 * 9; // Assuming 9 hours of work per day for 7 days
-        } else {
-            totalHours = 9; // Assuming 9 hours of work for the selected date
-        }
-    
-        // Accumulate total task hours for each task type
-        filteredTasks.forEach(task => {
-            const taskName = task.task;
-            const taskHours = parseFloat(task.totalHours);
-    
-            if (!taskHoursMap[taskName]) {
-                taskHoursMap[taskName] = 0;
-            }
-    
-            taskHoursMap[taskName] += taskHours;
-        });
-    
-        // Calculate percentage for each task type
-        const taskPercentages = Object.keys(taskHoursMap).map(taskName => ({
-            taskName,
-            value: totalHours !== 0 ? (taskHoursMap[taskName] / totalHours) * 100 : 0
-        }));
-    
-        return taskPercentages;
-    };
-    
-    const generateXAxisCategories = () => {
-        if (filterOption === 'Month') {
-            // Get the start and end dates of the current month
-            const startDate = dayjs(currentMonth).startOf('month');
-            const endDate = dayjs(currentMonth).endOf('month');
-            
-            // Generate an array of all dates in the current month
-            const datesOfMonth = [];
-            let currentDate = startDate;
-            while (currentDate.isSame(endDate, 'day') || currentDate.isBefore(endDate, 'day')) {
-                datesOfMonth.push(currentDate.format('YYYY-MM-DD'));
-                currentDate = currentDate.add(1, 'day');
-            }
-            console.log("dateoFmonth", datesOfMonth);
-            return datesOfMonth;
-        } else if (filterOption === 'Week') {
-            // Get all dates of the specific week
-            const startDate = dayjs(performanceData[0].date).startOf('week');
-            const endDate = dayjs(performanceData[performanceData.length - 1].date).endOf('week');
-            const datesOfWeek = [];
-            let currentDate = startDate;
-            while (currentDate.isSame(endDate, 'day') || currentDate.isBefore(endDate, 'day')) {
-                datesOfWeek.push(currentDate.format('YYYY-MM-DD'));
-                currentDate = currentDate.add(1, 'day');
-            }
-            return datesOfWeek;
-        } else {
-            // Get all hours of the specific date
-            return Array.from({ length: 24 }, (_, index) => `${index}:00`);
-        }
     };
 
     const getCurrentMonth = (filterOption: string, currentDate: string, currentMonth: string, currentWeek: any) => {
@@ -527,37 +265,6 @@ const EmployeeTaskStatus = () => {
         navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`);
     };
 
-    // Function to calculate performance data based on filter option
-   
-    const calculatePerformance = () => {
-        const performanceData:any[] = [];
-
-        // Ensure filteredTasks has data
-        if (!filteredTasks || filteredTasks.length === 0) {
-            return performanceData;
-        }
-
-        // Iterate over the filtered tasks and calculate extra hours worked per day/week/month
-        filteredTasks.forEach(task => {
-            let totalExpectedHours = 0;
-            if (filterOption === 'Month') {
-                totalExpectedHours = dayjs(task.date).daysInMonth() * 9; // Assuming 9 hours of work per day
-            } else if (filterOption === 'Week') {
-                totalExpectedHours = 7 * 9; // Assuming 9 hours of work per day for 7 days
-            } else {
-                totalExpectedHours = 9; // Assuming 9 hours of work for the selected date
-            }
-            const extraHours = parseFloat(task.totalHours) - totalExpectedHours;
-            const percentage = (extraHours / totalExpectedHours) * 100;
-            performanceData.push({
-                date: dayjs(task.date).format('YYYY-MM-DD'), // Adjust date format as needed
-                extraHours,
-                percentage,
-            });
-        });
-
-        return performanceData;
-    };
         
     const handleLeftArrowClick = () => {
         if (filterOption === 'Date') {
@@ -623,20 +330,6 @@ const EmployeeTaskStatus = () => {
     }
   return (
     <>
-    {/* <div style={{display:'flex', justifyContent:'space-between'}}>
-        <div style={{textAlign:'left', margin:'40px 20px 0px 20px'}}>
-            <h3 style={{fontSize:'20px', marginBottom:'0px',fontWeight:'bold', fontFamily:'poppins'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
-                <span className="wave" role="img" aria-label="Waving hand">👋</span>
-            </h3>
-            {/* <h3 style={{ fontSize: '20px', marginBottom:'0px'}}>
-                {userName}
-                <span className="wave" role="img" aria-label="Waving hand">👋</span>
-            </h3> 
-        </div>
-    </div> */}
-    <div>
-        <h1>{userId}</h1>
-    </div>
     <div style={{margin:'30px 0px 0px 0px'}}>
             <Card className="main-card">
             <div style={{ display: "flex", height:'55px' }}>
@@ -703,7 +396,7 @@ const EmployeeTaskStatus = () => {
                 {/* <button type='button' id='submit-less' onClick={handleLeftArrowClick}>
                     <LeftOutlined />
                 </button> */}
-                <ConfigProvider theme={config}>
+                {/* <ConfigProvider theme={config}>
                 <Select 
                     id='submit' 
                     style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }} 
@@ -715,7 +408,7 @@ const EmployeeTaskStatus = () => {
                     <Option value='Week'>Week</Option>
                     <Option value='Month'>Month</Option>
                 </Select>
-                </ConfigProvider>
+                </ConfigProvider> */}
 
                 {/* <button type='button' id='submit-less' onClick={handleRightArrowClick}>
                     <RightOutlined />
@@ -726,30 +419,30 @@ const EmployeeTaskStatus = () => {
         <button className='box' onClick={() => handleCountClick('Missed', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', textAlign:'center', fontWeight:'bold' }}>Not Filled</p>
-                <p style={{ color: '#FF8C00', fontSize: '34px', fontFamily: 'poppins' }}> {missedCount}</p>
+                <p style={{ color: '#FF8C00', fontSize: '34px', fontFamily: 'poppins' }}> {monthCounts.notFilledDays}</p>
             </div>
         </button>
         <button className='box' onClick={() => handleCountClick('Pending', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold'}}>Pending</p>    
-                <p style={{ color: '#FFD700', fontSize: '34px', fontFamily: 'poppins' }}>{pendingCount}</p>
+                <p style={{ color: '#FFD700', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.pendingCount}</p>
 
             </div>
         </button>
         <button className='box' onClick={() => handleCountClick('Accepted',filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266' , fontWeight:'bold'}}>Accepted</p>
-                <p style={{ color: '#32CD32	', fontSize: '34px', fontFamily: 'poppins' }}>{acceptCount}</p>
+                <p style={{ color: '#32CD32	', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.acceptedCount}</p>
             </div>
         </button>
         <button className='box' onClick={() => handleCountClick('Rejected', filterOption, currentDate.toString(), currentMonth.toString(), currentWeek)} style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold' }}>Rejected</p>
-                <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {rejectCount}</p>
+                <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {monthCounts.rejectedCount}</p>
             </div>
         </button>
     </div>
-  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom:'20px',marginLeft: '20px', marginRight: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px' }}>
+  {/* <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom:'20px',marginLeft: '20px', marginRight: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px' }}>
     <ResponsiveContainer width="80%" height={400}>
         <LineChart data={performanceData}>
             <defs>
@@ -759,7 +452,7 @@ const EmployeeTaskStatus = () => {
                 </linearGradient>
             </defs>
             <XAxis dataKey="date">
-                {/* Remove x-axis title */}
+                {/* Remove x-axis title 
             </XAxis>
             <YAxis>
                 <Label
@@ -774,60 +467,39 @@ const EmployeeTaskStatus = () => {
             <Tooltip />
             <Legend />
             <Line type="monotone" dataKey="percentage" stroke="#333" fillOpacity={1} fill="url(#colorUv)" />
-            {/* Remove the Brush component */}
+            {/* Remove the Brush component 
             <ReferenceLine y={0} stroke="#000" />
-            {/* Remove x-axis Label */}
+            {/* Remove x-axis Label 
             <Label value="Time" offset={0} position="insideBottomRight" />
         </LineChart>
     </ResponsiveContainer>
-</div>
+</div> */}
 
 
     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-            <ApexCharts
-                options={{
-                    chart: {
-                        type: 'pie',
-                    },
-                    labels: calculateTaskPercentages().map(task => task.taskName),
-                }}
-                series={calculateTaskPercentages().map(task => task.value)}
-                type="pie"
-                width={600}
-                height={300}
-            />
-        </div>
-        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-            {/* <ApexCharts
-                options={{
-                    chart: {
-                        type: 'pie',
-                    },
-                    labels: calculateOverallPercentages().map(task => task.taskName),
-                }}
-                series={calculateOverallPercentages().map(task => task.value)}
-                type="pie"
-                width={600}
-                height={300}
-            /> */}
-            {/* <PieChart width={400} height={400}>
+            <PieChart width={600} height={300}>
                 <Pie
-                    data={data}
-                    cx={200}
-                    cy={200}
+                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                    cx={300}
+                    cy={150}
                     labelLine={false}
                     label={true}
-                    outerRadius={80}
+                    outerRadius={120}
                     fill="#8884d8"
                     dataKey="value"
                 >
-                    {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
+                    {
+                        Object.entries(pieChartData).map(([name], index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))
+                    }
                 </Pie>
                 <Tooltip />
-            </PieChart> */}
+            </PieChart>
+        </div>
+
+        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
             <Doughnut data={data} options={chartOptions} style={{height:'300px'}}/>
         </div>
     </div>

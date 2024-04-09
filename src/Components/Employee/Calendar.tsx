@@ -16,60 +16,110 @@ interface Event {
   color: string;
 }
 const Calendar = () => {
-  const userId = '1234';
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
-
+  const [currentMonth, setCurrentMonth] = useState(dayjs());
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-employee`);
-        const tasks = response.data.response.data; // Assuming response contains an array of tasks
-        console.log("tasks", tasks);
-  
-        // Group tasks by date
-        const groupedTasks = tasks.reduce((acc:any, task:any) => {
-          const date = task.date;
-          if (!acc[date]) {
-            acc[date] = task;
-          }
-          return acc;
-        }, {});
-  
-        const fetchedEvents: Event[] = Object.values(groupedTasks).map((task: any) => {
-          let color = '';
-          let title = '';
-  
-          switch (task.taskStatus) {
-            case 'Approved':
-              color = 'green';
-              title = 'Approved';
-              break;
-            case 'Rejected':
-              color = 'red';
-              title = `Rejected - ${task.comment}`;
-              break;
-            default:
-              color = 'orange';
-              title = 'Pending';
-              break;
-          }
-  
-          return {
-            title,
-            start: task.date,
-            color
-          };
-        });
-  
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
-  
-    fetchTasks();
+    const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
+    const year = currentMonth.format('YYYY'); // Get year (e.g., "2024")
+    fetchCalendarView(monthName,year);
   }, []);
+
+  const fetchCalendarView = async (month: any, year: any) => {
+    try {
+      const response = await api.get('/api/v1/timeSheet/task-calendar-view', {
+        params: {
+          month,
+          year
+        }
+      });
+  
+      const calendarData = response.data.response.data;
+  
+      const events = calendarData.map((task: any) => {
+        let color = '';
+        let title = '';
+  
+        switch (task.status) {
+          case 'Approved':
+            color = 'green';
+            title = 'Approved';
+            break;
+          case 'Rejected':
+            color = 'red';
+            title = `Rejected - ${task.comments}`;
+            break;
+          default:
+            color = 'orange';
+            title = 'Pending';
+            break;
+        }
+  
+        return {
+          title,
+          start: task.date, // Convert date string to Date object
+          color
+        };
+      });
+  
+      console.log("events", events);
+      setEvents(events);
+      // Do something with the events array, like setting it in state
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  // useEffect(() => {
+  //   const fetchTasks = async () => {
+  //     try {
+  //       const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-employee`);
+  //       const tasks = response.data.response.data; // Assuming response contains an array of tasks
+  //       console.log("tasks", tasks);
+  
+  //       // Group tasks by date
+  //       const groupedTasks = tasks.reduce((acc:any, task:any) => {
+  //         const date = task.date;
+  //         if (!acc[date]) {
+  //           acc[date] = task;
+  //         }
+  //         return acc;
+  //       }, {});
+  
+  //       const fetchedEvents: Event[] = Object.values(groupedTasks).map((task: any) => {
+  //         let color = '';
+  //         let title = '';
+  
+  //         switch (task.taskStatus) {
+  //           case 'Approved':
+  //             color = 'green';
+  //             title = 'Approved';
+  //             break;
+  //           case 'Rejected':
+  //             color = 'red';
+  //             title = `Rejected - ${task.comment}`;
+  //             break;
+  //           default:
+  //             color = 'orange';
+  //             title = 'Pending';
+  //             break;
+  //         }
+  
+  //         return {
+  //           title,
+  //           start: task.date,
+  //           color
+  //         };
+  //       });
+  
+  //       setEvents(fetchedEvents);
+  //     } catch (error) {
+  //       console.error('Error fetching tasks:', error);
+  //     }
+  //   };
+  
+  //   fetchTasks();
+  // }, []);
   
 
   
@@ -100,15 +150,17 @@ const Calendar = () => {
   };
 
   const handleDatesSet = (arg: any) => {
-    const currentMonth = dayjs(arg.start);
+    const currentMonthDate = dayjs(arg.start); // Get the month as a Dayjs object
+    // Format the month as "April 2024"
+    const currentMonthString = currentMonthDate.format('MMMM YYYY');
+    setCurrentMonth(currentMonthDate);
     const today = dayjs();
-    if (currentMonth.isAfter(today, 'month')) {
+    if (currentMonthDate.isAfter(today, 'month')) {
         // If the displayed month is in the future, navigate back to the current month
         const calendarApi = arg.view.calendar;
         calendarApi.gotoDate(today.toDate());
     }
   };
-
   // Get the clickedDate from localStorage
   const clickedDateFromLocalStorage = localStorage.getItem('clickedDate');
   // Use clickedDate from localStorage if available, otherwise use the current year
