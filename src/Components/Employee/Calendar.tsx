@@ -40,6 +40,7 @@ const Calendar = () => {
         let color = '';
         let title = '';
   
+        
         switch (task.status) {
           case 'Approved':
             color = 'green';
