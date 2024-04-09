@@ -1056,7 +1056,9 @@ const handleExportOption = (key: string) => {
                                     </div>
                                 </Space>
                             </div>
-                            <div style={{marginRight:'20px', marginTop:'25px'}}>
+                            
+                        </div>
+                        <div style={{marginRight:'20px', marginTop:'25px'}}>
                             <Dropdown overlay={exportMenu} placement="bottomLeft">
                                 <Button
                                 type="primary"
@@ -1067,7 +1069,6 @@ const handleExportOption = (key: string) => {
                             </Dropdown>
                         </div>
 
-                        </div>
                     </div>
                     
                     <div  style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 20px', alignItems: 'center' }}>
