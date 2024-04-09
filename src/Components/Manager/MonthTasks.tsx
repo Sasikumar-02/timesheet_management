@@ -75,7 +75,7 @@ const MonthTasks: React.FC = () => {
     const [statuses, setStatuses]= useState<boolean>(false);
     const {Option}= Select
     const location = useLocation();
-    const { uniqueRequestId, employeeId, formattedMonth } = location.state;
+    const { uniqueRequestId, employeeId, formattedMonth, employeeName } = location.state;
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [comments, setComments] = useState('');
     const [commentVisible, setCommentVisible] = useState(false);
@@ -111,10 +111,8 @@ console.log("statuses",statuses);
         if (uniqueRequestId && Array.isArray(uniqueRequestId)) {
           const fetchData = async () => {      
             try {
-              const response = await api.get("/api/v1/timeSheet/fetch-day-task-by-reportingTo",{
-                params:{
-                    'uniqueRequestIds':uniqueRequestId.join(',')
-                }
+              const response = await api.post("/api/v1/timeSheet/fetch-day-task-by-reportingTo",{
+                 uniqueRequestIds: uniqueRequestId
               });
               console.log('response-new', response.data.response.data);
               setMonthTasks(response.data.response.data);
@@ -833,9 +831,9 @@ const handleExportOption = (key: string) => {
             // },
         },            
         {
-            title: 'trainingTotalHours',
+            title: 'Training',
             dataIndex: 'trainingTotalHours',
-            key: 'tasks',
+            key: 'trainingTotalHours',
             width: '15%',
             fixed:'left',
             // render: (_, record: DateTask) => {
@@ -859,9 +857,9 @@ const handleExportOption = (key: string) => {
             // },
         },
         {
-            title: 'learningTotalHours',
+            title: 'Learning',
             dataIndex: 'learningTotalHours',
-            key: 'tasks',
+            key: 'learningTotalHours',
             width: '15%',
             fixed: 'left',
             // render: (_, record: DateTask) => {
@@ -1049,7 +1047,7 @@ const handleExportOption = (key: string) => {
                                     <Avatar icon={<UserOutlined />} size={65} />
                                     <div>
                                     <div>
-                                        <strong style={{fontSize:'20px'}}>Sasi Kumar</strong>
+                                        <strong style={{fontSize:'20px'}}>{employeeName}</strong>
                                     </div>
                                     {/* Displaying the userId */}
                                     <div style={{textAlign:'left', fontSize:'16px'}}>{employeeId}</div>

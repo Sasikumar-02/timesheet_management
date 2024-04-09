@@ -860,7 +860,7 @@ const ApprovalRequest:React.FC = () => {
             // }}  
             onRow={(record: GroupedTasks) => ({
               onClick: (event: React.MouseEvent<HTMLElement>) => {
-                const { uniqueRequestId, employeeId, month } = record;
+                const { uniqueRequestId, employeeId, month, employeeName } = record;
                 setSelectedUserId(userId); // Set the userId in state
                 // Extract necessary data from the GroupedTasks record
                 const [monthName, year] = month.split(' ');
@@ -872,7 +872,8 @@ const ApprovalRequest:React.FC = () => {
                 navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
                   uniqueRequestId,
                   formattedMonth: month, //formattedMonth
-                  employeeId: employeeId
+                  employeeId: employeeId,
+                  employeeName:employeeName
               }});
               },
             })}
