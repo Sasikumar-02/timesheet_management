@@ -972,16 +972,7 @@ const handleExportOption = (key: string) => {
             dataIndex: 'taskStatus',
             key: 'taskStatus',
             // width: '10%',
-            // render: (_, record: DateTask) => {
-            //     // Render the status of the record
-            //     return (
-            //         <div>
-            //             {record?.taskStatus}
-            //         </div>
-            //     );
-            // },
         },
-        Table.EXPAND_COLUMN
     ];
 
     const innerColumn: ColumnsType<any> = [
