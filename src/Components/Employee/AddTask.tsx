@@ -29,7 +29,8 @@ import type { ThemeConfig } from "antd";
 import TextArea from 'antd/es/input/TextArea';
 import { values } from 'lodash';
 import moment from 'moment';
-
+import { DecodedToken } from './EmployeeTaskStatus';
+import { jwtDecode } from 'jwt-decode';
 // Declare setFieldValue outside of Formik
 let setFieldValue: Function;
 export interface DateTask{
@@ -101,6 +102,9 @@ const config: ThemeConfig = {
 };
 
 const AddTask: React.FC = () => {
+  const token = localStorage.getItem("authToken");
+  const decoded = jwtDecode(token || "") as DecodedToken;
+  const userId = decoded.UserId;
   const [reportingTo, setReportingTo] = useState<UserManager[]>([]);
   const [reportingToID, setReportingToID] = useState('1234');
   const [startTime, setStartTime]= useState('');
@@ -192,10 +196,6 @@ const AddTask: React.FC = () => {
       }
     }
   }, [filterOption, isEdited, currentDate, currentMonth, currentWeek]); // Run this effect whenever filterOption changes
-  
-  
-
-  const userId = localStorage.getItem('userId');
 
   // useEffect(()=>{
   //   if(!isEdited){
@@ -216,8 +216,7 @@ const AddTask: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userId = localStorage.getItem('userId');
-        const response = await api.get(`${process.env.REACT_APP_API_KEY}/api/v1/admin/employee-list`);
+        const response = await api.get(`/api/v1/admin/employee-list`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch data');
         }
@@ -233,6 +232,7 @@ const AddTask: React.FC = () => {
             reportingManagerName: employee.reportingMangerName,
             reportingManagerId: employee.reportingManagerId,
           };
+          console.log("reportingManager",reportingManager);
           setReportingTo([reportingManager]);
         }
       } catch (error) {

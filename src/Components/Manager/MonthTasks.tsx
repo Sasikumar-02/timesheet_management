@@ -924,6 +924,20 @@ const handleExportOption = (key: string) => {
                     </div>
                 );
             }
+        },  
+        {
+            title: 'Other',
+            dataIndex: 'otherTaskTotalHours',
+            key: 'otherTaskTotalHours',
+            width: '15%',
+            fixed: 'left',
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.otherTaskTotalHours)}
+                    </div>
+                );
+            }
         },            
         {
             title: 'Shift Hours',

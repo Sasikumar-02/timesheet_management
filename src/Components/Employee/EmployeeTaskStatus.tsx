@@ -29,6 +29,7 @@ import { RecentRejected } from '../Manager/MonthTasks';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
 import { RejectedKeys, SelectedKeys } from '../Manager/MonthTasks';
+import { jwtDecode } from 'jwt-decode';
 const config: ThemeConfig = {
     token: {
       colorPrimary: "#0b4266",
@@ -46,6 +47,12 @@ const config: ThemeConfig = {
       colorBgContainerDisabled: "rgba(0, 0, 0, 0.04)",
     },
   };
+export interface DecodedToken {
+  Role: string;
+  UserId: string;
+}
+ 
+
 interface EmployeeTaskStatusProps{
     setSelectedMonth: React.Dispatch<React.SetStateAction<string>>;
     setSelectedYear: React.Dispatch<React.SetStateAction<string>>;
@@ -72,8 +79,7 @@ const EmployeeTaskStatus = () => {
     const [chartWidth, setChartWidth] = useState(window.innerWidth * 0.7); // Set initial chart width to 90% of window width
     const [selectedMonth, setSelectedMonth]=useState<string>('');
     const [selectedYear, setSelectedYear]=useState<string>('');
-    const userName = localStorage.getItem("userName");
-    console.log("userName", userName);
+    const [userName, setUserName]=useState('');
     const [workFromHomeCount, setWorkFromHomeCount] = useState(0);
     const [workFromOfficeCount, setWorkFromOfficeCount] = useState(0);
     const [recentApproved, setRecentApproved] = useState([]);
@@ -97,6 +103,10 @@ const EmployeeTaskStatus = () => {
         OnDuty: 0,
         WorkFromHome: 0
     })
+
+    const token = localStorage.getItem("authToken");
+    const decoded = jwtDecode(token || "") as DecodedToken;
+    const userId = decoded.UserId;
     const chartOptions = {
         maintainAspectRatio: false,
         responsive: true,
@@ -144,23 +154,43 @@ const EmployeeTaskStatus = () => {
           throw error;
         }
       };
+
+      useEffect(()=>{
+        const fetchData = async()=>{
+            try{
+                const response = await api.get('/api/v1/admin/employee-list')
+                const data = response.data.response.data;
+  
+                console.log('Fetched data:', data);
+                
+                const employee = data.filter((emp: any) => emp.userId === userId).map((emp:any)=>emp?.firstName);
+                setUserName(employee);
+            }
+            catch(err){
+                throw err;
+            }
+            
+        }
+        fetchData();
+      })
       
       useEffect(() => {
         const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
         const year = currentMonth.format('YYYY'); // Get year (e.g., "2024")
       
         fetchMonthlyReport(monthName, year);
-        fetchPieReport(monthName, year);
-        fetchDoughReport(monthName, year);
-      }, [currentMonth]);
+        fetchPieReport(monthName, year, userId);
+        fetchDoughReport(monthName, year, userId);
+      }, [currentMonth, userId, userName]);
 
    
-    const fetchPieReport=async(month:any, year:any)=>{
+    const fetchPieReport=async(month:any, year:any, employeeId:any)=>{
         try{
             const response = await api.get('/api/v1/timeSheet/monthly-task-distribution',{
             params:{
                 month,
-                year
+                year,
+                employeeId
             } 
         })
         console.log("response-pie", response.data.response.data.categoryPercentages);
@@ -171,12 +201,13 @@ const EmployeeTaskStatus = () => {
         }  
     }
 
-    const fetchDoughReport=async(month:any, year:any)=>{
+    const fetchDoughReport=async(month:any, year:any,employeeId:any)=>{
         try{
             const response = await api.get('/api/v1/timeSheet/monthly-location-distribution',{
             params:{
                 month,
-                year
+                year,
+                employeeId
             } 
         })
         console.log("response-dough", response.data.response.data);
@@ -334,7 +365,7 @@ const EmployeeTaskStatus = () => {
             <Card className="main-card">
             <div style={{ display: "flex", height:'55px' }}>
                 <div>
-                <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
+                <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName : ""}
                 <span className="wave" role="img" aria-label="Waving hand">👋</span></h3>
                 <p>
                     All of us do not have equal talent, but all of us have an equal

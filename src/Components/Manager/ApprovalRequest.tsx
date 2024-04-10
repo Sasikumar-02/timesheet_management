@@ -839,11 +839,12 @@ const ApprovalRequest:React.FC = () => {
             </Select>
 
               <Button
-                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'65px', textAlign:"center", marginLeft:'20px', marginTop:'20px', paddingTop:'8px'}}
+             
+                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'102px', textAlign:"center", marginLeft:'20px', marginTop:'20px', paddingTop:'8px'}}
                   className='regenerateactive'
                   onClick={handleClearFilters}
               >
-              Clear
+              Clear Filter
               </Button>
           </div>
 

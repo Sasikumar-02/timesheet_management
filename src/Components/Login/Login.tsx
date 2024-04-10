@@ -74,7 +74,6 @@ const LoginPage: React.FC = () => {
         console.log("Decoded token:", decoded); // Log decoded token
         localStorage.setItem("authToken", data?.response?.data.token);
         localStorage.setItem("role", decoded?.Role);
-        localStorage.setItem("userId", decoded?.UserId);
         setSubmitting(false);
         navigate("/");
       } else {
