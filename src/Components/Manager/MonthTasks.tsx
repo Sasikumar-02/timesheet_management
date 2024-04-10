@@ -144,19 +144,22 @@ const chartOptions = {
   };
   
 
-useEffect(() => {
-    const [monthName, year] = formattedMonth.split(' ');
-    fetchPieReport(monthName, year);
-    fetchDoughReport(monthName, year);
-  }, [formattedMonth]);
+  useEffect(() => {
+    const [monthName, year] = formattedMonth.split(/\s+/);
+    console.log("monthName, year",monthName, year);
+    fetchPieReport(monthName, year, employeeId);
+    fetchDoughReport(monthName, year, employeeId);
+}, [formattedMonth, employeeId]);
 
 
-const fetchPieReport=async(month:any, year:any)=>{
+
+const fetchPieReport=async(month:any, year:any, employeeId:any)=>{
     try{
         const response = await api.get('/api/v1/timeSheet/monthly-task-distribution',{
         params:{
             month,
-            year
+            year,
+            employeeId
         } 
     })
     console.log("response-pie", response.data.response.data.categoryPercentages);
@@ -167,12 +170,13 @@ const fetchPieReport=async(month:any, year:any)=>{
     }  
 }
 
-const fetchDoughReport=async(month:any, year:any)=>{
+const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     try{
         const response = await api.get('/api/v1/timeSheet/monthly-location-distribution',{
         params:{
             month,
-            year
+            year,
+            employeeId
         } 
     })
     console.log("response-dough", response.data.response.data);
@@ -649,8 +653,6 @@ const fetchDoughReport=async(month:any, year:any)=>{
                 ];
             });
             console.log("exportToExcel - dataToExport", dataToExport);
-            let date = '';
-            let userId = '';
                 
             const header = ['Date', 'Work Location', 'Task', 'Project', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];         
     
@@ -678,16 +680,16 @@ const fetchDoughReport=async(month:any, year:any)=>{
             const nameRow = worksheet.addRow([]);
             nameRow.getCell(1).value = 'Name:';
             nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
-            nameRow.getCell(2).value = 'Sasi Kumar';
+            nameRow.getCell(2).value = employeeName;
             const userIdRow = worksheet.addRow([]);
             userIdRow.getCell(1).value = 'UserID:';
             userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
-            userIdRow.getCell(2).value = userId;
+            userIdRow.getCell(2).value = employeeId;
     
             const monthRow = worksheet.addRow([]);
             monthRow.getCell(1).value = 'Month:';
             monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
-            monthRow.getCell(2).value = formatDateToMonthYear(date); // Dynamically convert date to "Month Year" format
+            monthRow.getCell(2).value = formattedMonth; // Dynamically convert date to "Month Year" format
                 
             // Add empty rows
             for (let i = 0; i < 1; i++) {
@@ -840,7 +842,17 @@ const handleExportOption = (key: string) => {
         </Menu>
       );
 
-   
+      const hoursDecimalToHoursMinutes = (decimalHours:any) => {
+        // Split the decimal value into hours and minutes
+        const hours = Math.floor(decimalHours);
+        const minutes = Math.round((decimalHours - hours) * 60);
+        console.log("hours minutes",hours, minutes);
+        // Return the formatted string
+        if(hours===0 && minutes===0){
+            return '-';
+        }
+        return `${hours}h ${minutes}min`;
+    };
 
   
     const column: ColumnsType<any> = [
@@ -863,25 +875,13 @@ const handleExportOption = (key: string) => {
             key: 'projectTotalHours',
             width: '15%',
             fixed:'left',
-            // render: (_, record: DateTask) => {
-            //     // Initialize total hours for the 'Learning' task
-            //     let projectTotalHours = 0;
-        
-            //     // Iterate over each task in the record
-            //     record.tasks?.forEach(task => {
-            //         // Check if the current task is a 'Learning' task
-            //         if (task.task === 'Project') {
-            //             // Add the total hours of the 'Learning' task to the accumulated total
-            //             projectTotalHours += parseFloat(task.totalHours || '0');
-            //         }
-            //     });
-        
-            //     return (
-            //         <div>
-            //             {projectTotalHours}H
-            //         </div>
-            //     );
-            // },
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.projectTotalHours)}
+                    </div>
+                );
+            }
         },
         {
             title: 'Meeting',
@@ -889,25 +889,13 @@ const handleExportOption = (key: string) => {
             key: 'meetingTotalHours',
             width: '15%',
             fixed: 'left',
-            // render: (_, record: DateTask) => {
-            //     // Initialize total hours for the 'Learning' task
-            //     let meetingTotalHours = 0;
-        
-            //     // Iterate over each task in the record
-            //     record.tasks?.forEach(task => {
-            //         // Check if the current task is a 'Learning' task
-            //         if (task.task === 'Meeting') {
-            //             // Add the total hours of the 'Learning' task to the accumulated total
-            //             meetingTotalHours += parseFloat(task.totalHours || '0');
-            //         }
-            //     });
-        
-            //     return (
-            //         <div>
-            //             {meetingTotalHours}H
-            //         </div>
-            //     );
-            // },
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.meetingTotalHours)}
+                    </div>
+                );
+            }
         },            
         {
             title: 'Training',
@@ -915,25 +903,13 @@ const handleExportOption = (key: string) => {
             key: 'trainingTotalHours',
             width: '15%',
             fixed:'left',
-            // render: (_, record: DateTask) => {
-            //     // Initialize total hours for the 'Learning' task
-            //     let trainingTotalHours = 0;
-        
-            //     // Iterate over each task in the record
-            //     record.tasks?.forEach(task => {
-            //         // Check if the current task is a 'Learning' task
-            //         if (task.task === 'Training') {
-            //             // Add the total hours of the 'Learning' task to the accumulated total
-            //             trainingTotalHours += parseFloat(task.totalHours || '0');
-            //         }
-            //     });
-        
-            //     return (
-            //         <div>
-            //             {trainingTotalHours}H
-            //         </div>
-            //     );
-            // },
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.trainingTotalHours)}
+                    </div>
+                );
+            }
         },
         {
             title: 'Learning',
@@ -941,25 +917,13 @@ const handleExportOption = (key: string) => {
             key: 'learningTotalHours',
             width: '15%',
             fixed: 'left',
-            // render: (_, record: DateTask) => {
-            //     // Initialize total hours for the 'Learning' task
-            //     let learningTotalHours = 0;
-        
-            //     // Iterate over each task in the record
-            //     record.tasks?.forEach(task => {
-            //         // Check if the current task is a 'Learning' task
-            //         if (task.task === 'Learning') {
-            //             // Add the total hours of the 'Learning' task to the accumulated total
-            //             learningTotalHours += parseFloat(task.totalHours || '0');
-            //         }
-            //     });
-        
-            //     return (
-            //         <div>
-            //             {learningTotalHours}H
-            //         </div>
-            //     );
-            // },
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.learningTotalHours)}
+                    </div>
+                );
+            }
         },            
         {
             title: 'Shift Hours',
@@ -991,8 +955,8 @@ const handleExportOption = (key: string) => {
         },
         {
             title: 'Extra Hours',
-            dataIndex: 'trainingTotalHours',
-            key: 'trainingTotalHours',
+            dataIndex: 'extraHours',
+            key: 'extraHours',
             width: '15%',
             fixed:'left',
             // render: (_, record: DateTask) => {
