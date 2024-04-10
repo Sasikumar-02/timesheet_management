@@ -849,16 +849,6 @@ const ApprovalRequest:React.FC = () => {
           </div>
 
           <Table
-            // rowSelection={{
-            //   type: 'checkbox',
-            //   selectedRowKeys: selectedRows,
-            //   onChange: handleRowSelection,
-            //   getCheckboxProps: (record: GroupedTasks) => ({
-            //     // Use the `key` field as the identifier for row selection
-            //     //key: record.key,
-            //     disabled: false, // You can adjust these additional props as needed
-            //   }),
-            // }}  
             onRow={(record: GroupedTasks) => ({
               onClick: (event: React.MouseEvent<HTMLElement>) => {
                 const { uniqueRequestId, employeeId, month, employeeName } = record;
@@ -872,7 +862,7 @@ const ApprovalRequest:React.FC = () => {
                 //handleRowClick(tasksObject, formattedMonth, event);
                 navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
                   uniqueRequestId,
-                  formattedMonth: month, //formattedMonth
+                  formattedMonth: month, 
                   employeeId: employeeId,
                   employeeName:employeeName
               }});
