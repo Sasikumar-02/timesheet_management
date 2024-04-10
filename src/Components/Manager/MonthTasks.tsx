@@ -7,6 +7,7 @@ import {
     DownOutlined,
     UpOutlined,
 } from "@ant-design/icons";
+import { Doughnut } from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -79,6 +80,19 @@ const MonthTasks: React.FC = () => {
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [comments, setComments] = useState('');
     const [commentVisible, setCommentVisible] = useState(false);
+    const [pieChartData, setPieChartData]= useState({
+        Learning: 0,
+        Meeting: 0,
+        Training: 0,
+        Project: 0,
+        Other:0
+    })
+    const [doughChartData, setDoughChartData]= useState({
+        ClientLocation: 0,
+        Office: 0,
+        OnDuty: 0,
+        WorkFromHome: 0
+    })
     const statusOptions = ['Pending', 'Approved', 'Rejected'];
     const initialFilters = {
         status: null
@@ -94,17 +108,80 @@ const MonthTasks: React.FC = () => {
     console.log("received data",uniqueRequestId, employeeId, formattedMonth)
     const [modalVisible, setModalVisible] = useState(false);
     const [clickedRecord, setClickedRecord] = useState<any>();
-    const [chartOptions, setChartOptions] = useState<ChartOptions>({
-        labels: [],
-        colors: [],
-        chart: {
-            type: 'pie', // or any other default chart type
-        },
-    });
+    // const [chartOptions, setChartOptions] = useState<ChartOptions>({
+    //     labels: [],
+    //     colors: [],
+    //     chart: {
+    //         type: 'pie', // or any other default chart type
+    //     },
+    // });
     const [chartImages, setChartImages] = useState<ChartImage[]>([]);
     const [chartSeries, setChartSeries] = useState<number[]>([]);
     const [monthTasks, setMonthTasks] = useState<any[]>([]);
 console.log("statuses",statuses);
+const chartOptions = {
+    maintainAspectRatio: false,
+    responsive: true,
+    width: 200,
+    height: 300,
+  };
+
+  const data = {
+    labels: Object.keys(doughChartData),
+    datasets: [
+      {
+        data: Object.values(doughChartData),
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.8)', // Red
+          'rgba(54, 162, 235, 0.8)', // Blue
+          'rgba(255, 206, 86, 0.8)', // Yellow
+          'rgba(75, 192, 192, 0.8)', // Green
+          'rgba(153, 102, 255, 0.8)', // Purple
+          'rgba(255, 159, 64, 0.8)', // Orange
+        ],
+      },
+    ],
+  };
+  
+
+useEffect(() => {
+    const [monthName, year] = formattedMonth.split(' ');
+    fetchPieReport(monthName, year);
+    fetchDoughReport(monthName, year);
+  }, [formattedMonth]);
+
+
+const fetchPieReport=async(month:any, year:any)=>{
+    try{
+        const response = await api.get('/api/v1/timeSheet/monthly-task-distribution',{
+        params:{
+            month,
+            year
+        } 
+    })
+    console.log("response-pie", response.data.response.data.categoryPercentages);
+    setPieChartData(response.data.response.data.categoryPercentages);
+    }
+    catch(err){
+        throw err;
+    }  
+}
+
+const fetchDoughReport=async(month:any, year:any)=>{
+    try{
+        const response = await api.get('/api/v1/timeSheet/monthly-location-distribution',{
+        params:{
+            month,
+            year
+        } 
+    })
+    console.log("response-dough", response.data.response.data);
+    setDoughChartData(response.data.response.data.locationPercentages);
+    }
+    catch(err){
+        throw err;
+    }  
+}
     useEffect(() => {
         // Check if uniqueRequestId is defined and is an array
         console.log("uniqueRequestId", uniqueRequestId);
@@ -450,7 +527,9 @@ console.log("statuses",statuses);
     };
     
     const handleReject = () => {
-        setCommentVisible(true);
+        if(selectedRows.length>0){
+            setCommentVisible(true);
+        }
       };
     
       const handleCancel = () => {
@@ -1069,66 +1148,32 @@ const handleExportOption = (key: string) => {
 
                     </div>
                     
-                    <div  style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 20px', alignItems: 'center' }}>
-                        <div id='pie-chart-container' style={{ 
-                            transition: 'box-shadow .3s',
-                            background: 'white',
-                            boxShadow: '0 0 4px rgba(33,33,33,.2)',  
-                            borderRadius: '5px', 
-                            // padding: '46px', 
-                            width: '48%', 
-                            height: '350px', 
-                            boxSizing: 'border-box',
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            alignItems: 'center',
-                            border: '1px solid white' // Set border to white
-                        }}>
-                            {/* <Chart
-                                options={{
-                                    ...chartOptions,
-                                    chart: {
-                                        ...chartOptions.chart,
-                                        background: 'white' // Set background color to white
-                                    }
-                                }}
-                                series={chartSeries}
-                                type="pie"
-                                width="380"
-                            /> */}
-                            {/* <PieChart width={1000} height={350} style={{background: 'white'}}>
+                    <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
+                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+                            <PieChart width={600} height={300}>
                                 <Pie
-                                    dataKey="value"
-                                    isAnimationActive={false}
-                                    data={chartData}
-                                    style={{width: '500px',height: '100%'}}
-                                    cx={'50%'}
-                                    cy={'50%'}
-                                    outerRadius={160}
+                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                                    cx={300}
+                                    cy={150}
+                                    labelLine={false}
+                                    label={true}
+                                    outerRadius={120}
                                     fill="#8884d8"
-                                    label
+                                    dataKey="value"
                                 >
-                                    {chartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                                    ))}
+                                    {
+                                        Object.entries(pieChartData).map(([name], index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                                        ))
+                                    }
                                 </Pie>
                                 <Tooltip />
-                                {/* <Legend /> 
-                            </PieChart> */}
-                        </div>
-                        <div style={{ 
-                            transition: 'box-shadow .3s', 
-                            background: 'white',
-                            boxShadow: '0 0 4px rgba(33,33,33,.2)',  
-                            borderRadius: '5px', 
-                            padding: '20px', 
-                            width: '48%', 
-                            boxSizing: 'border-box',
-                            overflowX: 'auto' // Enable horizontal scrolling if needed
-                        }}>
-                            
+                            </PieChart>
                         </div>
 
+                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
+                            <Doughnut data={data} options={chartOptions} style={{height:'300px'}}/>
+                        </div>
                     </div>
 
                     <div>
@@ -1178,17 +1223,17 @@ const handleExportOption = (key: string) => {
 
                     </ConfigProvider>
                     <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>   
-                        <Button style={{height:'200%' ,width: '100px', backgroundColor: 'red', color: 'white', marginRight:'10px' }} onClick={handleReject}>
+                        <Button style={{height:'200%' ,width: '100px', backgroundColor: 'red', color: 'white', marginRight:'10px', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} onClick={handleReject} title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}>
                         Reject
                         </Button>
-                        <Button style={{height:'200%', width:'100px', backgroundColor:'green', color:'white'}} onClick={handleApprove}>Approve</Button>
+                        <Button style={{height:'200%', width:'100px', backgroundColor:'green', color:'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'}} onClick={handleApprove} title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}>Approve</Button>
                         <Modal
                         title="Comments"
                         className='modalTitle'
                         visible={commentVisible}
                         onCancel={handleCancel}
                         footer={[
-                            <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white' }} key="submit" type="primary" onClick={handleSubmit}>
+                            <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
                             Submit
                             </Button>,
                         ]}

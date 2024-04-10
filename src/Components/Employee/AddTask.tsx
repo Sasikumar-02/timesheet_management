@@ -894,6 +894,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     date: yup.string().required('Date is required'),
     workLocation: yup.string().required('Work Location is required'),
     task: yup.string().required('Task is required'),
+    project: yup.string().required('Project is Required'),
     startTime: yup.string().required('Start Time is required'),
     endTime: yup.string()
       .required('End Time is required')
@@ -1140,6 +1141,14 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                           </Option>
                         ))}
                       </Select>
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
+                        >
+                          <ErrorMessage name="project" /> {/* Display error message if any */}
+                        </Typography.Text>
+                      </div>
                     </Form.Item>
                   </div>
                   <div style={{display:'flex'}}>
