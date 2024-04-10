@@ -21,6 +21,7 @@ const Sidebar: React.FC = () => {
     }, [Location.pathname]);
 
     const isRequestsActive = activeKey === "approvalrequest" || activeKey === "monthtasks";
+    const isEmployeeRequestActive = activeKey === 'calendar' || activeKey === 'dashboard';
 
     const renderMenuItems = () => {
         const userEmail = localStorage.getItem('role');
@@ -33,7 +34,7 @@ const Sidebar: React.FC = () => {
                             id="menu"
                             key="dashboard"
                             icon={<HomeFilled />}
-                            className={activeKey === "dashboard" ? "active" : ""}
+                            className={isEmployeeRequestActive ? "active" : ""}
                         >
                             <Link to="/employee/dashboard">Dashboard</Link>
                         </Menu.Item>
