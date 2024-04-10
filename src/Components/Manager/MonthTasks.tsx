@@ -849,7 +849,7 @@ const handleExportOption = (key: string) => {
         console.log("hours minutes",hours, minutes);
         // Return the formatted string
         if(hours===0 && minutes===0){
-            return '-';
+            return '➖';
         }
         return `${hours}h ${minutes}min`;
     };
@@ -860,7 +860,7 @@ const handleExportOption = (key: string) => {
             title: 'Date',
             dataIndex: 'date',
             key: 'date',
-            width: '15%',
+            // width: '15%',
             fixed: 'left',
             // render: (_, record: DateTask) => {
             //     // Get the specific month key
@@ -873,7 +873,7 @@ const handleExportOption = (key: string) => {
             title: 'Project',
             dataIndex: 'projectTotalHours',
             key: 'projectTotalHours',
-            width: '15%',
+            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 return (
@@ -887,7 +887,7 @@ const handleExportOption = (key: string) => {
             title: 'Meeting',
             dataIndex: 'meetingTotalHours',
             key: 'meetingTotalHours',
-            width: '15%',
+            // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
@@ -901,7 +901,7 @@ const handleExportOption = (key: string) => {
             title: 'Training',
             dataIndex: 'trainingTotalHours',
             key: 'trainingTotalHours',
-            width: '15%',
+            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 return (
@@ -915,7 +915,7 @@ const handleExportOption = (key: string) => {
             title: 'Learning',
             dataIndex: 'learningTotalHours',
             key: 'learningTotalHours',
-            width: '15%',
+            // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
@@ -929,7 +929,7 @@ const handleExportOption = (key: string) => {
             title: 'Other',
             dataIndex: 'otherTaskTotalHours',
             key: 'otherTaskTotalHours',
-            width: '15%',
+            // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
@@ -940,66 +940,38 @@ const handleExportOption = (key: string) => {
             }
         },            
         {
-            title: 'Shift Hours',
-            dataIndex: 'shiftHours',
-            key: 'shiftHours',
-            width: '15%',
+            title: 'Total Hours',
+            dataIndex: 'overallTotalHours',
+            key: 'overallTotalHours',
+            // width: '15%',
             fixed:'left',
-            // render: (_, record: DateTask) => {
-            //     // Initialize variables to store task hours and total hours
-            //     let totalHours = 0;
-            //     const taskHours: { [key: string]: number } = {};
-            //     // Iterate over each task in the record
-            //     record.tasks?.forEach(task => {
-            //         const totalHoursForTask = parseFloat(task.totalHours || '0');
-            //         totalHours += totalHoursForTask; // Accumulate total hours
-            //         taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask; // Add task hours
-            //     });
-
-            //     // Calculate extra hours if total hours exceed 9
-            //     const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-
-            //     // Filter and render only the total hours for the 'Project' tasks
-            //     return (
-            //         <div>
-            //             {totalHours.toFixed(2)}H
-            //         </div>
-            //     );
-            // },
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.overallTotalHours)}
+                    </div>
+                );
+            }        
         },
         {
             title: 'Extra Hours',
             dataIndex: 'extraHours',
             key: 'extraHours',
-            width: '15%',
+            // width: '15%',
             fixed:'left',
-            // render: (_, record: DateTask) => {
-            //     // Initialize variables to store task hours and total hours
-            //     let totalHours = 0;
-            //     const taskHours: { [key: string]: number } = {};
-            //     // Iterate over each task in the record
-            //     record.tasks?.forEach(task => {
-            //         const totalHoursForTask = parseFloat(task.totalHours || '0');
-            //         totalHours += totalHoursForTask; // Accumulate total hours
-            //         taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask; // Add task hours
-            //     });
-
-            //     // Calculate extra hours if total hours exceed 9
-            //     const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-
-            //     // Filter and render only the total hours for the 'Project' tasks
-            //     return (
-            //         <div>
-            //             {extraHours.toFixed(2)}H
-            //         </div>
-            //     );
-            // },
+            render: (_, record) => {
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.extraHours)}
+                    </div>
+                );
+            }
         },
         {
             title: 'Status',
             dataIndex: 'taskStatus',
             key: 'taskStatus',
-            width: '10%',
+            // width: '10%',
             // render: (_, record: DateTask) => {
             //     // Render the status of the record
             //     return (
@@ -1098,7 +1070,7 @@ const handleExportOption = (key: string) => {
         <div id="dashboardLayout" className='flex gap-5'>
             <>
                     <div style={{display:'flex', justifyContent:'space-between'}}>
-                        <div style={{display:'flex', alignItems:'flex-start', margin:'10px 20px'}}>
+                        <div style={{display:'flex', alignItems:'flex-start', margin:'10px 0px 10px 20px'}}>
                             <div>
                                 <Space className="flex gap-5">
                                     <Avatar icon={<UserOutlined />} size={65} />
@@ -1113,6 +1085,7 @@ const handleExportOption = (key: string) => {
                             </div>
                             
                         </div>
+                        <div style={{fontWeight:'bold', color:'#0B4266',fontSize:'20px',textAlign:'center', margin:'30px 20px 10px 0px'}}>{formattedMonth}</div>
                         <div style={{marginRight:'20px', marginTop:'25px'}}>
                             <Dropdown overlay={exportMenu} placement="bottomLeft">
                                 <Button
@@ -1171,7 +1144,7 @@ const handleExportOption = (key: string) => {
                         </Select>
                     </div>
 
-                    <div style={{fontWeight:'bold', color:'#0B4266',fontSize:'20px',textAlign:'center', margin:'10px 20px'}}>{formattedMonth}</div>
+                   
                     <ConfigProvider theme={config}>
                         <Table
                             rowSelection={{
@@ -1200,11 +1173,39 @@ const handleExportOption = (key: string) => {
                         </Modal>
 
                     </ConfigProvider>
-                    <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>   
-                        <Button style={{height:'200%' ,width: '100px', backgroundColor: 'red', color: 'white', marginRight:'10px', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} onClick={handleReject} title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}>
-                        Reject
-                        </Button>
-                        <Button style={{height:'200%', width:'100px', backgroundColor:'green', color:'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'}} onClick={handleApprove} title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}>Approve</Button>
+                    <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}> 
+                    {selectedStatus !== 'Approved' && selectedStatus !== 'Rejected' && (
+                        <>
+                            <Button 
+                                style={{
+                                    height: '200%',
+                                    width: '100px',
+                                    backgroundColor: 'red',
+                                    color: 'white',
+                                    marginRight: '10px',
+                                    cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
+                                }} 
+                                onClick={handleReject} 
+                                title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
+                            >
+                                Reject
+                            </Button>
+                            <Button 
+                                style={{
+                                    height: '200%', 
+                                    width: '100px', 
+                                    backgroundColor: 'green', 
+                                    color: 'white', 
+                                    cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
+                                }} 
+                                onClick={handleApprove} 
+                                title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}
+                            >
+                                Approve
+                            </Button>
+                        </>
+                    )}
+
                         <Modal
                         title="Comments"
                         className='modalTitle'

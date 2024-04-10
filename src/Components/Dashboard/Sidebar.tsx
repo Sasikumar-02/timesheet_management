@@ -114,7 +114,7 @@ const Sidebar: React.FC = () => {
                 <Link to="/calendar">Calendar</Link>
               </Menu.Item> */}
               <Menu.Item id="menu" key="4" icon={<PullRequestOutlined />}
-                className={Location.pathname === "/manager/approvalrequests" ? "active" : ""}>
+                className={Location.pathname === "/manager/approvalrequest" ? "active" : ""}>
                 <Link to="/manager/approvalrequest">Requests  </Link>
               </Menu.Item>
               <Menu.Item id="menu" key="4" icon={<ScheduleOutlined />}
