@@ -5,10 +5,11 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../Api/Api-Service";
+import { Table } from "antd/lib";
 import DashboardLayout from "../Dashboard/Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
-
+import { ColumnsType } from "antd/es/table";
 interface Event {
   title: string;
   start: string;
@@ -21,10 +22,66 @@ const Calendar = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const { month, year } = location.state;
-
+  const [uniqueRequestId, setUniqueRequestId]= useState('');
+  const [formattedDate, setFormattedDate] = useState<string>('');
+  const [clickedRecord, setClickedRecord] = useState<any>();
+  console.log("uniqueRequestId",uniqueRequestId);
   useEffect(() => {
     fetchCalendarView(month, year);
   }, [month, year]);
+
+  const handleDateClick = (arg: DateClickArg) => {
+    const clickedDate = dayjs(arg.date);
+
+    if (clickedDate.isAfter(dayjs(), "month")) {
+      notification.warning({
+        message: "Month Restriction",
+        description: "Cannot navigate to future months.",
+      });
+    } else if (clickedDate.isAfter(dayjs(), "day")) {
+      notification.warning({
+        message: "Date Restriction",
+        description: "Restricted to open future dates.",
+      });
+    } else {
+      const formattedDate = clickedDate.format("YYYY-MM-DD");
+     // fetchDataByUniqueId(uniqueRequestId);
+      // navigate(`/employee/addtask?date=${formattedDate}`, {
+      //   state: { formattedDate },
+      // });
+      console.log("formattedDate",formattedDate);
+      setFormattedDate(formattedDate);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const response = await api.get("/api/v1/timeSheet/task-calendar-view", {
+                params: {
+                    month,
+                    year,
+                },
+            });
+
+            const calendarData = response.data.response.data;
+            console.log("calendarData", calendarData);
+
+            // Iterate through calendarData to find a match for formattedDate
+            calendarData.forEach((task: any) => {
+                const taskDate = dayjs(task.date).format("YYYY-MM-DD");
+                if (formattedDate === taskDate) {
+                    setUniqueRequestId(task.uniqueId);
+                }
+            });
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    fetchData();
+}, [formattedDate]);
+
 
   const fetchCalendarView = async (month: any, year: any) => {
     try {
@@ -70,26 +127,9 @@ const Calendar = () => {
     }
   };
 
-  const handleDateClick = (arg: DateClickArg) => {
-    const clickedDate = dayjs(arg.date);
-
-    if (clickedDate.isAfter(dayjs(), "month")) {
-      notification.warning({
-        message: "Month Restriction",
-        description: "Cannot navigate to future months.",
-      });
-    } else if (clickedDate.isAfter(dayjs(), "day")) {
-      notification.warning({
-        message: "Date Restriction",
-        description: "Restricted to open future dates.",
-      });
-    } else {
-      const formattedDate = clickedDate.format("YYYY-MM-DD");
-      navigate(`/employee/addtask?date=${formattedDate}`, {
-        state: { formattedDate },
-      });
-    }
-  };
+  useEffect(()=>{
+    fetchDataByUniqueId(uniqueRequestId)
+  }, [uniqueRequestId])
 
   const handleDatesSet = (arg: any) => {
     const currentMonthDate = dayjs(arg.start);
@@ -107,20 +147,104 @@ const Calendar = () => {
     ? clickedDateFromLocalStorage
     : dayjs().startOf("year").format("YYYY-MM-DD");
 
+    const fetchDataByUniqueId = async (uniqueRequestId: string) => {
+      try {
+          const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
+          console.log('Response data:', response.data);
+          setClickedRecord(response.data.response.data);
+          // Process response data if needed
+      } catch (error) {
+          console.error('Error fetching data by unique ID:', error);
+          // Handle error here
+      }
+  };
+
+    const columns: ColumnsType<any> = [
+      {
+        title: 'Sl. No',
+        width: '132px',
+        dataIndex: 'slNo',
+        key: 'slNo',
+        fixed: 'left',
+        render: (text, record, index) => index + 1,
+      },
+      {
+        title: 'Work Location',
+        //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+        dataIndex: 'workLocation',
+        key: 'workLocation',
+        fixed: 'left',
+      },
+      {
+        title: 'Task',
+        //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+        dataIndex: 'task',
+        key: 'task',
+        fixed: 'left',
+      },
+      {
+        title: 'Project',
+        //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+        dataIndex: 'project',
+        key: 'project',
+        fixed: 'left',
+      },
+      // {
+      //   title: 'Date',
+      //   //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
+      //   dataIndex: 'date',
+      //   key: 'date',
+      //   fixed: 'left',
+      // },
+      {
+        title: 'Start Time',
+        //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
+        dataIndex: 'startTime',
+        key: 'startTime',
+        fixed: 'left',
+      },
+      {
+        title: 'End Time',
+        //sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
+        dataIndex: 'endTime',
+        key: 'endTime',
+        fixed: 'left',
+      },
+      {
+        title: 'Total Hours',
+        //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+        dataIndex: 'totalHours',
+        key: 'totalHours',
+        fixed: 'left',
+      },
+      {
+        title: 'Description',
+        //sorter: (a: Task, b: Task) => a.description.localeCompare(b.description),
+        dataIndex: 'description',
+        key: 'description',
+        fixed: 'left',
+      },
+      // {
+      //   title: 'Reporting To',
+      //   //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+      //   dataIndex: 'reportingTo',
+      //   key: 'reportingTo',
+      //   fixed: 'left',
+      // }, 
+      // {
+      //   title: 'Status',
+      //   //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+      //   dataIndex: 'taskStatus',
+      //   key: 'taskStatus',
+      //   fixed: 'left',
+      // }, 
+    ]
+
   return (
     <div>
-      <>
-        <div
-          id="calendar-main"
-          style={{
-            width: "97%",
-            margin: "30px 20px 20px 20px",
-            fontFamily: "poppins",
-            fontSize: "14px",
-            cursor: "pointer",
-          }}
-        >
-          <FullCalendar
+       <div style={{display:'flex', flexDirection:'row', margin:'10px 20px'}}>
+        <div style={{width:'100%', marginLeft:'20px'}}>
+        <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView={"dayGridMonth"}
             initialDate={currentDate}
@@ -134,11 +258,59 @@ const Calendar = () => {
             datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
             eventClassNames="calendar"
           />
-
         </div>
-      </>
+        {/* <div style={{ width: '50%', border: '1px solid #E6E6E6', margin: '0px 20px', maxHeight: '400px', overflow: 'auto' }}>
+          <h1 className='userprofile-main'>History</h1>
+          <Table
+              className='addtask-table'
+              columns={columns as ColumnsType<any>}
+              dataSource={clickedRecord}
+              pagination={false}
+          />
+        </div> */}
+        <div style={{width:'50%',border: '1px solid #E6E6E6', margin:'0px 20px'}}>
+          <h1>Task Details</h1>
+          <h2 style={{textAlign:'left', marginLeft:'20px'}}>Date:{formattedDate}</h2>
+          <Table
+            className='addtask-table'
+            columns={columns as ColumnsType<any>}
+            dataSource={clickedRecord}
+            pagination={false}
+          />
+        </div>
+
+      </div>
     </div>
   );
 };
 
 export default Calendar;
+
+{/* <>
+<div
+  id="calendar-main"
+  style={{
+    width: "97%",
+    margin: "30px 20px 20px 20px",
+    fontFamily: "poppins",
+    fontSize: "14px",
+    cursor: "pointer",
+  }}
+>
+  <FullCalendar
+    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+    initialView={"dayGridMonth"}
+    initialDate={currentDate}
+    headerToolbar={{
+      start: "title",
+      end: "prev,next",
+    }}
+    height={"80vh"}
+    dateClick={handleDateClick}
+    events={events}
+    datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
+    eventClassNames="calendar"
+  />
+
+</div>
+</> */}

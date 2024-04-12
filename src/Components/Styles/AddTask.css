@@ -159,10 +159,11 @@
   align-items: center;
   gap: 10px;
   border-radius: 4px;
-  background: #0B42664D; 
+  background: #0B4266; 
+  /* #0B42664D */
   border: none;
   cursor: pointer;
-  color: #0B4266;
+  color: white;
 }
 
 #cancel-addtask:hover {

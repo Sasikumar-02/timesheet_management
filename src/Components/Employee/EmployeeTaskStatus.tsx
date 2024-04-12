@@ -236,7 +236,8 @@ const EmployeeTaskStatus = () => {
             window.removeEventListener('resize', handleResize); // Remove event listener on component unmount
         };
     }, []);
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']; // Add more colors if needed
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1973'];
+
 
     const handleFilterChange = (value: any) => {
         setFilterOption(value);
@@ -509,6 +510,7 @@ const EmployeeTaskStatus = () => {
 
     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Percentage</h2>
             <PieChart width={600} height={300}>
                 <Pie
                     data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
@@ -531,8 +533,13 @@ const EmployeeTaskStatus = () => {
         </div>
 
         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-            <Doughnut data={data} options={chartOptions} style={{height:'300px'}}/>
+            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Work Location</h2>
+            <div style={{ height: '300px' }}>
+                <Doughnut data={data} options={chartOptions} />
+            </div>
         </div>
+
+
     </div>
     </>
   )

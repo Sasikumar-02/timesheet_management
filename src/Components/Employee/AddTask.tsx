@@ -757,7 +757,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
 
   const columns: ColumnsType<any> = [
     {
-      title: 'Sl.no',
+      title: 'Sl. No',
       width: '132px',
       dataIndex: 'slNo',
       key: 'slNo',
@@ -825,6 +825,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
       dataIndex: 'reportingTo',
       key: 'reportingTo',
+      fixed: 'left',
+    }, 
+    {
+      title: 'Status',
+      //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+      dataIndex: 'taskStatus',
+      key: 'taskStatus',
       fixed: 'left',
     }, 
     {
@@ -965,7 +972,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                   onClick={handleToggleForm} // Call the handleToggleForm function on click
                 />
               )}
-              <div style={{display:'flex'}}>
+              <div style={{display:'flex', marginLeft:'10px'}}>
                 <div>
                   <div style={{display:'flex'}}>
                   <Form.Item<FieldType>
@@ -1349,10 +1356,10 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                     
                   </div>
                 </div>
-                <div style={{display:'flex', alignItems:'center'}}>
+                {/* <div style={{display:'flex', alignItems:'center'}}>
                 
                   <div className='chart-container' style={{ marginLeft: "150px",width:'750px'}}>
-                   
+                   <h2>Task Percentage</h2>
                     <Chart
                         options={pieChartDataInForm.options}
                         series={pieChartDataInForm.series}
@@ -1360,7 +1367,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                         width="480"
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 

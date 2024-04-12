@@ -209,10 +209,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
       }, [statuses]);
       
 
-    // useEffect(() => {
-    //     preparePieChartImage();
-    //     prepareLineChartImage();
-    // }, [monthTasksData]);
+    useEffect(() => {
+        preparePieChartImage();
+        prepareLineChartImage();
+    }, [monthTasks]);
 
     const preparePieChartImage = () => {
         // Your pie chart logic to render on a canvas
@@ -235,142 +235,9 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             });
         }
     };
-
-    // Function to prepare data for the pie chart
-    // const preparePieChartData = () => {
-    //     // Initialize an object to store total hours per task
-    //     const taskHoursPerDay: { [key: string]: number } = {};
-    
-    //     // Iterate over each day's tasks data
-    //     monthTasksData?.forEach(dateTask => {
-    //         const tasks = dateTask.task;
-    
-    //         // Iterate over each task for the current day
-    //         tasks?.forEach(task => {
-    //             const taskName = task.task;
-    //             const totalHours = parseFloat(task.totalHours || '0');
-    
-    //             // Accumulate total hours for each task
-    //             taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
-    //         });
-    //     });
-    
-    //     // Extract task names and total hours as series data for the pie chart
-    //     const seriesData = Object.values(taskHoursPerDay);
-    //     console.log("seriesData", seriesData);
-    //     const labels = Object.keys(taskHoursPerDay);
-    //     console.log("seriesData labels", labels);
-        
-    //     // Set up options for the pie chart
-    //     const options: ChartOptions = {
-    //         chart: {
-    //             type: 'pie',
-    //         },
-    //         labels: labels,
-    //         colors: [], // Set colors as an empty array if not provided dynamically
-    //     };
-    
-    //     setChartOptions(options);
-    //     setChartSeries(seriesData);
-    // };    
-
-    // Update preparePieChartData to accept a filter parameter
-    // const preparePieChartData = (filter: string[]) => {
-    //     const taskHoursPerDay: { [key: string]: number } = {};
-    //     if(filter?.length!==0){
-    //         monthTasksData?.forEach(dateTask => {
-    //             // Check if dateTask.key is included in the filter
-    //             if (filter.includes(dateTask.key)) {
-    //                 const tasks = dateTask.tasks;
-        
-    //                 tasks?.forEach(task => {
-    //                     const taskName = task.task;
-    //                     const totalHours = parseFloat(task.totalHours || '0');
-        
-    //                     taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
-    //                 });
-    //             }
-    //         });
-    //     }
-    //     else{
-    //         monthTasksData?.forEach(dateTask => {
-    //             const tasks = dateTask.tasks;
-    //             tasks?.forEach(task => {
-    //                 const taskName = task.task;
-    //                 const totalHours = parseFloat(task.totalHours || '0');
-    
-    //                 taskHoursPerDay[taskName] = (taskHoursPerDay[taskName] || 0) + totalHours;
-    //             });
-    //         });
-    //     }
-    //     const data = Object.entries(taskHoursPerDay).map(([taskName, totalHours]) => ({
-    //         name: taskName,
-    //         value: totalHours
-    //     }));
-    
-    //     setChartData(data);
-    // };
    
     
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
-
-    // Function to extract date from tasks
-    // function extractDateFromTasks(tasks: Task[]): string | null {
-    //     // Assuming all tasks have the same date
-    //     return tasks?.length > 0 ? tasks[0].date : null;
-    // }
-    
-    // let chartDatas: { date: string, percentage: number | null }[] = [];
-    // let desiredMonth: string | null = null;
-    
-    // if (monthTasksData?.length > 0 && monthTasksData[0].tasks?.length > 0) {
-    //     desiredMonth = monthTasksData[0].tasks[0].date;
-    // }
-    
-    // if (desiredMonth) {
-    //     const startDate = dayjs(desiredMonth).startOf('month').toDate();
-    //     const endDate = dayjs(desiredMonth).endOf('month').toDate();
-    
-    //     const totalHoursPerDay = monthTasksData.map(dateTask => {
-    //         const totalHours = dateTask.tasks.reduce((total, task) => total + parseFloat(task.totalHours), 0);
-    //         return { date: extractDateFromTasks(dateTask.tasks), totalHours };
-    //     });
-    
-    //     const extraHoursPerDay = monthTasksData.map(dateTask => {
-    //         const totalHours = dateTask.tasks.reduce((total, task) => total + parseFloat(task.totalHours), 0);
-    //         const extraHours = totalHours - 8; // Assuming 8 hours is a regular workday
-    //         return { date: extractDateFromTasks(dateTask.tasks), extraHours };
-    //     });
-    
-    //     const percentageExtraHoursPerDay = extraHoursPerDay.map(({ date, extraHours }) => {
-    //         const totalHours = totalHoursPerDay.find(day => day.date === date)?.totalHours || 0;
-    //         const percentage = totalHours >= 9 ? (extraHours / totalHours) * 100 : 0;
-    //         return { date, percentage };
-    //     });
-    
-    //     const allDatesInMonth = [];
-    //     let currentDate = dayjs(startDate);
-    //     while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
-    //         allDatesInMonth.push(currentDate.format('YYYY-MM-DD'));
-    //         currentDate = currentDate.add(1, 'day');
-    //     }
-    
-    //     chartDatas = allDatesInMonth.map(date => {
-    //         const dataForDate = percentageExtraHoursPerDay.find(data => data.date === date);
-    //         return { date, percentage: dataForDate ? dataForDate.percentage : 0 };
-    //     });
-    // } else {
-    //     console.log('No tasks found or invalid date range.');
-    // }
-    
-    // useEffect(() => {
-    //     preparePieChartData(selectedRows); // Call preparePieChartData with selectedRows as filter
-    // }, [monthTasksData, selectedRows]);
-
-    // useEffect(() => {
-    //     setMonthTasks(tasksForClickedMonth);
-    //     setRowTask(tasksObject);
-    // }, [tasksForClickedMonth, tasksObject]);
     
     const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
         return new Promise((resolve, reject) => {
@@ -396,7 +263,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                     reject(error); // Reject if there's an error exporting the charts
                 });
         });
-    };
+    };    
     
     // const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
     //     return new Promise((resolve, reject) => {
@@ -697,32 +564,32 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
     
             // Call exportCharts to get the images
-            //const { pieChartImage, lineChartImage } = await exportCharts();
+            const { pieChartImage, lineChartImage } = await exportCharts();
     
             // Calculate the current row number
             const currentRow = worksheet.rowCount + 2;
     
             // Add the images to the worksheet
-            // const pieChartImageId = workbook.addImage({
-            //     base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
-            //     extension: 'png',
-            // });
+            const pieChartImageId = workbook.addImage({
+                base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
+                extension: 'png',
+            });
     
-            // const lineChartImageId = workbook.addImage({
-            //     base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
-            //     extension: 'png',
-            // });
+            const lineChartImageId = workbook.addImage({
+                base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
+                extension: 'png',
+            });
     
-            // Add both images to the same row
-            // worksheet.addImage(pieChartImageId, {
-            //     tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-            //     br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
-            // });
+            //Add both images to the same row
+            worksheet.addImage(pieChartImageId, {
+                tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+                br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
+            });
     
-            // worksheet.addImage(lineChartImageId, {
-            //     tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-            //     br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
-            // });
+            worksheet.addImage(lineChartImageId, {
+                tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+                br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
+            });
             
             // Add a row with horizontal gridline (6th row)
             const gridlineRow = worksheet.addRow(Array(header.length).fill('')); // Add empty content for each column
@@ -1090,33 +957,36 @@ const handleExportOption = (key: string) => {
 
                     </div>
                     
-                    <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-                            <PieChart width={600} height={300}>
-                                <Pie
-                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                                    cx={300}
-                                    cy={150}
-                                    labelLine={false}
-                                    label={true}
-                                    outerRadius={120}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {
-                                        Object.entries(pieChartData).map(([name], index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                                        ))
-                                    }
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
+    <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
+        <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Percentage</h2>
+        <PieChart width={600} height={300}>
+            <Pie
+                data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                cx={300}
+                cy={150}
+                labelLine={false}
+                label={true}
+                outerRadius={120}
+                fill="#8884d8"
+                dataKey="value"
+            >
+                {Object.entries(pieChartData).map(([name], index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                ))}
+            </Pie>
+            <Tooltip />
+        </PieChart>
+    </div>
 
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-                            <Doughnut data={data} options={chartOptions} style={{height:'300px'}}/>
-                        </div>
-                    </div>
+    <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
+        <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Work Location</h2>
+        <div style={{ height: '300px' }}>
+            <Doughnut data={data} options={chartOptions} />
+        </div>
+    </div>
+</div>
+
 
                     <div>
                         <Select
