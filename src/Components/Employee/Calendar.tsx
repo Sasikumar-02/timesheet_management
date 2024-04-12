@@ -10,6 +10,7 @@ import DashboardLayout from "../Dashboard/Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
 import { ColumnsType } from "antd/es/table";
+import {Modal} from "antd";
 interface Event {
   title: string;
   start: string;
@@ -25,6 +26,7 @@ const Calendar = () => {
   const [uniqueRequestId, setUniqueRequestId]= useState('');
   const [formattedDate, setFormattedDate] = useState<string>('');
   const [clickedRecord, setClickedRecord] = useState<any>();
+  const [modalVisible, setModalVisible] = useState(false);
   console.log("uniqueRequestId",uniqueRequestId);
   useEffect(() => {
     fetchCalendarView(month, year);
@@ -51,6 +53,7 @@ const Calendar = () => {
       // });
       console.log("formattedDate",formattedDate);
       setFormattedDate(formattedDate);
+      setModalVisible(true);
     }
   };
 
@@ -159,6 +162,32 @@ const Calendar = () => {
       }
   };
 
+  const hoursDecimalToHoursMinutes = (decimalHours:any) => {
+    // Split the decimal value into hours and minutes
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    console.log("hours minutes",hours, minutes);
+    // Return the formatted string
+    if(hours===0 && minutes===0){
+        return '➖';
+    }
+    return `${hours}h ${minutes}min`;
+  };
+
+  const hoursTimeToHoursMinutes = (decimalHours: string) => {
+    // Parse the decimal hours string
+    const [hoursStr, minutesStr] = decimalHours.split(':');
+    const hours = parseInt(hoursStr);
+    const minutes = parseInt(minutesStr);
+
+    // Return the formatted string
+    if (hours === 0 && minutes === 0) {
+        return '➖';
+    }
+    return `${hours}h ${minutes}min`;
+  };
+
+
     const columns: ColumnsType<any> = [
       {
         title: 'Sl. No',
@@ -189,19 +218,26 @@ const Calendar = () => {
         key: 'project',
         fixed: 'left',
       },
-      // {
-      //   title: 'Date',
-      //   //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
-      //   dataIndex: 'date',
-      //   key: 'date',
-      //   fixed: 'left',
-      // },
+      {
+        title: 'Date',
+        //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
+        dataIndex: 'date',
+        key: 'date',
+        fixed: 'left',
+      },
       {
         title: 'Start Time',
         //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
         dataIndex: 'startTime',
         key: 'startTime',
         fixed: 'left',
+        render: (_, record) => {
+          return (
+              <div>
+                  {hoursTimeToHoursMinutes(record?.startTime)}
+              </div>
+          );
+      }
       },
       {
         title: 'End Time',
@@ -209,6 +245,13 @@ const Calendar = () => {
         dataIndex: 'endTime',
         key: 'endTime',
         fixed: 'left',
+        render: (_, record) => {
+          return (
+              <div>
+                  {hoursTimeToHoursMinutes(record?.endTime)}
+              </div>
+          );
+      }
       },
       {
         title: 'Total Hours',
@@ -216,6 +259,13 @@ const Calendar = () => {
         dataIndex: 'totalHours',
         key: 'totalHours',
         fixed: 'left',
+        render: (_, record) => {
+          return (
+              <div>
+                  {hoursDecimalToHoursMinutes(record?.totalHours)}
+              </div>
+          );
+      }
       },
       {
         title: 'Description',
@@ -224,13 +274,13 @@ const Calendar = () => {
         key: 'description',
         fixed: 'left',
       },
-      // {
-      //   title: 'Reporting To',
-      //   //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
-      //   dataIndex: 'reportingTo',
-      //   key: 'reportingTo',
-      //   fixed: 'left',
-      // }, 
+      {
+        title: 'Reporting To',
+        //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+        dataIndex: 'reportingTo',
+        key: 'reportingTo',
+        fixed: 'left',
+      }, 
       // {
       //   title: 'Status',
       //   //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
@@ -240,47 +290,94 @@ const Calendar = () => {
       // }, 
     ]
 
-  return (
-    <div>
-       <div style={{display:'flex', flexDirection:'row', margin:'10px 20px'}}>
-        <div style={{width:'100%', marginLeft:'20px'}}>
-        <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView={"dayGridMonth"}
-            initialDate={currentDate}
-            headerToolbar={{
-              start: "title",
-              end: "prev,next",
-            }}
-            height={"80vh"}
-            dateClick={handleDateClick}
-            events={events}
-            datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
-            eventClassNames="calendar"
-          />
-        </div>
-        {/* <div style={{ width: '50%', border: '1px solid #E6E6E6', margin: '0px 20px', maxHeight: '400px', overflow: 'auto' }}>
-          <h1 className='userprofile-main'>History</h1>
-          <Table
-              className='addtask-table'
-              columns={columns as ColumnsType<any>}
-              dataSource={clickedRecord}
-              pagination={false}
-          />
-        </div> */}
-        <div style={{width:'50%',border: '1px solid #E6E6E6', margin:'0px 20px'}}>
-          <h1>Task Details</h1>
-          <h2 style={{textAlign:'left', marginLeft:'20px'}}>Date:{formattedDate}</h2>
-          <Table
-            className='addtask-table'
-            columns={columns as ColumnsType<any>}
-            dataSource={clickedRecord}
-            pagination={false}
-          />
-        </div>
+    const modalContent = clickedRecord && (
+      <Table
+          className='addtask-table'
+          columns={columns as ColumnsType<any>}
+          dataSource={clickedRecord}
+          pagination={false}
+      />
+  );
 
-      </div>
+  return (
+    // <div>
+    //    <div style={{display:'flex', flexDirection:'row', margin:'10px 20px'}}>
+    //     <div style={{width:'100%', marginLeft:'20px', marginTop:'20px'}}>
+    //     <FullCalendar
+    //         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+    //         initialView={"dayGridMonth"}
+    //         initialDate={currentDate}
+    //         headerToolbar={{
+    //           start: "title",
+    //           end: "prev,next",
+    //         }}
+    //         height={"80vh"}
+            
+    //         dateClick={handleDateClick}
+    //         events={events}
+    //         datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
+    //         eventClassNames="calendar"
+    //       />
+    //     </div>
+    //     {/* <div style={{ width: '50%', border: '1px solid #E6E6E6', margin: '0px 20px', maxHeight: '400px', overflow: 'auto' }}>
+    //       <h1 className='userprofile-main'>History</h1>
+    //       <Table
+    //           className='addtask-table'
+    //           columns={columns as ColumnsType<any>}
+    //           dataSource={clickedRecord}
+    //           pagination={false}
+    //       />
+    //     </div> */}
+    //     <div style={{width:'50%',border: '1px solid #E6E6E6', margin:'20px 20px 0px 20px'}}>
+    //       <h1>Task Details</h1>
+    //       <h2 style={{textAlign:'left', marginLeft:'20px'}}>Date:{formattedDate}</h2>
+    //       <Table
+    //         className='addtask-table'
+    //         columns={columns as ColumnsType<any>}
+    //         dataSource={clickedRecord}
+    //         pagination={false}
+    //       />
+    //     </div>
+
+    //   </div>
+    // </div>
+    <>
+    <div
+      id="calendar-main"
+      style={{
+        width: "97%",
+        margin: "30px 20px 20px 20px",
+        fontFamily: "poppins",
+        fontSize: "14px",
+        cursor: "pointer",
+      }}
+    >
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView={"dayGridMonth"}
+        initialDate={currentDate}
+        headerToolbar={{
+          start: "title",
+          end: "prev,next",
+        }}
+        height={"80vh"}
+        dateClick={handleDateClick}
+        events={events}
+        datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
+        eventClassNames="calendar"
+      />
+      <Modal
+          title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
+          visible={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          footer={null}
+      >
+          {modalContent}
+      </Modal>
+
     </div>
+    </> 
+
   );
 };
 
@@ -313,4 +410,4 @@ export default Calendar;
   />
 
 </div>
-</> */}
+</>  */}

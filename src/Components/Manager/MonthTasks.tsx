@@ -80,6 +80,13 @@ const MonthTasks: React.FC = () => {
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [comments, setComments] = useState('');
     const [commentVisible, setCommentVisible] = useState(false);
+    const [projectTotalHours, setProjectTotalHours]=useState<any[]>([]);
+    const [learningTotalHours, setLearningTotalHours]=useState<any[]>([]);
+    const [trainingTotalHours, setTrainingTotalHours]=useState<any[]>([]);
+    const [otherTaskTotalHours, setOtherTaskTotalHours]=useState<any[]>([]);
+    const [overallTotalHours, setOverallTotalHours]=useState<any[]>([]);
+    const [extraTotalHours, setExtraTotalHours]=useState<any[]>([]);
+    const [meetingTotalHours, setMeetingTotalHours]=useState<any[]>([]);
     const [pieChartData, setPieChartData]= useState({
         Learning: 0,
         Meeting: 0,
@@ -353,10 +360,27 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     //     });
     // };
 
-    const handleRowSelection = (selectedRowKeys: React.Key[]) => {
+    const handleRowSelection = (selectedRowKeys: React.Key[], selectedRows: any[]) => {
         setSelectedRows(selectedRowKeys as string[]);
-        console.log("handleRowSelection", selectedRowKeys);
+        const projectTotalHoursArray = selectedRows.map(row => row.projectTotalHours);
+        const trainingTotalHoursArray = selectedRows.map(row => row.trainingTotalHours);
+        const meetingTotalHoursArray = selectedRows.map(row => row.meetingTotalHours);
+        const learningTotalHoursArray = selectedRows.map(row => row.learningTotalHours);
+        const otherTaskTotalHoursArray = selectedRows.map(row => row.otherTaskTotalHours);
+        const overallTotalHoursArray = selectedRows.map(row => row.overallTotalHours);
+        const extraTotalHoursArray = selectedRows.map(row => row.extraTotalHours);
+        
+        setProjectTotalHours(projectTotalHoursArray);
+        setTrainingTotalHours(trainingTotalHoursArray);
+        setMeetingTotalHours(meetingTotalHoursArray);
+        setLearningTotalHours(learningTotalHoursArray);
+        setOtherTaskTotalHours(otherTaskTotalHoursArray);
+        setOverallTotalHours(overallTotalHoursArray);
+        setExtraTotalHours(extraTotalHoursArray);
+    
+        console.log("handleRowSelection", selectedRowKeys, selectedRows);
     };
+    
 
     const handleRowClick = (record: any) => {
         console.log("handleRowClick",record);
@@ -417,7 +441,14 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           const payload = {
             approvalStatus: "Rejected",
             approvalComments: comments,
-            uniqueRequestId: selectedRows // Assuming id is the property in each selected row that holds the uniqueRequestId
+            uniqueRequestId: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+            learningTotalHours:learningTotalHours,
+            meetingTotalHours: meetingTotalHours,
+            projectTotalHours: projectTotalHours,
+            otherTaskTotalHours: otherTaskTotalHours,
+            trainingTotalHours: trainingTotalHours,
+            overallTotalHours:overallTotalHours,
+            extraTotalHours: extraTotalHours
           };
     
           // Send the payload to the API
@@ -441,7 +472,14 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             console.log("handleApprove-selectedRows", selectedRows);
           const payload = {
             approvalStatus: "Approved",
-            uniqueRequestId: selectedRows // Assuming id is the property in each selected row that holds the uniqueRequestId
+            uniqueRequestId: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+            learningTotalHours:learningTotalHours,
+            meetingTotalHours: meetingTotalHours,
+            projectTotalHours: projectTotalHours,
+            otherTaskTotalHours: otherTaskTotalHours,
+            trainingTotalHours: trainingTotalHours,
+            overallTotalHours:overallTotalHours,
+            extraTotalHours: extraTotalHours
           };
           
           const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
@@ -652,6 +690,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
             saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+            setSelectedRows([]);
     
         } catch (error) {
             console.error('Error exporting to Excel:', error);
@@ -958,34 +997,34 @@ const handleExportOption = (key: string) => {
                     </div>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
-    <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
-        <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Percentage</h2>
-        <PieChart width={600} height={300}>
-            <Pie
-                data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                cx={300}
-                cy={150}
-                labelLine={false}
-                label={true}
-                outerRadius={120}
-                fill="#8884d8"
-                dataKey="value"
-            >
-                {Object.entries(pieChartData).map(([name], index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                ))}
-            </Pie>
-            <Tooltip />
-        </PieChart>
-    </div>
+                        <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
+                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
+                            <PieChart width={600} height={300}>
+                                <Pie
+                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                                    cx={300}
+                                    cy={150}
+                                    labelLine={false}
+                                    label={true}
+                                    outerRadius={120}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {Object.entries(pieChartData).map(([name], index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </div>
 
-    <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
-        <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Work Location</h2>
-        <div style={{ height: '300px' }}>
-            <Doughnut data={data} options={chartOptions} />
-        </div>
-    </div>
-</div>
+                        <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
+                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
+                            <div style={{ height: '300px' }}>
+                                <Doughnut data={data} options={chartOptions} />
+                            </div>
+                        </div>
+                    </div>
 
 
                     <div>
@@ -1011,7 +1050,7 @@ const handleExportOption = (key: string) => {
                             rowSelection={{
                                 type: 'checkbox',
                                 selectedRowKeys: selectedRows,
-                                onChange: handleRowSelection
+                                onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
                             }}
                             onRow={(record: any) => ({
                                 onClick: () => handleRowClick(record),

@@ -14,8 +14,7 @@ import { Doughnut } from 'react-chartjs-2';
 import Calendar from '../Employee/Calendar'; // Import your Calendar component
 import { useNavigate } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
-//import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
-import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ResponsiveContainer, Brush, ReferenceLine, Label } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
 import { notification, Card , ConfigProvider, Button} from 'antd';
@@ -28,6 +27,7 @@ import { Select, Input } from 'antd'; // Import the Select component from Ant De
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
 import { TaskRequestedOn } from '../Employee/AddTask';
+import api from '../../Api/Api-Service';
 interface PerformanceDatum {
     taskName: string;
     totalHours: number;
@@ -100,50 +100,113 @@ const ManagerDashboard = () => {
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [workFromHomeCount, setWorkFromHomeCount] = useState(0);
   const [workFromOfficeCount, setWorkFromOfficeCount] = useState(0);
+  const [monthCounts, setMonthCounts]= useState({
+    acceptedCount:0,
+    pendingCount: 0,
+    rejectedCount: 0
+  });
+  const [pieChartData, setPieChartData]= useState({
+    Learning: 0,
+    Meeting: 0,
+    Training: 0,
+    Project: 0,
+    Other:0
+  })
+  const [doughChartData, setDoughChartData]= useState({
+      ClientLocation: 0,
+      Office: 0,
+      OnDuty: 0,
+      WorkFromHome: 0
+  })
 
+const chartOptions = {
+  maintainAspectRatio: false,
+  responsive: true,
+  width: 200,
+  height: 300,
+};
 
-  // Load taskRequestedOn and approveTaskRequestedOn from localStorage on component mount
-  useEffect(() => {
-    const storedTaskRequestedOn = localStorage.getItem('taskRequestedOn');
-    const storedApproveTaskRequestedOn = localStorage.getItem('approveTaskRequestedOn');
-    if (storedTaskRequestedOn) {
-      setTaskRequestedOn(JSON.parse(storedTaskRequestedOn));
-    }
-    if (storedApproveTaskRequestedOn) {
-      setApproveTaskRequestedOn(JSON.parse(storedApproveTaskRequestedOn));
-    }
-  }, []);
+const data = {
+  labels: Object.keys(doughChartData),
+  datasets: [
+    {
+      data: Object.values(doughChartData),
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.8)', // Red
+        'rgba(54, 162, 235, 0.8)', // Blue
+        'rgba(255, 206, 86, 0.8)', // Yellow
+        'rgba(75, 192, 192, 0.8)', // Green
+        'rgba(153, 102, 255, 0.8)', // Purple
+        'rgba(255, 159, 64, 0.8)', // Orange
+      ],
+    },
+  ],
+};
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
 
-//   useEffect(() => {
-//     const newTitleCounts: TitleCount = {};
-//     const userIdsPerTitle: { [title: string]: string } = {};
+useEffect(() => {
+  const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
+  const year = currentMonth.format('YYYY'); // Get year (e.g., "2024")
 
-//     Object.values(groupedTasks)?.forEach(userTasks => {
-//         Object.values(userTasks)?.forEach(monthTasks => {
-//             Object.values(monthTasks.tasks)?.forEach(dayTasks => {
-//                 dayTasks.tasks.forEach((task: Task) => {
-//                     const title = task.project;
-//                     const userId = task.userId;
+  fetchMonthlyReport(monthName, year);
+  fetchPieReport(monthName, year);
+  fetchDoughReport(monthName, year);
+}, [currentMonth]);
 
-//                     // Check if userId is the same for the specific title
-//                     if (!userIdsPerTitle[title] || userIdsPerTitle[title] !== userId) {
-//                         if (newTitleCounts[title]) {
-//                             newTitleCounts[title]++;
-//                         } else {
-//                             newTitleCounts[title] = 1;
-//                         }
+const fetchMonthlyReport = async (month:any, year:any) => {
+  try {
+    const response = await api.get('/api/v1/timeSheet/fetch-monthly-report-manager', {
+      params: {
+        month,
+        year
+      }
+    });
 
-//                         // Update userIdsPerTitle for the specific title
-//                         //userIdsPerTitle[title] = userId; need to uncomment
-//                     }
-//                 });
-//             });
-//         });
-//     });
+    const responseData = response.data.response.data;
+    const countsObject = {
+      acceptedCount: responseData.acceptedCount,
+      pendingCount: responseData.pendingCount,
+      rejectedCount: responseData.rejectedCount
+    };
+    console.log("response-new", countsObject);
+    setMonthCounts(countsObject);
+  } catch (error) {
+    throw error;
+  }
+};
 
-//     setTitleCounts(newTitleCounts);
-// }, [groupedTasks]);
+const fetchPieReport=async(month:any, year:any)=>{
+  try{
+      const response = await api.get('/api/v1/timeSheet/monthly-task-distribution-manager',{
+      params:{
+          month,
+          year,
+          
+      } 
+  })
+  console.log("response-pie", response.data.response.data.categoryPercentages);
+  setPieChartData(response.data.response.data.categoryPercentages);
+  }
+  catch(err){
+      throw err;
+  }  
+}
 
+const fetchDoughReport=async(month:any, year:any)=>{
+  try{
+      const response = await api.get('/api/v1/timeSheet/monthly-location-distribution-manager',{
+      params:{
+          month,
+          year
+      } 
+  })
+  console.log("response-dough", response.data.response.data);
+  setDoughChartData(response.data.response.data.locationPercentages);
+  }
+  catch(err){
+      throw err;
+  }  
+}
 
 
 
@@ -598,19 +661,7 @@ const ManagerDashboard = () => {
       //   setWorkFromOfficeCount(totalWorkFromOffice);
       // };
     
-      const data = {
-        labels: ['Work from Home', 'Work From Office'],
-        datasets: [
-          {
-            data: [workFromHomeCount, workFromOfficeCount],
-            backgroundColor: ['#FF6384', '#36A2EB'],
-            hoverBackgroundColor: ['#FF6384', '#36A2EB'],
-          },
-        ],
-      };
-    
-    
-  
+     
     return (
       <>
           {/* <h1>Manager</h1> */}
@@ -663,7 +714,7 @@ const ManagerDashboard = () => {
                   <Button id='submit-icon' onClick={handleLeftArrowClick}> 
                       <LeftOutlined />
                   </Button>
-                  <Select 
+                  {/* <Select 
                     // id='submit-less' 
                       style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', marginTop:'10px', height:'68%'}} 
                       onChange={(value) => handleFilterChange(value)} 
@@ -673,7 +724,7 @@ const ManagerDashboard = () => {
                       <Option value='Date'>Date</Option>
                       <Option value='Week'>Week</Option>
                       <Option value='Month'>Month</Option>
-                  </Select>
+                  </Select> */}
                   <Button id='submit-icon' onClick={handleRightArrowClick}>
                       <RightOutlined />
                   </Button>
@@ -726,11 +777,11 @@ const ManagerDashboard = () => {
                   />
               </div> */}
           </div>
-          <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
+          {/* <div style={{display:'flex', justifyContent:'flex-end', height:'15%', marginRight:'20px', marginTop:'10px'}}>
             <div style={{ width:'200px'}}>
                 <Button style={{width:'50%', height:'100%'}} onClick={sendReminders}>Reminder</Button>
-            </div>
-            <div>
+            </div> 
+             <div>
                 <Select
                     showSearch
                     style={{ width: 200, marginRight: 8, height: 40, textAlign:'left' }}
@@ -760,42 +811,59 @@ const ManagerDashboard = () => {
             Clear
             </Button>
             </div>
-          </div>
-      </div>
-        <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center', }}>
-          <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%', display:'flex', justifyContent:'center', alignItems:'center'}}>
-              {/* <ApexCharts
-                  options={{
-                      chart: {
-                          type: 'pie',
-                      },
-                      labels: fullPerformanceDataForManager.map(data => data.taskName),
-                  }}
-                  series={fullPerformanceDataForManager.map(data => data.totalHours)}
-                  type="pie"
-                  width={600}
-                  height={300}
-              /> */}
-               <div style={{width: '300px', height: '300px'}}>
-                <Doughnut data={data} style={{boxSizing: 'border-box',display: 'block',height:'300px',width: '300px'}} width={200} height={200}/>
-              </div>
-          </div>
-          <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-              <ApexCharts
-                  options={{
-                      chart: {
-                          type: 'pie',
-                      },
-                     // labels: performanceDataForManager.map(task => task.taskName),
-                  }}
-                  //series={performanceDataForManager.map(data => data.totalHours)}
-                  type="pie"
-                  width={600}
-                  height={300}
-              />
-          </div>
+          </div> */}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold'}}>Pending Requests</p>    
+                <p style={{ color: '#FFD700', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.pendingCount}</p>
+
+            </div>
+        </button>
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266' , fontWeight:'bold'}}>Accepted</p>
+                <p style={{ color: '#32CD32	', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.acceptedCount}</p>
+            </div>
+        </button>
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold' }}>Rejected</p>
+                <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {monthCounts.rejectedCount}</p>
+            </div>
+        </button>
+    </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
+          <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
+              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Task Percentage</h2>
+              <PieChart width={600} height={300}>
+                  <Pie
+                      data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                      cx={300}
+                      cy={150}
+                      labelLine={false}
+                      label={true}
+                      outerRadius={120}
+                      fill="#8884d8"
+                      dataKey="value"
+                  >
+                      {Object.entries(pieChartData).map(([name], index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                      ))}
+                  </Pie>
+                  <Tooltip />
+              </PieChart>
+          </div>
+
+          <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
+              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Location Percentage</h2>
+              <div style={{ height: '300px' }}>
+                  <Doughnut data={data} options={chartOptions} />
+              </div>
+          </div>
+      </div>
+      {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {Object.entries(titleCounts).map(([title, count]) => (
                 <button className='box' key={title} title={`Click to view ${title}`} onClick={()=>handleClick(title)}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
@@ -804,7 +872,7 @@ const ManagerDashboard = () => {
                     </div>
                 </button>
             ))}
-        </div>
+        </div> */}
       </>
     )
 }

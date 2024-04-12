@@ -44,7 +44,7 @@ const Sidebar: React.FC = () => {
                             icon={<ScheduleSendOutlined />}
                             className={activeKey === "addtask" ? "active" : ""}
                         >
-                            <Link to="/employee/addtask">Add Task</Link>
+                            <Link to="/employee/addtask">TimeSheet</Link>
                         </Menu.Item>
                     </>
                 );
@@ -94,7 +94,7 @@ const Sidebar: React.FC = () => {
                             icon={<PullRequestOutlined />}
                             className={isRequestsActive ? "active" : ""}
                         >
-                            <Link to="/manager/approvalrequest">Requests</Link>
+                            <Link to="/manager/approvalrequest">Review</Link>
                         </Menu.Item>
                         <Menu.Item
                             id="menu"

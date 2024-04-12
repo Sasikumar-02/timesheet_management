@@ -549,6 +549,32 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     
   };
 
+  const hoursDecimalToHoursMinutes = (decimalHours:any) => {
+    // Split the decimal value into hours and minutes
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    console.log("hours minutes",hours, minutes);
+    // Return the formatted string
+    if(hours===0 && minutes===0){
+        return '➖';
+    }
+    return `${hours}h ${minutes}min`;
+  };
+
+  const hoursTimeToHoursMinutes = (decimalHours: string) => {
+    // Parse the decimal hours string
+    const [hoursStr, minutesStr] = decimalHours.split(':');
+    const hours = parseInt(hoursStr);
+    const minutes = parseInt(minutesStr);
+
+    // Return the formatted string
+    if (hours === 0 && minutes === 0) {
+        return '➖';
+    }
+    return `${hours}h ${minutes}min`;
+  };
+
+
   const handleToggleForm = () => {
     setIsFormEnabled((prevIsFormEnabled) => !prevIsFormEnabled);
     setCancelButton((prevIsFormEnabled) => !prevIsFormEnabled);
@@ -798,6 +824,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       dataIndex: 'startTime',
       key: 'startTime',
       fixed: 'left',
+      render: (_, record) => {
+        return (
+            <div>
+                {hoursTimeToHoursMinutes(record?.startTime)}
+            </div>
+        );
+    }
     },
     {
       title: 'End Time',
@@ -805,6 +838,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       dataIndex: 'endTime',
       key: 'endTime',
       fixed: 'left',
+      render: (_, record) => {
+        return (
+            <div>
+                {hoursTimeToHoursMinutes(record?.endTime)}
+            </div>
+        );
+    }
     },
     {
       title: 'Total Hours',
@@ -812,6 +852,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       dataIndex: 'totalHours',
       key: 'totalHours',
       fixed: 'left',
+      render: (_, record) => {
+        return (
+            <div>
+                {hoursDecimalToHoursMinutes(record?.totalHours)}
+            </div>
+        );
+    }
     },
     {
       title: 'Description',

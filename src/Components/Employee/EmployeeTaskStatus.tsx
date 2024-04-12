@@ -172,7 +172,7 @@ const EmployeeTaskStatus = () => {
             
         }
         fetchData();
-      })
+      },[])
       
       useEffect(() => {
         const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
@@ -510,7 +510,7 @@ const EmployeeTaskStatus = () => {
 
     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Percentage</h2>
+            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
             <PieChart width={600} height={300}>
                 <Pie
                     data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
@@ -533,7 +533,7 @@ const EmployeeTaskStatus = () => {
         </div>
 
         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Approved Task Work Location</h2>
+            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
             <div style={{ height: '300px' }}>
                 <Doughnut data={data} options={chartOptions} />
             </div>
