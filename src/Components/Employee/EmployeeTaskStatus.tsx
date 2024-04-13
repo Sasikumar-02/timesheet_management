@@ -141,12 +141,12 @@ const EmployeeTaskStatus = () => {
             }
           });
       
-          const responseData = response.data.response.data;
+          const responseData = response?.data?.response?.data;
           const countsObject = {
-            acceptedCount: responseData.acceptedCount,
-            notFilledDays: responseData.notFilledDays,
-            pendingCount: responseData.pendingCount,
-            rejectedCount: responseData.rejectedCount
+            acceptedCount: responseData?.acceptedCount,
+            notFilledDays: responseData?.notFilledDays,
+            pendingCount: responseData?.pendingCount,
+            rejectedCount: responseData?.rejectedCount
           };
           console.log("response-new", countsObject);
           setMonthCounts(countsObject);
@@ -159,7 +159,7 @@ const EmployeeTaskStatus = () => {
         const fetchData = async()=>{
             try{
                 const response = await api.get('/api/v1/admin/employee-list')
-                const data = response.data.response.data;
+                const data = response?.data?.response?.data;
   
                 console.log('Fetched data:', data);
                 
