@@ -977,20 +977,20 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           </div>
           { filterOption === 'Month' ? (
             <div style={{display:'flex', justifyContent:'flex-end'}}>
-              <div className='date'>From: {dayjs(currentMonth).startOf('month').format('YYYY-MM-DD')}</div>
-              <div className='date' style={{ marginLeft: '40px' }}>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
+              <div className='date' style={{fontSize:'18px'}}><b>From: </b> {dayjs(currentMonth).startOf('month').format('YYYY-MM-DD')}</div>
+              <div className='date' style={{ marginLeft: '40px', fontSize:'18px' }}><b>To: </b> {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
             </div>
             ) : filterOption === 'Week' ? (
               <div style={{display:'flex', justifyContent:'flex-end'}}>
-                <div className='date'>From: {dayjs(currentWeek).startOf('week').format('YYYY-MM-DD')}</div>
-                <div className='date' style={{ marginLeft: '40px' }}>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
+                <div className='date' style={{fontSize:'18px'}}><b>From: </b> {dayjs(currentWeek).startOf('week').format('YYYY-MM-DD')}</div>
+                <div className='date' style={{ marginLeft: '40px', fontSize:'18px' }}><b>To: </b> {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
               </div>
             )  : (
-              <div className='date'>Date: {currentDate.format('YYYY-MM-DD')}</div>
+              <div className='date' style={{fontSize:'18px'}}><b>Date: </b> {currentDate.format('YYYY-MM-DD')}</div>
             )
           }
         </div>
-        {(filterOption === 'Date' || ((filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( 
+        {(((filterOption === 'Date' || filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( 
         <Formik
           initialValues={initialValue}
           validationSchema={validationSchema}
@@ -1013,7 +1013,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
          return (  
           <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
             <div>
-              {(isFormEnabled && filterOption!=='Date')&& (
+              {(isFormEnabled )&& ( //&& filterOption!=='Date'
                 <CloseCircleOutlined
                   style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'1000px' }}
                   onClick={handleToggleForm} // Call the handleToggleForm function on click
@@ -1441,7 +1441,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           <div style={{display:'flex', justifyContent:'flex-end'}}>
          
         
-        {!cancelButton && !(filterOption === 'Date' && !isFormEnabled) && (
+        {!cancelButton && !isFormEnabled && (
             <Button
               id='cancel-new'
               onClick={handleToggleForm}

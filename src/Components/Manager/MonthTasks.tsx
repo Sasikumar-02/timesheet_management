@@ -12,8 +12,9 @@ import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
+import {Tooltip} from 'antd';
 import DashboardLayout from '../Dashboard/Layout'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'
 import { TaskObject } from './ApprovalRequest';
@@ -87,6 +88,7 @@ const MonthTasks: React.FC = () => {
     const [overallTotalHours, setOverallTotalHours]=useState<any[]>([]);
     const [extraTotalHours, setExtraTotalHours]=useState<any[]>([]);
     const [meetingTotalHours, setMeetingTotalHours]=useState<any[]>([]);
+    const [isdelayed, setIsDelayed]=useState<any[]>([]);
     const [pieChartData, setPieChartData]= useState({
         Learning: 0,
         Meeting: 0,
@@ -202,6 +204,14 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
               const response = await api.post("/api/v1/timeSheet/fetch-day-task-by-reportingTo",{
                  uniqueRequestIds: uniqueRequestId
               });
+              let taskDelayed:any[] =[];
+              response.data.response.data.map((task:any)=>{
+                if(task.delayed){
+                    taskDelayed.push(task.date);
+                }
+            })
+            console.log("taskDelayed",taskDelayed);
+            setIsDelayed(taskDelayed);
               console.log('response-new', response.data.response.data);
               setMonthTasks(response.data.response.data);
               // Process response data here
@@ -469,24 +479,25 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
 
       const handleApprove = async () => {
         try {
-            console.log("handleApprove-selectedRows", selectedRows);
-          const payload = {
-            approvalStatus: "Approved",
-            uniqueRequestId: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
-            learningTotalHours:learningTotalHours,
-            meetingTotalHours: meetingTotalHours,
-            projectTotalHours: projectTotalHours,
-            otherTaskTotalHours: otherTaskTotalHours,
-            trainingTotalHours: trainingTotalHours,
-            overallTotalHours:overallTotalHours,
-            extraTotalHours: extraTotalHours
-          };
-          
-          const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
-          setStatuses(prev=>!prev);
-          setSelectedRows([]);
-          console.log("handleApprove",response.data); // Optionally handle the response data
-          
+            if(selectedRows.length>0){
+                console.log("handleApprove-selectedRows", selectedRows);
+                const payload = {
+                    approvalStatus: "Approved",
+                    uniqueRequestId: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+                    learningTotalHours:learningTotalHours,
+                    meetingTotalHours: meetingTotalHours,
+                    projectTotalHours: projectTotalHours,
+                    otherTaskTotalHours: otherTaskTotalHours,
+                    trainingTotalHours: trainingTotalHours,
+                    overallTotalHours:overallTotalHours,
+                    extraTotalHours: extraTotalHours
+                };
+                
+                const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
+                setStatuses(prev=>!prev);
+                setSelectedRows([]);
+                console.log("handleApprove",response.data); // Optionally handle the response data
+            }
         } catch (error) {
           console.error('Error occurred:', error);
           // Optionally handle errors
@@ -766,15 +777,20 @@ const handleExportOption = (key: string) => {
             title: 'Date',
             dataIndex: 'date',
             key: 'date',
-            // width: '15%',
             fixed: 'left',
-            // render: (_, record: DateTask) => {
-            //     // Get the specific month key
-
-            //     const date = record.tasks?.length > 0 ? record.tasks[0].date : '';
-            //     return date;
-            // },
-        },
+            render: (_, record: any) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ marginRight: '7px' }}>{record.date}</span>
+                    {isdelayed.includes(record.date) && (
+                        <Tooltip title="You submitted the task after the deadline" placement="right">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
+                                <path fill="orange" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m3.55 13.8l-4.08-2.51c-.3-.18-.48-.5-.48-.85V7.75c.01-.41.35-.75.76-.75s.75.34.75.75v4.45l3.84 2.31c.36.22.48.69.26 1.05c-.22.35-.69.46-1.05.24"></path>
+                            </svg>
+                        </Tooltip>
+                    )}
+                </div>
+            )
+        },        
         {
             title: 'Project',
             dataIndex: 'projectTotalHours',
@@ -1080,7 +1096,7 @@ const handleExportOption = (key: string) => {
                                 style={{
                                     height: '200%',
                                     width: '100px',
-                                    backgroundColor: 'red',
+                                    backgroundColor: selectedRows.length===0?'#FC8267': 'red',
                                     color: 'white',
                                     marginRight: '10px',
                                     cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
@@ -1094,7 +1110,7 @@ const handleExportOption = (key: string) => {
                                 style={{
                                     height: '200%', 
                                     width: '100px', 
-                                    backgroundColor: 'green', 
+                                    backgroundColor: selectedRows.length===0?'#6CB66B':'green', 
                                     color: 'white', 
                                     cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
                                 }} 
