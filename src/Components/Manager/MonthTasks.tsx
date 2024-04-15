@@ -137,7 +137,6 @@ const MonthTasks: React.FC = () => {
       
           return (
             <div style={{ backgroundColor: isdelayed ? 'orange' : 'transparent', padding: '5px' }}>
-              <p>{date}</p>
               {isdelayed && <span>You submitted the task after the deadline</span>}
             </div>
           );
@@ -165,12 +164,7 @@ const chartOptions = {
       {
         data: Object.values(doughChartData),
         backgroundColor: [
-          'rgba(255, 99, 132, 0.8)', // Red
-          'rgba(54, 162, 235, 0.8)', // Blue
-          'rgba(255, 206, 86, 0.8)', // Yellow
-          'rgba(75, 192, 192, 0.8)', // Green
-          'rgba(153, 102, 255, 0.8)', // Purple
-          'rgba(255, 159, 64, 0.8)', // Orange
+            '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'
         ],
       },
     ],
@@ -182,7 +176,7 @@ const chartOptions = {
     console.log("monthName, year",monthName, year);
     fetchPieReport(monthName, year, employeeId);
     fetchDoughReport(monthName, year, employeeId);
-}, [formattedMonth, employeeId]);
+}, [formattedMonth, employeeId, monthTasks]);
 
 
 
@@ -306,94 +300,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         });
     };    
     
-    // const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
-    //     return new Promise((resolve, reject) => {
-    //         // Get chart containers
-    //         const pieChartContainer = document.getElementById('pie-chart-container') as HTMLDivElement;
-    //         const lineChartContainer = document.getElementById('line-chart-container') as HTMLDivElement;
     
-    //         // Set explicit dimensions for the chart containers
-    //         const containerWidth = pieChartContainer.offsetWidth;
-    //         const containerHeight = pieChartContainer.offsetHeight;
-    //         const reducedWidth = containerWidth * 0.45; // You can adjust the reduction percentage as needed
-    //         const reducedHeight = containerHeight * 0.7; // You can adjust the reduction percentage as needed
-    //         pieChartContainer.style.width = reducedWidth + 'px';
-    //         pieChartContainer.style.height = reducedHeight + 'px';
-    //         lineChartContainer.style.width = containerWidth + 'px';
-    //         lineChartContainer.style.height = containerHeight + 'px';
-    
-    //         // Create promises for each chart export
-    //         const pieChartPromise = html2canvas(pieChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
-    //         const lineChartPromise = html2canvas(lineChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
-    
-    //         // Wait for both promises to resolve
-    //         Promise.all([pieChartPromise, lineChartPromise])
-    //             .then(([pieCanvas, lineCanvas]) => {
-    //                 // Convert canvas elements to PNG images
-    //                 const pieChartImage = pieCanvas.toDataURL('image/png');
-    //                 const lineChartImage = lineCanvas.toDataURL('image/png');
-    
-    //                 // Resolve with the images
-    //                 resolve({ pieChartImage, lineChartImage });
-    //             })
-    //             .catch(error => {
-    //                 reject(error); // Reject if there's an error exporting the charts
-    //             })
-    //             .finally(() => {
-    //                 // Reset the styles
-    //                 pieChartContainer.style.width = '';
-    //                 pieChartContainer.style.height = '';
-    //                 lineChartContainer.style.width = '';
-    //                 lineChartContainer.style.height = '';
-    //             });
-    //     });
-    // };
-
-   
-    
-    // const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
-    //     return new Promise((resolve, reject) => {
-    //         // Get chart containers
-    //         const pieChartContainer = document.getElementById('pie-chart-container') as HTMLDivElement;
-    //         const lineChartContainer = document.getElementById('line-chart-container') as HTMLDivElement;
-    
-    //         // Set explicit dimensions for the chart containers
-    //         const containerWidth = pieChartContainer.offsetWidth;
-    //         const containerHeight = pieChartContainer.offsetHeight;
-    //         const reducedWidth = containerWidth * 0.45; // You can adjust the reduction percentage as needed
-    //         const reducedHeight = containerHeight * 0.7; // You can adjust the reduction percentage as needed
-    //         pieChartContainer.style.width = reducedWidth + 'px';
-    //         pieChartContainer.style.height = reducedHeight + 'px';
-    //         lineChartContainer.style.width = containerWidth + 'px';
-    //         lineChartContainer.style.height = containerHeight + 'px';
-    
-    //         // Create promises for each chart export
-    //         const pieChartPromise = html2canvas(pieChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
-    //         const lineChartPromise = html2canvas(lineChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
-    
-    //         // Wait for both promises to resolve
-    //         Promise.all([pieChartPromise, lineChartPromise])
-    //             .then(([pieCanvas, lineCanvas]) => {
-    //                 // Convert canvas elements to PNG images
-    //                 const pieChartImage = pieCanvas.toDataURL('image/png');
-    //                 const lineChartImage = lineCanvas.toDataURL('image/png');
-    
-    //                 // Resolve with the images
-    //                 resolve({ pieChartImage, lineChartImage });
-    //             })
-    //             .catch(error => {
-    //                 reject(error); // Reject if there's an error exporting the charts
-    //             })
-    //             .finally(() => {
-    //                 // Reset the styles
-    //                 pieChartContainer.style.width = '';
-    //                 pieChartContainer.style.height = '';
-    //                 lineChartContainer.style.width = '';
-    //                 lineChartContainer.style.height = '';
-    //             });
-    //     });
-    // };
-
     const handleRowSelection = (selectedRowKeys: React.Key[], selectedRows: any[]) => {
         setSelectedRows(selectedRowKeys as string[]);
         const projectTotalHoursArray = selectedRows.map(row => row.projectTotalHours);
@@ -528,29 +435,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         }
       };
     
-    // const monthTaskDatas: TaskObject[] = Object.values(monthTasks).map(dateData => {
-    //     console.log("monthTaskData-monthtasks", monthTasks)
-    //     console.log("dateData", dateData);
-    //     if (!dateData) return {}; // Check if dateData is undefined or null
-    //     return dateData ;
-    // });
-
-    
-    // useEffect(() => {
-    //     // Process the monthTaskDatas and store it in the state
-    //     const processedMonthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
-    //         const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
-    //         const { key, tasks } = taskObject[date];
-    //         return { key, tasks, status: "Pending" }; // Include tasks property in the processed data
-    //     });
-    
-    //     // Check if the processed data is different from the current state
-    //     if (!isEqual(processedMonthTasksData, monthTasksData)) {
-    //         // Update the state with the processed data
-    //         setMonthTasksData(processedMonthTasksData);
-    //     }
-    // }, [monthTaskDatas, monthTasksData]); // Add monthTaskDatas to the dependency array
-
     // Function to convert date to "Month Year" format
     function formatDateToMonthYear(dateString: any) {
         const [year, month] = dateString.split('-');
@@ -748,32 +632,6 @@ const handleExportOption = (key: string) => {
     }
 };
 
-// const handleFilterChange = (
-    //     filterType: keyof typeof filters,
-    //     value: string | string[] | null
-    //   ) => {
-    //     // Ensure the status property is set to null if the value is an empty string
-    //     const updatedFilters = { ...filters, [filterType]: value === '' ? null : value as string | null };
-        
-    //     setIsFilterActive(
-    //       Object.values(updatedFilters).some((filter) => {
-    //         return filter !== null && filter !== '' && filter !== undefined;
-    //       })
-    //     );
-      
-    //     // Update the state with the new filters
-    //     setFilters(updatedFilters);
-      
-    //     // If filtering by role, set the selectedRole state
-    //     if (filterType === 'status') {
-    //       setSelectedStatus(value as string | null);
-    //     }
-        
-    //     // Fetch data based on the updated filters and page size
-    //     //fetchData(1, defaultPageSize);
-    //   };
-      
-      
       
 
     const exportMenu = (
@@ -816,6 +674,7 @@ const handleExportOption = (key: string) => {
             key: 'date',
             fixed: 'left',
             render: (_, record: any) => (
+                
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span
                   style={{ marginRight: '7px' }}
@@ -824,13 +683,9 @@ const handleExportOption = (key: string) => {
                 >
                   {record.date}
                 </span>
-                <AntdTooltip
-                  title={<CustomTooltip payload={[{ payload: record }]} active={hovered} />}
-                  placement="right"
-                  mouseEnterDelay={0.5} // Adjust the delay as needed
-                  visible={hovered}
-                >
-                  <svg
+                {isDelayed.includes(record.date) && (
+                    <AntdTooltip title={"You have submitted the task after the deadline"}>
+                    <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="1.2em"
                     height="1.2em"
@@ -841,8 +696,11 @@ const handleExportOption = (key: string) => {
                       d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m3.55 13.8l-4.08-2.51c-.3-.18-.48-.5-.48-.85V7.75c.01-.41.35-.75.76-.75s.75.34.75.75v4.45l3.84 2.31c.36.22.48.69.26 1.05c-.22.35-.69.46-1.05.24"
                     ></path>
                   </svg>
-                </AntdTooltip>
+                  </AntdTooltip>
+                )}
+                  
               </div>
+              
             )
         },        
         {
@@ -1117,7 +975,7 @@ const handleExportOption = (key: string) => {
                                     }
                                 </Pie>
                                 <Tooltip />
-                                <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ color: 'black' }} />
+                                <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
                             </PieChart>
                         </div>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>

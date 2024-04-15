@@ -144,13 +144,8 @@ const data = {
     {
       data: Object.values(doughChartData),
       backgroundColor: [
-        'rgba(255, 99, 132, 0.8)', // Red
-        'rgba(54, 162, 235, 0.8)', // Blue
-        'rgba(255, 206, 86, 0.8)', // Yellow
-        'rgba(75, 192, 192, 0.8)', // Green
-        'rgba(153, 102, 255, 0.8)', // Purple
-        'rgba(255, 159, 64, 0.8)', // Orange
-      ],
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'
+    ],
     },
   ],
 };
@@ -916,7 +911,7 @@ const fetchDoughReport=async(month:any, year:any)=>{
                                     }
                                 </Pie>
                                 <Tooltip />
-                                <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ color: 'black' }} />
+                                <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
                             </PieChart>
                         </div>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>

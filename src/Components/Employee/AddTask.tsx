@@ -973,7 +973,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       <div className='createuser-main' style={{overflow:'hidden'}}>
         <div className='header'>
           <div>
-            <h1>Add Task</h1>
+            <h1>{isFormEnabled ? 'Add Task': 'TimeSheet'}</h1>
           </div>
           { filterOption === 'Month' ? (
             <div style={{display:'flex', justifyContent:'flex-end'}}>
