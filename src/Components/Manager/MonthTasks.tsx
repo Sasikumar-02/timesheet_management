@@ -734,6 +734,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             render: (_, record: any) => (
                 
                 <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div>{record.date}</div>
                 {isDelayed.includes(record.date) && (
                     <AntdTooltip title={"You have submitted the task after the deadline"}>
                     <svg
