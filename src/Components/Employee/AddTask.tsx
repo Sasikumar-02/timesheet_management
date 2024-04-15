@@ -977,16 +977,16 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           </div>
           { filterOption === 'Month' ? (
             <div style={{display:'flex', justifyContent:'flex-end'}}>
-              <div className='date' style={{fontSize:'18px'}}><b>From: </b> {dayjs(currentMonth).startOf('month').format('YYYY-MM-DD')}</div>
-              <div className='date' style={{ marginLeft: '40px', fontSize:'18px' }}><b>To: </b> {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</div>
+              <div className='date' style={{fontSize:'18px'}}><b>From: {dayjs(currentMonth).startOf('month').format('YYYY-MM-DD')}</b></div>
+              <div className='date' style={{ marginLeft: '40px', fontSize:'18px' }}><b>To: {dayjs(currentMonth).endOf('month').format('YYYY-MM-DD')}</b></div>
             </div>
             ) : filterOption === 'Week' ? (
               <div style={{display:'flex', justifyContent:'flex-end'}}>
-                <div className='date' style={{fontSize:'18px'}}><b>From: </b> {dayjs(currentWeek).startOf('week').format('YYYY-MM-DD')}</div>
-                <div className='date' style={{ marginLeft: '40px', fontSize:'18px' }}><b>To: </b> {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</div>
+                <div className='date' style={{fontSize:'18px'}}><b>From: {dayjs(currentWeek).startOf('week').format('YYYY-MM-DD')}</b></div>
+                <div className='date' style={{ marginLeft: '40px', fontSize:'18px' }}><b>To: {dayjs(currentWeek).endOf('week').format('YYYY-MM-DD')}</b></div>
               </div>
             )  : (
-              <div className='date' style={{fontSize:'18px'}}><b>Date: </b> {currentDate.format('YYYY-MM-DD')}</div>
+              <div className='date' style={{fontSize:'18px'}}><b>Date: {currentDate.format('YYYY-MM-DD')}</b></div>
             )
           }
         </div>

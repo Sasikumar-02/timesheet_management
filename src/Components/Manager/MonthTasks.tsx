@@ -244,32 +244,32 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
       }, [statuses]);
       
 
-    useEffect(() => {
-        preparePieChartImage();
-        prepareLineChartImage();
-    }, [monthTasks]);
+    // useEffect(() => {
+    //     preparePieChartImage();
+    //     prepareLineChartImage();
+    // }, [monthTasks]);
 
-    const preparePieChartImage = () => {
-        // Your pie chart logic to render on a canvas
-        const chartCanvas = document.getElementById('pie-chart-container') as HTMLCanvasElement;
-        if (chartCanvas) {
-            html2canvas(chartCanvas).then(canvas => {
-                const imageData = canvas.toDataURL('image/png');
-                setChartImages(prevImages => [...prevImages, { name: 'PieChart.png', data: imageData }]);
-            });
-        }
-    };
+    // const preparePieChartImage = () => {
+    //     // Your pie chart logic to render on a canvas
+    //     const chartCanvas = document.getElementById('pie-chart-container') as HTMLCanvasElement;
+    //     if (chartCanvas) {
+    //         html2canvas(chartCanvas).then(canvas => {
+    //             const imageData = canvas.toDataURL('image/png');
+    //             setChartImages(prevImages => [...prevImages, { name: 'PieChart.png', data: imageData }]);
+    //         });
+    //     }
+    // };
 
-    const prepareLineChartImage = () => {
-        // Your line chart logic to render on a canvas
-        const chartCanvas = document.getElementById('line-chart-container') as HTMLCanvasElement;
-        if (chartCanvas) {
-            html2canvas(chartCanvas).then(canvas => {
-                const imageData = canvas.toDataURL('image/png');
-                setChartImages(prevImages => [...prevImages, { name: 'LineChart.png', data: imageData }]);
-            });
-        }
-    };
+    // const prepareLineChartImage = () => {
+    //     // Your line chart logic to render on a canvas
+    //     const chartCanvas = document.getElementById('line-chart-container') as HTMLCanvasElement;
+    //     if (chartCanvas) {
+    //         html2canvas(chartCanvas).then(canvas => {
+    //             const imageData = canvas.toDataURL('image/png');
+    //             setChartImages(prevImages => [...prevImages, { name: 'LineChart.png', data: imageData }]);
+    //         });
+    //     }
+    // };
    
     
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
@@ -361,6 +361,34 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             throw error; // Rethrow the error for handling in the caller function
         }
     };
+
+    useEffect(() => {
+        preparePieChartImage();
+        prepareLineChartImage();
+    }, [monthTasks]);
+
+    const preparePieChartImage = () => {
+        // Your pie chart logic to render on a canvas
+        const chartCanvas = document.getElementById('pie-chart-container') as HTMLCanvasElement;
+        if (chartCanvas) {
+            html2canvas(chartCanvas).then(canvas => {
+                const imageData = canvas.toDataURL('image/png');
+                setChartImages(prevImages => [...prevImages, { name: 'PieChart.png', data: imageData }]);
+            });
+        }
+    };
+
+    const prepareLineChartImage = () => {
+        // Your line chart logic to render on a canvas
+        const chartCanvas = document.getElementById('line-chart-container') as HTMLCanvasElement;
+        if (chartCanvas) {
+            html2canvas(chartCanvas).then(canvas => {
+                const imageData = canvas.toDataURL('image/png');
+                setChartImages(prevImages => [...prevImages, { name: 'LineChart.png', data: imageData }]);
+            });
+        }
+    };
+   
     
     const handleReject = () => {
         if(selectedRows.length>0){
@@ -631,8 +659,6 @@ const handleExportOption = (key: string) => {
       exportToExcel();
     }
 };
-
-      
 
     const exportMenu = (
         <Menu onClick={(e) => handleExportOption(e.key as string)}>
