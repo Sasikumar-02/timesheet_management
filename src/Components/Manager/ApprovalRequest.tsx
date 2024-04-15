@@ -145,8 +145,8 @@ const ApprovalRequest:React.FC = () => {
           }
         });
         console.log("response-my", selectedMonth, selectedYear);
-        console.log("response-data", response.data.response.data);
-        setUserTasks(response.data.response.data);
+        console.log("response-data", response?.data?.response?.data);
+        setUserTasks(response?.data?.response?.data);
         // Process response data here
       } catch (error) {
         console.error("Error fetching data:", error);

@@ -193,8 +193,8 @@ const EmployeeTaskStatus = () => {
                 employeeId
             } 
         })
-        console.log("response-pie", response.data.response.data.categoryPercentages);
-        setPieChartData(response.data.response.data.categoryPercentages);
+        console.log("response-pie", response?.data?.response?.data?.categoryPercentages);
+        setPieChartData(response?.data?.response?.data?.categoryPercentages);
         }
         catch(err){
             throw err;
@@ -210,8 +210,8 @@ const EmployeeTaskStatus = () => {
                 employeeId
             } 
         })
-        console.log("response-dough", response.data.response.data);
-        setDoughChartData(response.data.response.data.locationPercentages);
+        console.log("response-dough", response?.data?.response?.data);
+        setDoughChartData(response?.data?.response?.data?.locationPercentages);
         }
         catch(err){
             throw err;

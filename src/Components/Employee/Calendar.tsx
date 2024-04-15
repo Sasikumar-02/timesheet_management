@@ -67,7 +67,7 @@ const Calendar = () => {
                 },
             });
 
-            const calendarData = response.data.response.data;
+            const calendarData = response?.data?.response?.data;
             console.log("calendarData", calendarData);
 
             // Iterate through calendarData to find a match for formattedDate
@@ -95,7 +95,7 @@ const Calendar = () => {
         },
       });
 
-      const calendarData = response.data.response.data;
+      const calendarData = response?.data?.response?.data;
 
       const events = calendarData?.map((task: any) => {
         let color = "";
@@ -154,7 +154,7 @@ const Calendar = () => {
       try {
           const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
           console.log('Response data:', response.data);
-          setClickedRecord(response.data.response.data);
+          setClickedRecord(response?.data?.response?.data);
           // Process response data if needed
       } catch (error) {
           console.error('Error fetching data by unique ID:', error);

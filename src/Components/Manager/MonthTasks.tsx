@@ -131,6 +131,12 @@ console.log("statuses",statuses);
 const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
+    plugins: {
+        legend: {
+          position: 'right' as const, // Display the legend at the right side
+          align: 'center' as const, // Align the legend to the start of the position (right side)
+        }
+      },
     width: 200,
     height: 300,
   };
@@ -171,8 +177,8 @@ const fetchPieReport=async(month:any, year:any, employeeId:any)=>{
             employeeId
         } 
     })
-    console.log("response-pie", response.data.response.data.categoryPercentages);
-    setPieChartData(response.data.response.data.categoryPercentages);
+    console.log("response-pie", response?.data?.response?.data?.categoryPercentages);
+    setPieChartData(response?.data?.response?.data?.categoryPercentages);
     }
     catch(err){
         throw err;
@@ -188,8 +194,8 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             employeeId
         } 
     })
-    console.log("response-dough", response.data.response.data);
-    setDoughChartData(response.data.response.data.locationPercentages);
+    console.log("response-dough", response?.data?.response?.data);
+    setDoughChartData(response?.data?.response?.data?.locationPercentages);
     }
     catch(err){
         throw err;
@@ -205,15 +211,15 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                  uniqueRequestIds: uniqueRequestId
               });
               let taskDelayed:any[] =[];
-              response.data.response.data.map((task:any)=>{
-                if(task.delayed){
-                    taskDelayed.push(task.date);
+              response?.data?.response?.data?.map((task:any)=>{
+                if(task?.delayed){
+                    taskDelayed.push(task?.date);
                 }
             })
             console.log("taskDelayed",taskDelayed);
             setIsDelayed(taskDelayed);
-              console.log('response-new', response.data.response.data);
-              setMonthTasks(response.data.response.data);
+              console.log('response-new', response?.data?.response?.data);
+              setMonthTasks(response?.data?.response?.data);
               // Process response data here
             } catch (error) {
               console.error("Error fetching data:", error);
@@ -402,8 +408,8 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     const fetchDataByUniqueId = async (uniqueRequestId: string) => {
         try {
             const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
-            console.log('Response data:', response.data);
-            setClickedRecord(response.data.response.data);
+            console.log('Response data:', response?.data);
+            setClickedRecord(response?.data?.response?.data);
             // Process response data if needed
         } catch (error) {
             console.error('Error fetching data by unique ID:', error);
@@ -418,7 +424,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             console.log('exportToExcel - 2')
             const tasksPromises = uniqueRequestIds.map(async (uniqueRequestId) => {
                 const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
-                return response.data.response.data;
+                return response?.data?.response?.data;
             });
     
             // Wait for all promises to resolve
@@ -464,7 +470,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           // Send the payload to the API
           const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
           
-          console.log(response.data); // Optionally handle the response data
+          console.log(response?.data); // Optionally handle the response data
     
           // Reset the modal state
           setStatuses(prev=>!prev);
@@ -496,7 +502,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                 const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
                 setStatuses(prev=>!prev);
                 setSelectedRows([]);
-                console.log("handleApprove",response.data); // Optionally handle the response data
+                console.log("handleApprove",response?.data); // Optionally handle the response data
             }
         } catch (error) {
           console.error('Error occurred:', error);
@@ -1013,34 +1019,53 @@ const handleExportOption = (key: string) => {
                     </div>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
-                        <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
-                            <PieChart width={600} height={300}>
-                                <Pie
-                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                                    cx={300}
-                                    cy={150}
-                                    labelLine={false}
-                                    label={true}
-                                    outerRadius={120}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {Object.entries(pieChartData).map(([name], index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </div>
+        <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
+          <h2 style={{ textAlign: 'left', color: '#0B4266', marginTop: '0px' }}>Overall Task Percentage</h2>
+          <div style={{display:'flex'}}>
+            <div>
+              <PieChart width={600} height={300}>
+                <Pie
+                  data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                  cx={300}
+                  cy={150}
+                  labelLine={false}
+                  label={true}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {Object.entries(pieChartData).map(([name], index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </div>
+            <div style={{ width: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            {Object.entries(pieChartData).map(([name], index) => (
+              <div key={`legend-${index}`} style={{ display: 'flex', alignItems: 'center', margin: '5px 0' }}>
+                <span style={{ width: '10px', height: '10px', backgroundColor: COLORS[index % COLORS?.length], marginRight: '5px' }}></span>
+                <span>{name}</span>
+              </div>
+            ))}
+            </div>
+          </div>  
+        </div>
 
-                        <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
-                            <div style={{ height: '300px' }}>
-                                <Doughnut data={data} options={chartOptions} />
-                            </div>
-                        </div>
-                    </div>
+
+          <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
+              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location Percentage</h2>
+              <div style={{ height: '300px' }}>
+                  <Doughnut data={data} options={chartOptions} />
+              </div>
+              {/* <Chart
+                options={chartOptions}
+                series={chartSeries}
+                type="donut"
+                width="380"
+              /> */}
+          </div>
+      </div>
 
 
                     <div>

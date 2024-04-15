@@ -11,6 +11,7 @@ import {
   } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import { Doughnut } from 'react-chartjs-2';
+import Chart from 'react-apexcharts';
 import Calendar from '../Employee/Calendar'; // Import your Calendar component
 import { useNavigate } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
@@ -49,7 +50,12 @@ const config: ThemeConfig = {
       colorBgContainerDisabled: "rgba(0, 0, 0, 0.04)",
     },
   };
-
+  const CustomLabel = ({ x, y, value }: { x: number; y: number; value: string | number }) => (
+    <text x={x} y={y} fill="#8884d8" textAnchor="middle" dominantBaseline="central">
+      {value}
+    </text>
+  );
+  
   interface TitleCount {
     [title: string]: number;
 }
@@ -122,6 +128,12 @@ const ManagerDashboard = () => {
 const chartOptions = {
   maintainAspectRatio: false,
   responsive: true,
+  plugins: {
+    legend: {
+      position: 'right' as const, // Display the legend at the right side
+      align: 'center' as const, // Align the legend to the start of the position (right side)
+    }
+  },
   width: 200,
   height: 300,
 };
@@ -142,6 +154,55 @@ const data = {
     },
   ],
 };
+
+// const chartOptions = {
+//   labels: Object.keys(doughChartData),
+//   legend: {
+//     position: 'right' as 'right',
+//     offsetY: 0,
+//     height: 250,
+//     horizontalAlign: 'right' as 'right',
+//   },
+//   plotOptions: {
+//     pie: {
+//       donut: {
+//         labels: {
+//           show: false
+//         }
+//       }
+//     }
+//   },
+//   dataLabels: {
+//     enabled: false
+//   },
+//   chart: {
+//     height: 350,
+//     type: 'donut' as 'donut',
+//     offsetY: 10,
+//   },
+//   responsive: [{
+//     breakpoint: 480,
+//     options: {
+//       chart: {
+//         width: '100%',
+//         height: 300
+//       },
+//       legend: {
+//         position: 'bottom' as 'bottom',
+//         offsetY: 0,
+//         height: 250,
+//         horizontalAlign: 'center' as 'center',
+//       }
+//     }
+//   }]
+// };
+
+
+
+
+
+// const chartSeries = Object.values(doughChartData);
+//console.log("data", chartSeries, chartOptions);
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
 
 useEffect(() => {
@@ -162,11 +223,11 @@ const fetchMonthlyReport = async (month:any, year:any) => {
       }
     });
 
-    const responseData = response.data.response.data;
+    const responseData = response?.data?.response?.data;
     const countsObject = {
-      acceptedCount: responseData.acceptedCount,
-      pendingCount: responseData.pendingCount,
-      rejectedCount: responseData.rejectedCount
+      acceptedCount: responseData?.acceptedCount,
+      pendingCount: responseData?.pendingCount,
+      rejectedCount: responseData?.rejectedCount
     };
     console.log("response-new", countsObject);
     setMonthCounts(countsObject);
@@ -184,8 +245,8 @@ const fetchPieReport=async(month:any, year:any)=>{
           
       } 
   })
-  console.log("response-pie", response.data.response.data.categoryPercentages);
-  setPieChartData(response.data.response.data.categoryPercentages);
+  console.log("response-pie", response?.data?.response?.data?.categoryPercentages);
+  setPieChartData(response?.data?.response?.data?.categoryPercentages);
   }
   catch(err){
       throw err;
@@ -200,8 +261,8 @@ const fetchDoughReport=async(month:any, year:any)=>{
           year
       } 
   })
-  console.log("response-dough", response.data.response.data);
-  setDoughChartData(response.data.response.data.locationPercentages);
+  console.log("response-dough", response?.data?.response?.data);
+  setDoughChartData(response?.data?.response?.data?.locationPercentages);
   }
   catch(err){
       throw err;
@@ -835,32 +896,51 @@ const fetchDoughReport=async(month:any, year:any)=>{
         </button>
     </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
-          <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
-              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Task Percentage</h2>
+        <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
+          <h2 style={{ textAlign: 'left', color: '#0B4266', marginTop: '0px' }}>Overall Task Percentage</h2>
+          <div style={{display:'flex'}}>
+            <div>
               <PieChart width={600} height={300}>
-                  <Pie
-                      data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                      cx={300}
-                      cy={150}
-                      labelLine={false}
-                      label={true}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                  >
-                      {Object.entries(pieChartData).map(([name], index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                      ))}
-                  </Pie>
-                  <Tooltip />
+                <Pie
+                  data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                  cx={300}
+                  cy={150}
+                  labelLine={false}
+                  label={true}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {Object.entries(pieChartData).map(([name], index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
               </PieChart>
-          </div>
+            </div>
+            <div style={{ width: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            {Object.entries(pieChartData).map(([name], index) => (
+              <div key={`legend-${index}`} style={{ display: 'flex', alignItems: 'center', margin: '5px 0' }}>
+                <span style={{ width: '10px', height: '10px', backgroundColor: COLORS[index % COLORS?.length], marginRight: '5px' }}></span>
+                <span>{name}</span>
+              </div>
+            ))}
+            </div>
+          </div>  
+        </div>
+
 
           <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
-              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Location Percentage</h2>
+              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location Percentage</h2>
               <div style={{ height: '300px' }}>
                   <Doughnut data={data} options={chartOptions} />
               </div>
+              {/* <Chart
+                options={chartOptions}
+                series={chartSeries}
+                type="donut"
+                width="380"
+              /> */}
           </div>
       </div>
       {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>

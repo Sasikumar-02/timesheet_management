@@ -220,17 +220,17 @@ const AddTask: React.FC = () => {
         if (response.status !== 200) {
           throw new Error('Failed to fetch data');
         }
-        const data = response.data.response.data;
+        const data = response?.data?.response?.data;
   
         console.log('Fetched data:', data);
         
-        const employee = data.find((emp: any) => emp.userId === userId);
+        const employee = data.find((emp: any) => emp?.userId === userId);
         console.log("employee", employee);
         if (employee) {
           // Assuming reportingTo is an array
           const reportingManager: UserManager = {
-            reportingManagerName: employee.reportingMangerName,
-            reportingManagerId: employee.reportingManagerId,
+            reportingManagerName: employee?.reportingMangerName,
+            reportingManagerId: employee?.reportingManagerId,
           };
           console.log("reportingManager",reportingManager);
           setReportingTo([reportingManager]);
@@ -250,7 +250,7 @@ const AddTask: React.FC = () => {
       try {
         const response = await api.get('/api/v1/project/get-project-of-user/' + userId);
         console.log("userId", userId);
-        const data = response.data.response.data;
+        const data = response?.data?.response?.data;
         console.log("fetchData", data);
   
         // Initialize an empty array to store updated projects
@@ -295,14 +295,14 @@ const AddTask: React.FC = () => {
       try {
         // Fetch tasks from the API
         const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
-        console.log("response-fulldata", response.data.response.data);
+        console.log("response-fulldata", response?.data?.response?.data);
         let filteredTasks: any[] = [];
         if (filterOption === 'Date') {
           let date = dayjs(currentDate).format('YYYY-MM-DD');
           console.log('response-date', date);
           console.log("response-currentDate", currentDate);
           // Filter tasks based on currentDate
-          filteredTasks = response.data.response.data.filter((task: any) => {
+          filteredTasks = response?.data?.response?.data?.filter((task: any) => {
             // Assuming the task has a date property named "date"
             // Modify this condition according to your task structure
             return task.date === date;
@@ -310,7 +310,7 @@ const AddTask: React.FC = () => {
         } else if (filterOption === 'Week') {
           const startOfWeek = currentWeek.startOf('week');
           const endOfWeek = currentWeek.endOf('week');
-          filteredTasks = response.data.response.data.filter(
+          filteredTasks = response?.data?.response?.data?.filter(
             (task: any) =>
               (dayjs(task.date).isSame(startOfWeek) || dayjs(task.date).isAfter(startOfWeek)) &&
               (dayjs(task.date).isSame(endOfWeek) || dayjs(task.date).isBefore(endOfWeek))
@@ -319,7 +319,7 @@ const AddTask: React.FC = () => {
         } else {
           const startOfMonth = currentMonth.startOf('month');
           const endOfMonth = currentMonth.endOf('month');
-          filteredTasks = response.data.response.data.filter(
+          filteredTasks = response?.data?.response?.data?.filter(
             (task: any) =>
               (dayjs(task.date).isSame(startOfMonth) || dayjs(task.date).isAfter(startOfMonth)) &&
               (dayjs(task.date).isSame(endOfMonth) || dayjs(task.date).isBefore(endOfMonth))

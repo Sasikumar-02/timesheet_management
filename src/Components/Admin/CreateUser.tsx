@@ -50,7 +50,7 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
         if (response.status !== 200) {
           throw new Error('Failed to fetch data');
         }
-        const data = response.data.response.data;
+        const data = response?.data?.response?.data;
         console.log('Fetched data:', data);
         setEmployees(data); // Set fetched data to state
       } catch (error) {
@@ -68,7 +68,7 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
         if (response.status !== 200) {
           throw new Error('Failed to fetch data');
         }
-        const data = response.data.response.data;
+        const data =response?.data?.response?.data;
         console.log('Fetched data:', data);
         setManagers(data); // Set fetched data to state
       } catch (error) {
