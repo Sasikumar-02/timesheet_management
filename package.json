@@ -13,6 +13,7 @@
     "@fullcalendar/interaction": "^6.1.10",
     "@fullcalendar/react": "^6.1.10",
     "@fullcalendar/timegrid": "^6.1.10",
+    "@iconify/react": "^4.1.1",
     "@mui/icons-material": "^5.15.6",
     "@mui/material": "^5.15.6",
     "@testing-library/jest-dom": "^5.17.0",

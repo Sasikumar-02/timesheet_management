@@ -29,6 +29,8 @@ import type { ThemeConfig } from "antd";
 import { theme } from "antd";
 import { TaskRequestedOn } from '../Employee/AddTask';
 import api from '../../Api/Api-Service';
+import { DecodedToken } from '../Employee/EmployeeTaskStatus';
+import { jwtDecode } from 'jwt-decode';
 interface PerformanceDatum {
     taskName: string;
     totalHours: number;
@@ -80,7 +82,7 @@ interface EmployeeTaskStatusProps{
 }
 
 const ManagerDashboard = () => {
-    const userId = ['123','1234']; // Assuming you have a function to get the current user's ID
+    // const userId = ['123','1234']; // Assuming you have a function to get the current user's ID
     const { Option } = Select; // Destructure the Option component from Select
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
@@ -96,8 +98,6 @@ const ManagerDashboard = () => {
     const [placeholderValues, setPlaceholderValues] = useState({
         userId: "Filter by userId",
       });
-    const userName = localStorage.getItem("userName");
-    console.log("userName", userName);
     const [searchText, setSearchText] = useState("");
     // Define state for groupedTasks
   const [groupedTasks, setGroupedTasks] = useState<UserGroupedTask>({});
@@ -124,6 +124,29 @@ const ManagerDashboard = () => {
       OnDuty: 0,
       WorkFromHome: 0
   })
+  const [userName, setUserName]=useState('');
+  const token = localStorage.getItem("authToken");
+    const decoded = jwtDecode(token || "") as DecodedToken;
+    const userId = decoded.UserId;
+
+    useEffect(()=>{
+      const fetchData = async()=>{
+          try{
+              const response = await api.get('/api/v1/admin/employee-list')
+              const data = response?.data?.response?.data;
+
+              console.log('Fetched data:', data);
+              
+              const employee = data.filter((emp: any) => emp.userId === userId).map((emp:any)=>emp?.firstName);
+              setUserName(employee);
+          }
+          catch(err){
+              throw err;
+          }
+          
+      }
+      fetchData();
+    },[])
 
 const chartOptions = {
   maintainAspectRatio: false,
@@ -579,56 +602,56 @@ const fetchDoughReport=async(month:any, year:any)=>{
       console.log(`Rejected: UserId-${userId}, Month-${month}, Date-${date}`);
     }; 
 
-    const handleClick = (title: string) => {
-        navigate(`/manager/projectuser`, { state: { title } });
-      };
+    // const handleClick = (title: string) => {
+    //     navigate(`/manager/projectuser`, { state: { title } });
+    //   };
 
-      // Function to send reminders and store them in localStorage
-      const sendReminders = () => {
-        const currentDateFormatted = dayjs(currentDate).format('MMMM DD, YYYY');
-        let reminderMessage = '';
+    //   // Function to send reminders and store them in localStorage
+    //   const sendReminders = () => {
+    //     const currentDateFormatted = dayjs(currentDate).format('MMMM DD, YYYY');
+    //     let reminderMessage = '';
         
-        // Generate reminder message based on filterOption
-        switch (filterOption) {
-            case 'Date':
-                reminderMessage = `Reminder for ${currentDateFormatted} to fill the task`;
-                break;
-            case 'Week':
-                const startOfWeek = dayjs(currentWeek).startOf('week').format('MMMM DD, YYYY');
-                const endOfWeek = dayjs(currentWeek).endOf('week').format('MMMM DD, YYYY');
-                reminderMessage = `Reminder for the week ${startOfWeek} to ${endOfWeek} to fill the task`;
-                break;
-            case 'Month':
-                const startOfMonth = dayjs(currentMonth).startOf('month').format('MMMM DD, YYYY');
-                const endOfMonth = dayjs(currentMonth).endOf('month').format('MMMM DD, YYYY');
-                reminderMessage = `Reminder for the month of ${dayjs(currentMonth).format('MMMM YYYY')} to fill the task`;
-                break;
-            default:
-                reminderMessage = '';
-        }
+    //     // Generate reminder message based on filterOption
+    //     switch (filterOption) {
+    //         case 'Date':
+    //             reminderMessage = `Reminder for ${currentDateFormatted} to fill the task`;
+    //             break;
+    //         case 'Week':
+    //             const startOfWeek = dayjs(currentWeek).startOf('week').format('MMMM DD, YYYY');
+    //             const endOfWeek = dayjs(currentWeek).endOf('week').format('MMMM DD, YYYY');
+    //             reminderMessage = `Reminder for the week ${startOfWeek} to ${endOfWeek} to fill the task`;
+    //             break;
+    //         case 'Month':
+    //             const startOfMonth = dayjs(currentMonth).startOf('month').format('MMMM DD, YYYY');
+    //             const endOfMonth = dayjs(currentMonth).endOf('month').format('MMMM DD, YYYY');
+    //             reminderMessage = `Reminder for the month of ${dayjs(currentMonth).format('MMMM YYYY')} to fill the task`;
+    //             break;
+    //         default:
+    //             reminderMessage = '';
+    //     }
         
-        // Retrieve existing reminders from localStorage
-        const existingReminders = JSON.parse(localStorage.getItem('remainder') || '{}');
+    //     // Retrieve existing reminders from localStorage
+    //     const existingReminders = JSON.parse(localStorage.getItem('remainder') || '{}');
         
-        // Append new reminders to existing reminders or initialize as an array
-        userId.forEach(id => {
-            if (!existingReminders[id]) {
-                existingReminders[id] = [];
-            }
-            // Push the new reminder message to the array
-            existingReminders[id].push(reminderMessage);
-        });
+    //     // Append new reminders to existing reminders or initialize as an array
+    //     userId.forEach(id => {
+    //         if (!existingReminders[id]) {
+    //             existingReminders[id] = [];
+    //         }
+    //         // Push the new reminder message to the array
+    //         existingReminders[id].push(reminderMessage);
+    //     });
         
-        // Store updated reminders back into localStorage
-        localStorage.setItem('remainder', JSON.stringify(existingReminders));
+    //     // Store updated reminders back into localStorage
+    //     localStorage.setItem('remainder', JSON.stringify(existingReminders));
         
-        notification.success({
-            message: 'Success',
-            description: 'Reminder has been sent successfully',
-        });
+    //     notification.success({
+    //         message: 'Success',
+    //         description: 'Reminder has been sent successfully',
+    //     });
         
-        console.log('Reminders sent and stored in localStorage.');
-    };
+    //     console.log('Reminders sent and stored in localStorage.');
+    // };
     
        
     // useEffect(() => {
@@ -726,7 +749,7 @@ const fetchDoughReport=async(month:any, year:any)=>{
               <Card className="main-card">
               <div style={{ display: "flex", height:'55px' }}>
                   <div>
-                  <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ""}
+                  <h3 style={{textAlign:'left', marginTop:'0px', marginBottom:'0px'}}>Welcome {userName ? userName: ""}
                   <span className="wave" role="img" aria-label="Waving hand">👋</span></h3>
                   <p>
                       All of us do not have equal talent, but all of us have an equal

@@ -22,7 +22,7 @@ const Calendar = () => {
   const location = useLocation();
   const [events, setEvents] = useState<Event[]>([]);
   const [currentMonth, setCurrentMonth] = useState(dayjs());
-  const { month, year } = location.state;
+  const { month, year, clickedDate } = location.state;
   const [uniqueRequestId, setUniqueRequestId]= useState('');
   const [formattedDate, setFormattedDate] = useState<string>('');
   const [clickedRecord, setClickedRecord] = useState<any>();
@@ -145,11 +145,10 @@ const Calendar = () => {
     fetchCalendarView(newMonth, newYear);
   };
 
-  const clickedDateFromLocalStorage = localStorage.getItem("clickedDate");
-  const currentDate = clickedDateFromLocalStorage
-    ? clickedDateFromLocalStorage
+  const currentDate = clickedDate
+    ? clickedDate
     : dayjs().startOf("year").format("YYYY-MM-DD");
-
+    console.log("clickedDateFromLocalStorage -1",currentDate);
     const fetchDataByUniqueId = async (uniqueRequestId: string) => {
       try {
           const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);

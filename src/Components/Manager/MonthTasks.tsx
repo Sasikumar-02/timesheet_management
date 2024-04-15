@@ -8,13 +8,14 @@ import {
     UpOutlined,
 } from "@ant-design/icons";
 import { Doughnut } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
 import { Tooltip as AntdTooltip } from 'antd';
 import DashboardLayout from '../Dashboard/Layout'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid,Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid,Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Cell} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'
 import { TaskObject } from './ApprovalRequest';
@@ -91,7 +92,7 @@ const MonthTasks: React.FC = () => {
     const [extraTotalHours, setExtraTotalHours]=useState<any[]>([]);
     const [meetingTotalHours, setMeetingTotalHours]=useState<any[]>([]);
     const [isDelayed, setIsDelayed]=useState<any[]>([]);
-    const [hovered, setHovered] = useState(false);
+    const [overallData, setOverallData] = useState<any[]>([]);
     const [pieChartData, setPieChartData]= useState({
         Learning: 0,
         Meeting: 0,
@@ -169,6 +170,15 @@ const chartOptions = {
       },
     ],
   };
+
+  const pieData = {
+    labels: Object.keys(pieChartData),
+    datasets: [{
+        data: Object.values(pieChartData),
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0'],
+        hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0']
+    }]
+};
   
 
   useEffect(() => {
@@ -329,7 +339,27 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         fetchDataByUniqueId(uniqueRequestId);
         setModalVisible(true);
     };
-    
+    const fetchOverallDataByUniqueId = async () => {
+        try {
+            const newData: any[] = [];
+            // Use Promise.all to await all API calls concurrently
+            await Promise.all(
+                uniqueRequestId.map(async (id: any) => {
+                    const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${id}`);
+                    newData.push(response.data.response.data);
+                })
+            );
+            // Update the state with the new data
+            setOverallData(newData);
+        } catch (err) {
+            console.error('Error fetching overall data:', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchOverallDataByUniqueId();
+    }, [monthTasks]); // Empty dependency array means it only runs once, similar to componentDidMount
+
     const fetchDataByUniqueId = async (uniqueRequestId: string) => {
         try {
             const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
@@ -481,6 +511,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             
             let dataToExport: any[] = [];
             if (selectedRows?.length > 0) {
+                console.log("sleectedRows", selectedRows);
                 let ids = monthTasks
                     .filter(row => selectedRows.includes(row.uniqueRequestId))
                     .map(row => row.uniqueRequestId);
@@ -488,8 +519,11 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             
                 // Flatten the fetchedData array of arrays
                 dataToExport = fetchedData.flat();
+            } else {
+                // If no rows are selected, export all monthTasks data
+                console.log("sleectedRows -1", overallData)
+                dataToExport = overallData.flat();
             }
-            
             // Map over dataToExport to extract values for Excel
             const data = dataToExport.map((rowData: any) => {
                 return [
@@ -645,21 +679,19 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     };
     
 
-const handleExportOption = (key: string) => {
-    if (key === 'all' || selectedRows?.length === 0) {
-      // Notify if no rows are selected
-      if (selectedRows?.length === 0) {
-        message.warning('Please select rows to export.');
-        return;
-      }
-      // Proceed with export
-    //   exportToExcel(selectedRows, monthTasksData);
-        exportToExcel();
-    } else {
-      exportToExcel();
-    }
-};
-
+    const handleExportOption = async (key: string) => {
+        try {
+            if (key === 'all') {
+                await exportToExcel();
+            } else if (selectedRows?.length > 0) {
+                await exportToExcel();
+            } else {
+                message.warning('Please select rows to export.');
+            }
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+        }
+    };    
     const exportMenu = (
         <Menu onClick={(e) => handleExportOption(e.key as string)}>
           <Menu.Item key="selectedData">Export</Menu.Item>
@@ -702,13 +734,6 @@ const handleExportOption = (key: string) => {
             render: (_, record: any) => (
                 
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span
-                  style={{ marginRight: '7px' }}
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                >
-                  {record.date}
-                </span>
                 {isDelayed.includes(record.date) && (
                     <AntdTooltip title={"You have submitted the task after the deadline"}>
                     <svg
@@ -838,7 +863,7 @@ const handleExportOption = (key: string) => {
     const innerColumn: ColumnsType<any> = [
         {
           title: 'Sl. No',
-          width: '132px',
+        //   width: '132px',
           dataIndex: 'slNo',
           key: 'slNo',
           fixed: 'left',
@@ -867,7 +892,7 @@ const handleExportOption = (key: string) => {
         },
         {
           title: 'Date',
-          //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
+        //   sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
           dataIndex: 'date',
           key: 'date',
           fixed: 'left',
@@ -982,8 +1007,11 @@ const handleExportOption = (key: string) => {
                     
                     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}} id='pie-chart-container'>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
-                            <PieChart width={600} height={300}>
+                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
+                           <div style={{ height: '300px' }}>
+                            <Pie data={pieData} options={chartOptions} />
+                           </div>
+                            {/* <PieChart width={600} height={300}>
                                 <Pie
                                     data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
                                     cx={300}
@@ -1002,7 +1030,8 @@ const handleExportOption = (key: string) => {
                                 </Pie>
                                 <Tooltip />
                                 <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
-                            </PieChart>
+                            </PieChart> */}
+                            
                         </div>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>
                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>

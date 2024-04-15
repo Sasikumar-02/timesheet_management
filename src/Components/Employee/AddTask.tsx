@@ -791,6 +791,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       render: (text, record, index) => index + 1,
     },
     {
+      title: 'Date',
+      // sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
+      dataIndex: 'date',
+      key: 'date',
+      fixed: 'left',
+    },
+    {
       title: 'Work Location',
       //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'workLocation',
@@ -812,13 +819,6 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       fixed: 'left',
     },
     {
-      title: 'Date',
-      //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
-      dataIndex: 'date',
-      key: 'date',
-      fixed: 'left',
-    },
-    {
       title: 'Start Time',
       //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
       dataIndex: 'startTime',
@@ -826,9 +826,9 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       fixed: 'left',
       render: (_, record) => {
         return (
-            <div>
-                {hoursTimeToHoursMinutes(record?.startTime)}
-            </div>
+          <div>
+              {hoursTimeToHoursMinutes(record?.startTime)}
+          </div>
         );
     }
     },
@@ -840,9 +840,9 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       fixed: 'left',
       render: (_, record) => {
         return (
-            <div>
-                {hoursTimeToHoursMinutes(record?.endTime)}
-            </div>
+          <div>
+              {hoursTimeToHoursMinutes(record?.endTime)}
+          </div>
         );
     }
     },
@@ -854,9 +854,9 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       fixed: 'left',
       render: (_, record) => {
         return (
-            <div>
-                {hoursDecimalToHoursMinutes(record?.totalHours)}
-            </div>
+          <div>
+              {hoursDecimalToHoursMinutes(record?.totalHours)}
+          </div>
         );
     }
     },
