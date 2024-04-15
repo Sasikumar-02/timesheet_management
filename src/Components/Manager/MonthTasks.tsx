@@ -12,9 +12,9 @@ import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
-import {Tooltip} from 'antd';
+//import {Tooltip} from 'antd';
 import DashboardLayout from '../Dashboard/Layout'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
+import { LineChart, Line, XAxis, YAxis,Tooltip, CartesianGrid, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'
 import { TaskObject } from './ApprovalRequest';
@@ -768,14 +768,27 @@ const handleExportOption = (key: string) => {
       const hoursDecimalToHoursMinutes = (decimalHours:any) => {
         // Split the decimal value into hours and minutes
         const hours = Math.floor(decimalHours);
-        const minutes = Math.round((decimalHours - hours) * 60);
-        console.log("hours minutes",hours, minutes);
+        const minutes = Math.round((decimalHours - hours) * 100);
+        console.log("hours minutes",hours, minutes)
         // Return the formatted string
         if(hours===0 && minutes===0){
             return '➖';
         }
         return `${hours}h ${minutes}min`;
     };
+
+    const hoursTimeToHoursMinutes = (decimalHours: string) => {
+        // Parse the decimal hours string
+        const [hoursStr, minutesStr] = decimalHours.split(':');
+        const hours = parseInt(hoursStr);
+        const minutes = parseInt(minutesStr);
+    
+        // Return the formatted string
+        if (hours === 0 && minutes === 0) {
+            return '➖';
+        }
+        return `${hours}h ${minutes}min`;
+      };
 
   
     const column: ColumnsType<any> = [
@@ -787,13 +800,13 @@ const handleExportOption = (key: string) => {
             render: (_, record: any) => (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <span style={{ marginRight: '7px' }}>{record.date}</span>
-                    {isdelayed.includes(record.date) && (
-                        <Tooltip title="You submitted the task after the deadline" placement="right">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
-                                <path fill="orange" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m3.55 13.8l-4.08-2.51c-.3-.18-.48-.5-.48-.85V7.75c.01-.41.35-.75.76-.75s.75.34.75.75v4.45l3.84 2.31c.36.22.48.69.26 1.05c-.22.35-.69.46-1.05.24"></path>
-                            </svg>
-                        </Tooltip>
-                    )}
+                    {/* {isdelayed.includes(record.date) && (
+                        // <Tooltip title="You submitted the task after the deadline" placement="right">
+                        //     <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
+                        //         <path fill="orange" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m3.55 13.8l-4.08-2.51c-.3-.18-.48-.5-.48-.85V7.75c.01-.41.35-.75.76-.75s.75.34.75.75v4.45l3.84 2.31c.36.22.48.69.26 1.05c-.22.35-.69.46-1.05.24"></path>
+                        //     </svg>
+                        // </Tooltip>
+                    )} */}
                 </div>
             )
         },        
@@ -905,75 +918,105 @@ const handleExportOption = (key: string) => {
 
     const innerColumn: ColumnsType<any> = [
         {
-          title: 'Sl.no',
-          className: 'ant-table-column-title',
+          title: 'Sl. No',
+          width: '132px',
           dataIndex: 'slNo',
           key: 'slNo',
           fixed: 'left',
-          render: (_, __, index) => <span>{index + 1}</span>,
-        },  
+          render: (text, record, index) => index + 1,
+        },
         {
-            title: 'Work Location',
-            //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
-            dataIndex: 'workLocation',
-            key: 'workLocation',
-            fixed: 'left',
+          title: 'Work Location',
+          //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+          dataIndex: 'workLocation',
+          key: 'workLocation',
+          fixed: 'left',
         },
         {
           title: 'Task',
-        //   sorter: (a: Task, b: Task) => {
-        //     return a.task.localeCompare(b.task);
-        //   },
+          //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'task',
           key: 'task',
           fixed: 'left',
         },
         {
-            title: 'Project',
-            // sorter: (a: Task, b: Task) => {
-            //   return a.title.localeCompare(b.title);
-            // },
-            dataIndex: 'project',
-            key: 'project',
-            fixed: 'left',
-          },
+          title: 'Project',
+          //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
+          dataIndex: 'project',
+          key: 'project',
+          fixed: 'left',
+        },
+        {
+          title: 'Date',
+          //sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
+          dataIndex: 'date',
+          key: 'date',
+          fixed: 'left',
+        },
         {
           title: 'Start Time',
-        //   sorter: (a: Task, b: Task) => {
-        //     return a.startTime.localeCompare(b.startTime);
-        //   },
+          //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
           dataIndex: 'startTime',
           key: 'startTime',
           fixed: 'left',
+          render: (_, record) => {
+            return (
+                <div>
+                    {hoursTimeToHoursMinutes(record?.startTime)}
+                </div>
+            );
+        }
         },
         {
           title: 'End Time',
-        //   sorter: (a: Task, b: Task) => {
-        //     return a.endTime.localeCompare(b.endTime);
-        //   },
+          //sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
           dataIndex: 'endTime',
           key: 'endTime',
           fixed: 'left',
+          render: (_, record) => {
+            return (
+                <div>
+                    {hoursTimeToHoursMinutes(record?.endTime)}
+                </div>
+            );
+        }
         },
         {
           title: 'Total Hours',
-        //   sorter: (a: Task, b: Task) => {
-        //     return a.totalHours.localeCompare(b.totalHours);
-        //   },
+          //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'totalHours',
           key: 'totalHours',
           fixed: 'left',
+          render: (_, record) => {
+            return (
+                <div>
+                    {hoursDecimalToHoursMinutes(record?.totalHours)}
+                </div>
+            );
+        }
         },
         {
           title: 'Description',
-        //   sorter: (a: Task, b: Task) => {
-        //     return a.description.localeCompare(b.description);
-        //   },
+          //sorter: (a: Task, b: Task) => a.description.localeCompare(b.description),
           dataIndex: 'description',
           key: 'description',
           fixed: 'left',
         },
-    ];
+        {
+          title: 'Reporting To',
+          //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+          dataIndex: 'reportingTo',
+          key: 'reportingTo',
+          fixed: 'left',
+        }, 
+        {
+          title: 'Status',
+          //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
+          dataIndex: 'taskStatus',
+          key: 'taskStatus',
+          fixed: 'left',
+        }
+      ]
 
     // JSX for modal content
     const modalContent = clickedRecord && (
@@ -1021,8 +1064,6 @@ const handleExportOption = (key: string) => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
         <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
           <h2 style={{ textAlign: 'left', color: '#0B4266', marginTop: '0px' }}>Overall Task Percentage</h2>
-          <div style={{display:'flex'}}>
-            <div>
               <PieChart width={600} height={300}>
                 <Pie
                   data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
@@ -1039,17 +1080,8 @@ const handleExportOption = (key: string) => {
                   ))}
                 </Pie>
                 <Tooltip />
+                <Legend />
               </PieChart>
-            </div>
-            <div style={{ width: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            {Object.entries(pieChartData).map(([name], index) => (
-              <div key={`legend-${index}`} style={{ display: 'flex', alignItems: 'center', margin: '5px 0' }}>
-                <span style={{ width: '10px', height: '10px', backgroundColor: COLORS[index % COLORS?.length], marginRight: '5px' }}></span>
-                <span>{name}</span>
-              </div>
-            ))}
-            </div>
-          </div>  
         </div>
 
 
@@ -1066,8 +1098,6 @@ const handleExportOption = (key: string) => {
               /> */}
           </div>
       </div>
-
-
                     <div>
                         <Select
                             showSearch

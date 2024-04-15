@@ -165,7 +165,7 @@ const Calendar = () => {
   const hoursDecimalToHoursMinutes = (decimalHours:any) => {
     // Split the decimal value into hours and minutes
     const hours = Math.floor(decimalHours);
-    const minutes = Math.round((decimalHours - hours) * 60);
+    const minutes = Math.round((decimalHours - hours) * 100);
     console.log("hours minutes",hours, minutes);
     // Return the formatted string
     if(hours===0 && minutes===0){

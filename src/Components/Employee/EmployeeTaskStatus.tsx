@@ -110,6 +110,12 @@ const EmployeeTaskStatus = () => {
     const chartOptions = {
         maintainAspectRatio: false,
         responsive: true,
+        plugins: {
+            legend: {
+              position: 'right' as const, // Display the legend at the right side
+              align: 'center' as const, // Align the legend to the start of the position (right side)
+            }
+          },
         width: 200,
         height: 300,
       };
@@ -508,39 +514,54 @@ const EmployeeTaskStatus = () => {
 </div> */}
 
 
-    <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
-            <PieChart width={600} height={300}>
+<div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
+        <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
+          <h2 style={{ textAlign: 'left', color: '#0B4266', marginTop: '0px' }}>Overall Task Percentage</h2>
+          <div style={{display:'flex'}}>
+            <div>
+              <PieChart width={600} height={300}>
                 <Pie
-                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                    cx={300}
-                    cy={150}
-                    labelLine={false}
-                    label={true}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
+                  data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                  cx={300}
+                  cy={150}
+                  labelLine={false}
+                  label={true}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="value"
                 >
-                    {
-                        Object.entries(pieChartData).map(([name], index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                        ))
-                    }
+                  {Object.entries(pieChartData).map(([name], index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
+                  ))}
                 </Pie>
                 <Tooltip />
-            </PieChart>
-        </div>
-
-        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
-            <div style={{ height: '300px' }}>
-                <Doughnut data={data} options={chartOptions} />
+              </PieChart>
             </div>
+            <div style={{ width: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            {Object.entries(pieChartData).map(([name], index) => (
+              <div key={`legend-${index}`} style={{ display: 'flex', alignItems: 'center', margin: '5px 0' }}>
+                <span style={{ width: '10px', height: '10px', backgroundColor: COLORS[index % COLORS?.length], marginRight: '5px' }}></span>
+                <span>{name}</span>
+              </div>
+            ))}
+            </div>
+          </div>  
         </div>
 
 
-    </div>
+          <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
+              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location Percentage</h2>
+              <div style={{ height: '300px' }}>
+                  <Doughnut data={data} options={chartOptions} />
+              </div>
+              {/* <Chart
+                options={chartOptions}
+                series={chartSeries}
+                type="donut"
+                width="380"
+              /> */}
+          </div>
+      </div>
     </>
   )
 }
