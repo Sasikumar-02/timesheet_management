@@ -12,9 +12,9 @@ import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
-//import {Tooltip} from 'antd';
+import { Tooltip as AntdTooltip } from 'antd';
 import DashboardLayout from '../Dashboard/Layout'
-import { LineChart, Line, XAxis, YAxis,Tooltip, CartesianGrid, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid,Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Pie, Cell} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'
 import { TaskObject } from './ApprovalRequest';
@@ -73,6 +73,8 @@ const config: ThemeConfig = {
         name: string;
         data: string;
     }
+    
+    
 const MonthTasks: React.FC = () => {
     const [statuses, setStatuses]= useState<boolean>(false);
     const {Option}= Select
@@ -88,7 +90,8 @@ const MonthTasks: React.FC = () => {
     const [overallTotalHours, setOverallTotalHours]=useState<any[]>([]);
     const [extraTotalHours, setExtraTotalHours]=useState<any[]>([]);
     const [meetingTotalHours, setMeetingTotalHours]=useState<any[]>([]);
-    const [isdelayed, setIsDelayed]=useState<any[]>([]);
+    const [isDelayed, setIsDelayed]=useState<any[]>([]);
+    const [hovered, setHovered] = useState(false);
     const [pieChartData, setPieChartData]= useState({
         Learning: 0,
         Meeting: 0,
@@ -127,6 +130,21 @@ const MonthTasks: React.FC = () => {
     const [chartImages, setChartImages] = useState<ChartImage[]>([]);
     const [chartSeries, setChartSeries] = useState<number[]>([]);
     const [monthTasks, setMonthTasks] = useState<any[]>([]);
+    const CustomTooltip = ({ active, payload }: { active: boolean, payload: any[] }) => {
+        if (active && payload && payload.length) {
+          const { date } = payload[0].payload;
+          const isdelayed = isDelayed.includes(date);
+      
+          return (
+            <div style={{ backgroundColor: isdelayed ? 'orange' : 'transparent', padding: '5px' }}>
+              <p>{date}</p>
+              {isdelayed && <span>You submitted the task after the deadline</span>}
+            </div>
+          );
+        }
+      
+        return null;
+      };
 console.log("statuses",statuses);
 const chartOptions = {
     maintainAspectRatio: false,
@@ -799,15 +817,32 @@ const handleExportOption = (key: string) => {
             fixed: 'left',
             render: (_, record: any) => (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '7px' }}>{record.date}</span>
-                    {/* {isdelayed.includes(record.date) && (
-                        // <Tooltip title="You submitted the task after the deadline" placement="right">
-                        //     <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
-                        //         <path fill="orange" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m3.55 13.8l-4.08-2.51c-.3-.18-.48-.5-.48-.85V7.75c.01-.41.35-.75.76-.75s.75.34.75.75v4.45l3.84 2.31c.36.22.48.69.26 1.05c-.22.35-.69.46-1.05.24"></path>
-                        //     </svg>
-                        // </Tooltip>
-                    )} */}
-                </div>
+                <span
+                  style={{ marginRight: '7px' }}
+                  onMouseEnter={() => setHovered(true)}
+                  onMouseLeave={() => setHovered(false)}
+                >
+                  {record.date}
+                </span>
+                <AntdTooltip
+                  title={<CustomTooltip payload={[{ payload: record }]} active={hovered} />}
+                  placement="right"
+                  mouseEnterDelay={0.5} // Adjust the delay as needed
+                  visible={hovered}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="1.2em"
+                    height="1.2em"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="orange"
+                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m3.55 13.8l-4.08-2.51c-.3-.18-.48-.5-.48-.85V7.75c.01-.41.35-.75.76-.75s.75.34.75.75v4.45l3.84 2.31c.36.22.48.69.26 1.05c-.22.35-.69.46-1.05.24"
+                    ></path>
+                  </svg>
+                </AntdTooltip>
+              </div>
             )
         },        
         {
@@ -1061,43 +1096,37 @@ const handleExportOption = (key: string) => {
 
                     </div>
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 20px', alignItems: 'center' }}>
-        <div id='pie-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '50%', backgroundColor: '#ffffff' }}>
-          <h2 style={{ textAlign: 'left', color: '#0B4266', marginTop: '0px' }}>Overall Task Percentage</h2>
-              <PieChart width={600} height={300}>
-                <Pie
-                  data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                  cx={300}
-                  cy={150}
-                  labelLine={false}
-                  label={true}
-                  outerRadius={120}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {Object.entries(pieChartData).map(([name], index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS?.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-        </div>
-
-
-          <div id='line-chart-container' style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width: '48%', backgroundColor: '#ffffff' }}>
-              <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location Percentage</h2>
-              <div style={{ height: '300px' }}>
-                  <Doughnut data={data} options={chartOptions} />
-              </div>
-              {/* <Chart
-                options={chartOptions}
-                series={chartSeries}
-                type="donut"
-                width="380"
-              /> */}
-          </div>
-      </div>
+                    <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
+                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}} id='pie-chart-container'>
+                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
+                            <PieChart width={600} height={300}>
+                                <Pie
+                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                                    cx={300}
+                                    cy={150}
+                                    labelLine={false}
+                                    label={true}
+                                    outerRadius={120}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {
+                                        Object.entries(pieChartData).map(([name], index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))
+                                    }
+                                </Pie>
+                                <Tooltip />
+                                <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ color: 'black' }} />
+                            </PieChart>
+                        </div>
+                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>
+                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
+                            <div style={{ height: '300px' }}>
+                                <Doughnut data={data} options={chartOptions} />
+                            </div>
+                        </div>
+                    </div>
                     <div>
                         <Select
                             showSearch

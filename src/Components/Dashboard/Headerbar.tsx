@@ -144,7 +144,7 @@ const Headerbar: React.FC = () => {
   return (
     <div className='headerstyle'>
       {/* <Input className='search' placeholder="Search Here" suffix={<SearchOutlined />} /> */}
-      <Notification/>
+      {/* <Notification/> */}
       <Dropdown overlay={menu}>
         <div
           style={{
