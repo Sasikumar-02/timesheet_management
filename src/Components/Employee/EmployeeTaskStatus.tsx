@@ -518,7 +518,7 @@ const EmployeeTaskStatus = () => {
                                     cx={300}
                                     cy={150}
                                     labelLine={false}
-                                    label={true}
+                                    label={false}
                                     outerRadius={120}
                                     fill="#8884d8"
                                     dataKey="value"
