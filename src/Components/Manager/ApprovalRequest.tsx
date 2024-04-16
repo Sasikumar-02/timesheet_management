@@ -887,7 +887,7 @@ const ApprovalRequest:React.FC = () => {
           />
         
       </div>
-      <Modal
+      {/* <Modal
         title={
           modalContent ? (
             <div>
@@ -897,7 +897,7 @@ const ApprovalRequest:React.FC = () => {
                   <div>
                     <strong>Sasi Kumar</strong>
                   </div>
-                  {/* Displaying the userId */}
+                  {/* Displaying the userId 
                   <div>{selectedUserId}</div>
                 </div>
               </Space>
@@ -929,7 +929,7 @@ const ApprovalRequest:React.FC = () => {
             <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
           </Modal>
         </div>
-      </Modal>
+      </Modal> */}
     </ConfigProvider>
   );
   
