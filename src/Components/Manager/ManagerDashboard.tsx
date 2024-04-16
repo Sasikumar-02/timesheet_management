@@ -15,7 +15,8 @@ import Chart from 'react-apexcharts';
 import Calendar from '../Employee/Calendar'; // Import your Calendar component
 import { useNavigate } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
-import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
+import { Pie } from 'react-chartjs-2';
+import { PieChart, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
 import { notification, Card , ConfigProvider, Button} from 'antd';
@@ -153,9 +154,21 @@ const chartOptions = {
   responsive: true,
   plugins: {
     legend: {
-      position: 'right' as const, // Display the legend at the right side
-      align: 'center' as const, // Align the legend to the start of the position (right side)
-    }
+      position: 'right' as 'right', // Display the legend at the right side
+      align: 'center' as 'center', // Align the legend to the start of the position (right side)
+    },
+    tooltip: { 
+      enabled: true, 
+      backgroundColor: "white",
+      titleColor: "#042a0b", 
+      bodyColor: "#042a0b", 
+      titleFont: { weight: 'bold' as 'bold' }, // Set weight to 'bold' explicitly 
+      padding: 10, 
+      cornerRadius: 10, 
+      borderColor: "#042a0b", 
+      borderWidth: 2, 
+      xAlign: "left" as "left", // Set xAlign to "left"
+  },
   },
   width: 200,
   height: 300,
@@ -171,6 +184,15 @@ const data = {
     ],
     },
   ],
+};
+
+const pieData = {
+  labels: Object.keys(pieChartData),
+  datasets: [{
+      data: Object.values(pieChartData),
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0'],
+      hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0']
+  }]
 };
 
 // const chartOptions = {
@@ -739,7 +761,11 @@ const fetchDoughReport=async(month:any, year:any)=>{
       //   setWorkFromHomeCount(totalWorkFromHome);
       //   setWorkFromOfficeCount(totalWorkFromOffice);
       // };
-    
+      const handleButtonClick = (currentMonth:any) => {
+        const [month, year]= dayjs(currentMonth).format('MMMM YYYY').split(' ');
+        console.log("month-year", month,year);
+        navigate('/manager/approvalrequest', { state: { month: month, year: year } });
+    };
      
     return (
       <>
@@ -893,20 +919,19 @@ const fetchDoughReport=async(month:any, year:any)=>{
           </div> */}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task" onClick={()=>handleButtonClick(currentMonth)}>
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold'}}>Pending Requests</p>    
                 <p style={{ color: '#FFD700', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.pendingCount}</p>
-
             </div>
         </button>
-        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266' , fontWeight:'bold'}}>Accepted</p>
                 <p style={{ color: '#32CD32	', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.acceptedCount}</p>
             </div>
         </button>
-        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to view the Calendar">
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task">
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold' }}>Rejected</p>
                 <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {monthCounts.rejectedCount}</p>
@@ -914,15 +939,18 @@ const fetchDoughReport=async(month:any, year:any)=>{
         </button>
     </div>
     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}} id='pie-chart-container'>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Task Percentage</h2>
-                            <PieChart width={600} height={300}>
+                      <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
+                           <div style={{ height: '300px' }} id='pie-chart-container'>
+                            <Pie data={pieData} options={chartOptions} />
+                           </div>
+                            {/* <PieChart width={600} height={300}>
                                 <Pie
                                     data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
                                     cx={300}
                                     cy={150}
                                     labelLine={false}
-                                    label={false}
+                                    label={true}
                                     outerRadius={120}
                                     fill="#8884d8"
                                     dataKey="value"
@@ -935,7 +963,8 @@ const fetchDoughReport=async(month:any, year:any)=>{
                                 </Pie>
                                 <Tooltip />
                                 <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
-                            </PieChart>
+                            </PieChart> */}
+                            
                         </div>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>
                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location Percentage</h2>

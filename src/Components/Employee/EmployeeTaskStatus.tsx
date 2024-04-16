@@ -14,7 +14,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
 //import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ResponsiveContainer, Brush, ReferenceLine, Label } from 'recharts';
-import { PieChart, Pie, Cell } from 'recharts';
+import { PieChart, Cell } from 'recharts';
+import { Pie } from 'react-chartjs-2';
 import { Doughnut } from 'react-chartjs-2';
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
@@ -112,9 +113,21 @@ const EmployeeTaskStatus = () => {
         responsive: true,
         plugins: {
             legend: {
-              position: 'right' as const, // Display the legend at the right side
-              align: 'center' as const, // Align the legend to the start of the position (right side)
-            }
+              position: 'right' as 'right', // Display the legend at the right side
+              align: 'center' as 'center', // Align the legend to the start of the position (right side)
+            },
+            tooltip: { 
+                enabled: true, 
+                backgroundColor: "white",
+                titleColor: "#042a0b", 
+                bodyColor: "#042a0b", 
+                titleFont: { weight: 'bold' as 'bold' }, // Set weight to 'bold' explicitly 
+                padding: 10, 
+                cornerRadius: 10, 
+                borderColor: "#042a0b", 
+                borderWidth: 2, 
+                xAlign: "left" as "left", // Set xAlign to "left"
+            },
           },
         width: 200,
         height: 300,
@@ -131,6 +144,15 @@ const EmployeeTaskStatus = () => {
           },
         ],
       };
+
+      const pieData = {
+        labels: Object.keys(pieChartData),
+        datasets: [{
+            data: Object.values(pieChartData),
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0']
+        }]
+    };
       
 
       const fetchMonthlyReport = async (month:any, year:any) => {
@@ -509,37 +531,41 @@ const EmployeeTaskStatus = () => {
 </div> */}
 
 
-<div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}} id='pie-chart-container'>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
-                            <PieChart width={600} height={300}>
-                                <Pie
-                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                                    cx={300}
-                                    cy={150}
-                                    labelLine={false}
-                                    label={false}
-                                    outerRadius={120}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {
-                                        Object.entries(pieChartData).map(([name], index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))
-                                    }
-                                </Pie>
-                                <Tooltip />
-                                <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
-                            </PieChart>
-                        </div>
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
-                            <div style={{ height: '300px' }}>
-                                <Doughnut data={data} options={chartOptions} />
-                            </div>
-                        </div>
+        <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
+            <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+                        <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
+                    <div style={{ height: '300px' }} id='pie-chart-container'>
+                    <Pie data={pieData} options={chartOptions} />
                     </div>
+                    {/* <PieChart width={600} height={300}>
+                        <Pie
+                            data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                            cx={300}
+                            cy={150}
+                            labelLine={false}
+                            label={true}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {
+                                Object.entries(pieChartData).map(([name], index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))
+                            }
+                        </Pie>
+                        <Tooltip />
+                        <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
+                    </PieChart> */}
+                    
+            </div>
+            <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>
+                <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
+                <div style={{ height: '300px' }}>
+                    <Doughnut data={data} options={chartOptions} />
+                </div>
+            </div>
+        </div>
     </>
   )
 }

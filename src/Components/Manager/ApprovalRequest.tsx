@@ -1,5 +1,5 @@
 import React,{useEffect, useState, useRef} from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ColumnsType } from 'antd/es/table'
 import { EditOutlined, FolderViewOutlined} from '@ant-design/icons';
 import { Progress } from 'antd';
@@ -79,6 +79,9 @@ export interface GroupedTasks {
 const ApprovalRequest:React.FC = () => { 
   //const userId = '1234'; // Replace 'YOUR_USER_ID' with the actual user id you want to check
   const userId ='1234';
+  const location = useLocation();
+  const {month, year}= location.state;
+  console.log("month-year 1", month, year);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   //const [rejectedKeys, setRejectedKeys] = useState<RecentRejected[]>([]);
   const navigate = useNavigate();
@@ -99,8 +102,9 @@ const ApprovalRequest:React.FC = () => {
   const [approvalRequests, setApprovalRequests] = useState<DateTask[]>([]);
   const [monthTasks, setMonthTasks] = useState<TaskObject[]>([]);
   const [userTasks, setUserTasks]= useState<GroupedTasks[]>([]);
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().toLocaleDateString('default', { month: 'long' });
+  const currentYear = year? year:  new Date().getFullYear();
+  const currentMonth = month? month: new Date().toLocaleDateString('default', { month: 'long' });
+  console.log("currentMonth", currentMonth, currentYear);
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(currentYear);

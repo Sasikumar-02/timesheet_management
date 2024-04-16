@@ -77,9 +77,9 @@ const config: ThemeConfig = {
     
     
 const MonthTasks: React.FC = () => {
+    const location = useLocation();
     const [statuses, setStatuses]= useState<boolean>(false);
     const {Option}= Select
-    const location = useLocation();
     const { uniqueRequestId, employeeId, formattedMonth, employeeName } = location.state;
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [comments, setComments] = useState('');
@@ -151,9 +151,21 @@ const chartOptions = {
     responsive: true,
     plugins: {
         legend: {
-          position: 'right' as const, // Display the legend at the right side
-          align: 'center' as const, // Align the legend to the start of the position (right side)
-        }
+          position: 'right' as 'right', // Display the legend at the right side
+          align: 'center' as 'center', // Align the legend to the start of the position (right side)
+        },
+        tooltip: { 
+            enabled: true, 
+            backgroundColor: "white",
+            titleColor: "#042a0b", 
+            bodyColor: "#042a0b", 
+            titleFont: { weight: 'bold' as 'bold' }, // Set weight to 'bold' explicitly 
+            padding: 10, 
+            cornerRadius: 10, 
+            borderColor: "#042a0b", 
+            borderWidth: 2, 
+            xAlign: "left" as "left", // Set xAlign to "left"
+        },
       },
     width: 200,
     height: 300,
