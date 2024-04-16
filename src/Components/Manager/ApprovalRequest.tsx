@@ -78,7 +78,6 @@ export interface GroupedTasks {
 
 const ApprovalRequest:React.FC = () => { 
   //const userId = '1234'; // Replace 'YOUR_USER_ID' with the actual user id you want to check
-  const dispatch = useDispatch();
   const userId ='1234';
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
