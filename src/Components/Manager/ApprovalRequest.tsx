@@ -44,6 +44,7 @@ import { theme } from "antd";
 import api from '../../Api/Api-Service';
 import { DatePicker } from 'antd';
 import moment, { Moment } from 'moment';
+import { useDispatch } from 'react-redux';
 //import 'antd/dist/antd.css';
 const {Option}= Select;
 const config: ThemeConfig = {
@@ -78,9 +79,13 @@ export interface GroupedTasks {
 
 const ApprovalRequest:React.FC = () => { 
   //const userId = '1234'; // Replace 'YOUR_USER_ID' with the actual user id you want to check
+  const dispatch = useDispatch();
   const userId ='1234';
   const location = useLocation();
-  const {month, year}= location.state;
+  const queryParams = new URLSearchParams(location.search);
+    
+    const year = queryParams.get('year');
+    const month = queryParams.get('month');
   console.log("month-year 1", month, year);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   //const [rejectedKeys, setRejectedKeys] = useState<RecentRejected[]>([]);
@@ -120,10 +125,10 @@ const ApprovalRequest:React.FC = () => {
   };
 
   const getYears = () => {
-    const startYear = currentYear - 50; // Adjust this value to set the starting year
-    const endYear = currentYear + 50; // Adjust this value to set the ending year
+    const startYear = parseInt(currentYear as string, 10) - 50; // Convert currentYear to number using parseInt
+    const endYear = parseInt(currentYear as string, 10) + 50; // Convert currentYear to number using parseInt
     return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
-  };
+};
 
 
   const months = getMonths();
@@ -857,19 +862,18 @@ const ApprovalRequest:React.FC = () => {
               onClick: (event: React.MouseEvent<HTMLElement>) => {
                 const { uniqueRequestId, employeeId, month, employeeName } = record;
                 setSelectedUserId(userId); // Set the userId in state
-                // Extract necessary data from the GroupedTasks record
-                const [monthName, year] = month.split(' ');
-                const monthNumber = moment().month(monthName).format('MM');
-                const formattedMonth = `${year}-${monthNumber}`;
-                
+                const [monthName, year] = month.split(/\s+/);
+                const monthNumber = moment().month(monthName).format('MMMM');
+                const formattedMonth = `${monthNumber}-${year}`;
                 // Pass TaskObject and formattedMonth to handleRowClick
                 //handleRowClick(tasksObject, formattedMonth, event);
-                navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
-                  uniqueRequestId,
-                  formattedMonth: month, 
-                  employeeId: employeeId,
-                  employeeName:employeeName
-              }});
+                navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`);
+              //   navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
+              //     uniqueRequestId,
+              //     formattedMonth: month, 
+              //     employeeId: employeeId,
+              //     employeeName:employeeName
+              // }});
               },
             })}
             rowClassName={(record: GroupedTasks, index: number) =>

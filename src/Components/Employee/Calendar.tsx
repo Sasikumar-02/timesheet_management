@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
+import interactionPlugin, { DateClickArg} from "@fullcalendar/interaction";
+import { EventClickArg } from '@fullcalendar/core';
 import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback } from "react";
 import api from "../../Api/Api-Service";
 import { Table } from "antd/lib";
 import DashboardLayout from "../Dashboard/Layout";
@@ -11,6 +13,7 @@ import dayjs from "dayjs";
 import { notification } from "antd";
 import { ColumnsType } from "antd/es/table";
 import {Modal} from "antd";
+import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
 interface Event {
   title: string;
   start: string;
@@ -20,6 +23,7 @@ interface Event {
 const Calendar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const {confirm}= Modal;
   const [events, setEvents] = useState<Event[]>([]);
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const { month, year, clickedDate } = location.state;
@@ -27,6 +31,8 @@ const Calendar = () => {
   const [formattedDate, setFormattedDate] = useState<string>('');
   const [clickedRecord, setClickedRecord] = useState<any>();
   const [modalVisible, setModalVisible] = useState(false);
+  const [refetch, setRefetch] = useState<boolean>(false);
+  const [selectedKeysToHide, setSelectedKeysToHide]=useState<string[]>([]);
   console.log("uniqueRequestId",uniqueRequestId);
   useEffect(() => {
     fetchCalendarView(month, year);
@@ -86,6 +92,7 @@ const Calendar = () => {
 }, [formattedDate]);
 
 
+
   const fetchCalendarView = async (month: any, year: any) => {
     try {
       const response = await api.get("/api/v1/timeSheet/task-calendar-view", {
@@ -140,15 +147,50 @@ const Calendar = () => {
   };
 
   const handlePrevNextClick = (arg: any) => {
+    setRefetch((prev)=>!prev);
     const newMonth = dayjs(arg.view.currentStart).format("MMMM");
     const newYear = dayjs(arg.view.currentStart).format("YYYY");
     fetchCalendarView(newMonth, newYear);
   };
 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        // Fetch tasks from the API
+        const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
+        console.log("response-fulldata", response?.data?.response?.data);
+  
+        // Find the first task with status "Approved" for each date
+        const approvedDates = response.data.response.data.reduce((acc: string[], task: any) => {
+          if (task.taskStatus === "Approved" && !acc.includes(task.date)) {
+            acc.push(task.date);
+          }
+          return acc;
+        }, []);
+  
+        // Update the state with the filtered tasks
+        console.log("approvedDates", approvedDates);
+        // Update selectedKeysToHide state with approved dates
+        setSelectedKeysToHide(approvedDates);
+      } catch (error) {
+        // Handle errors
+        console.error('Error fetching tasks:', error);
+        // You can also show a notification or perform other error handling here
+      }
+    };
+    // Call the fetchTasks function
+    fetchTasks();
+  }, [refetch]); // Empty dependency array to fetch tasks only once when the component mounts
+  
+  
+
   const currentDate = clickedDate
     ? clickedDate
     : dayjs().startOf("year").format("YYYY-MM-DD");
     console.log("clickedDateFromLocalStorage -1",currentDate);
+    useEffect(()=>{
+      fetchDataByUniqueId(uniqueRequestId);
+    },[refetch])
     const fetchDataByUniqueId = async (uniqueRequestId: string) => {
       try {
           const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
@@ -186,11 +228,51 @@ const Calendar = () => {
     return `${hours}h ${minutes}min`;
   };
 
+  const handleEditTask = async (record: any) => {
+    navigate('/employee/addtask', {state:{record}});
+  };
+
+  const handleDeleteTask = useCallback((task_id:any) => {
+    // Display confirmation modal before deleting the task
+    confirm({
+      title: 'Delete Task',
+      content: 'Are you sure you want to delete the task?',
+      okText: 'Yes',
+      okButtonProps: {
+        style: {
+          width: '80px', backgroundColor: '#0B4266', color: 'white'
+        },
+      },
+      cancelText: 'No',
+      cancelButtonProps: {
+        style: {
+          width: '80px', backgroundColor: '#0B4266', color: 'white'
+        },
+      },
+      async onOk() {
+        // Logic to delete the task if user confirms
+        try {
+          // Make DELETE request to delete the task
+          await api.delete(`/api/v1/timeSheet/delete-task/${task_id}`);
+          setRefetch((refetch)=>!refetch);
+          // Optionally, perform any additional actions after deletion
+          // For example, refetch the tasks or update the UI
+        } catch (error) {
+          // Handle errors
+          console.error('Error deleting task:', error);
+          // You can also show a notification or perform other error handling here
+        }
+      },
+      onCancel() {
+        // Logic if user cancels deletion
+      },
+    });
+  }, []);
+
 
     const columns: ColumnsType<any> = [
       {
         title: 'Sl. No',
-        width: '132px',
         dataIndex: 'slNo',
         key: 'slNo',
         fixed: 'left',
@@ -287,7 +369,70 @@ const Calendar = () => {
       //   key: 'taskStatus',
       //   fixed: 'left',
       // }, 
+      {
+        title: 'Actions',
+        dataIndex: 'actions',
+        key: 'actions',
+        render: (_, record, index) => {
+          // const isExistingTask = taskList.some(task => task.task_id === record.task_id);
+          const isDateSelected = selectedKeysToHide.includes(record.date);
+          
+          // Filter tasks by userId
+          //const userTasks = taskList.filter(task => task.userId === record.userId);
+          
+          // Check if the user has tasks for the selected date
+          //const hasUserTasksForDate = userTasks.some(task => task.date === record.date);
+      
+          return (
+            <div>
+              <EditOutlined
+                onClick={() => handleEditTask(record)}
+                style={{
+                  marginRight: '8px',
+                  cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', //|| !hasUserTasksForDate
+                  color: (isDateSelected ) ? 'grey' : 'blue', //|| !hasUserTasksForDate
+                  fontSize: '20px',
+                }}
+                disabled={isDateSelected } //|| !hasUserTasksForDate
+              />
+              <DeleteOutlined
+                onClick={() => handleDeleteTask(record?.timeSheetId)}
+                style={{
+                  cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', //|| !hasUserTasksForDate
+                  color: (isDateSelected ) ? 'grey' : 'red', //|| !hasUserTasksForDate
+                  fontSize: '20px',
+                }}
+                disabled={isDateSelected } //|| !hasUserTasksForDate
+              />
+            </div>
+          );
+        },
+      }
     ]
+
+    const handleEventClick = (arg: EventClickArg) => {
+      const clickedEvent = arg.event; // Extract the event from the click event
+      console.log("clickedEvent", clickedEvent.start)
+      const clickedDate = dayjs(clickedEvent.start); // Assuming the event has a start date
+      
+      // Similar logic to handleDateClick
+      if (clickedDate.isAfter(dayjs(), "month")) {
+          notification.warning({
+              message: "Month Restriction",
+              description: "Cannot navigate to future months.",
+          });
+      } else if (clickedDate.isAfter(dayjs(), "day")) {
+          notification.warning({
+              message: "Date Restriction",
+              description: "Restricted to open future dates.",
+          });
+      } else {
+          const formattedDate = clickedDate.format("YYYY-MM-DD");
+          setFormattedDate(formattedDate);
+          setModalVisible(true);
+      }
+  };
+  
 
     const modalContent = clickedRecord && (
       <Table
@@ -360,6 +505,7 @@ const Calendar = () => {
           end: "prev,next",
         }}
         height={"80vh"}
+        eventClick={handleEventClick}
         dateClick={handleDateClick}
         events={events}
         datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet

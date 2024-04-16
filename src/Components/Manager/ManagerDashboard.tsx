@@ -761,11 +761,13 @@ const fetchDoughReport=async(month:any, year:any)=>{
       //   setWorkFromHomeCount(totalWorkFromHome);
       //   setWorkFromOfficeCount(totalWorkFromOffice);
       // };
-      const handleButtonClick = (currentMonth:any) => {
-        const [month, year]= dayjs(currentMonth).format('MMMM YYYY').split(' ');
-        console.log("month-year", month,year);
-        navigate('/manager/approvalrequest', { state: { month: month, year: year } });
+      const handleButtonClick = (currentMonth: any) => {
+        const formattedMonthYear = dayjs(currentMonth).format('MMMM YYYY');
+        const [month, year] = formattedMonthYear.split(' ');
+        console.log("month-year", month, year);
+        navigate(`/manager/approvalrequest?month=${month}&year=${year}`);
     };
+    
      
     return (
       <>
@@ -925,13 +927,13 @@ const fetchDoughReport=async(month:any, year:any)=>{
                 <p style={{ color: '#FFD700', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.pendingCount}</p>
             </div>
         </button>
-        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task">
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task" onClick={()=>handleButtonClick(currentMonth)}>
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266' , fontWeight:'bold'}}>Accepted</p>
                 <p style={{ color: '#32CD32	', fontSize: '34px', fontFamily: 'poppins' }}>{monthCounts.acceptedCount}</p>
             </div>
         </button>
-        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task">
+        <button className='box' style={{ border: 'none', background: 'none', cursor:'pointer' }} title="Click to review the task" onClick={()=>handleButtonClick(currentMonth)}>
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around'}}>
                 <p style={{ fontFamily: 'poppins', fontSize: '16px', color: '#0B4266', fontWeight:'bold' }}>Rejected</p>
                 <p style={{ color: 'red', fontSize: '34px', fontFamily: 'poppins' }}> {monthCounts.rejectedCount}</p>

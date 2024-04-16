@@ -31,6 +31,7 @@ import { values } from 'lodash';
 import moment from 'moment';
 import { DecodedToken } from './EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
+import { initInputToken } from 'antd/es/input/style';
 // Declare setFieldValue outside of Formik
 let setFieldValue: Function;
 export interface DateTask{
@@ -105,6 +106,9 @@ const AddTask: React.FC = () => {
   const token = localStorage.getItem("authToken");
   const decoded = jwtDecode(token || "") as DecodedToken;
   const userId = decoded.UserId;
+  const location = useLocation();
+  const { record } = location.state || {}; // Default to an empty object if location.state is null
+  console.log("record", record);
   const [reportingTo, setReportingTo] = useState<UserManager[]>([]);
   const [reportingToID, setReportingToID] = useState('1234');
   const [startTime, setStartTime]= useState('');
@@ -115,13 +119,12 @@ const AddTask: React.FC = () => {
   const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
   const {confirm}= Modal;
-  const location = useLocation();
   // Define a state variable to hold the currently edited task
   //const [editedTask, setEditedTask] = useState<Task | null>(null);
   const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
   const [deletedTask, setDeletedTask] = useState(false);
   const [formWidth, setFormWidth] = useState(800);
-  const [currentDate, setCurrentDate] = useState(dayjs(formattedDate));
+  const [currentDate, setCurrentDate] = useState(dayjs(record?.date || formattedDate));
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf('month'));
   const [isFormEnabled, setIsFormEnabled] = useState(false);
@@ -162,20 +165,45 @@ const AddTask: React.FC = () => {
     }
   ]);
   const [refetch, setRefetch] = useState<boolean>(false);
-  const [initialValue, setInitialValue] = useState<any>({
-    timeSheetId: 0,
-    date: dayjs(currentDate).format('YYYY-MM-DD'), // Set to an empty string initially
-    workLocation: '',
-    task: '',
-    project: '',
-    startTime: '',
-    endTime: '',
-    totalHours: '',
-    description: '',
-    reportingTo: '', // Set default value to reportingManagerId if available
-  });
-  
-  // Assuming currentDate, currentWeek, and currentMonth are already defined
+  const [initialValue, setInitialValue] = useState<any>(() => {
+    if (record) {
+        return {
+            timeSheetId: record?.timeSheetId,
+            date: dayjs(record?.date).format('YYYY-MM-DD'),
+            workLocation: record?.workLocation,
+            task: record?.task,
+            project: record?.project,
+            startTime: record?.startTime,
+            endTime: record?.endTime,
+            totalHours: record?.totalHours,
+            description: record?.description,
+            reportingTo: record?.reportingTo || '', // Set default value to an empty string if reportingTo is undefined
+        };
+    } else {
+        return {
+            timeSheetId: 0,
+            date: dayjs(currentDate).format('YYYY-MM-DD'),
+            workLocation: '',
+            task: '',
+            project: '',
+            startTime: '',
+            endTime: '',
+            totalHours: '',
+            description: '',
+            reportingTo: '', 
+        };
+    }
+});
+console.log("isFormEnabled-cancelButton-isEdited", isFormEnabled, cancelButton, isEdited);
+useEffect(() => {
+  if (record) { // Check if record is defined and has a length property
+    setIsEdited(true); 
+    setCancelButton(true);
+    setIsFormEnabled(true);
+    setEditTaskId(record?.timeSheetId);
+  }
+}, [record]);
+
   useEffect(() => {
     if(!isEdited){
       if (filterOption === 'Date') {
@@ -594,26 +622,32 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     }
   };
 
+  useEffect(()=>{
+    console.log("initialValue", initialValue);
+  },[initialValue])
   // Function to handle editing a task
-  const handleEditTask = async (record: any) => {
+  const handleEditTask = (record: any) => {
     console.log("after - filteredTasks", filteredTasks);
     console.log("clicked", record);
-    // const newFitleredTasks = filteredTasks.filter((task:any)=> task.timeSheetId !==record.timeSheetId)
-    // setFilteredTasks(newFitleredTasks);
+  
+    // Update both state values synchronously
     setEditTaskId(record?.timeSheetId);
     setInitialValue({
-      date: record.date,
-      workLocation: record.workLocation,
-      task: record.task,
-      project: record.project,
-      startTime: record.startTime,
-      endTime: record.endTime,
-      totalHours: record.totalHours,
-      description: record.description,
-      reportingTo: record.reportingTo, // Set default value to reportingManagerId if available
+      date: record?.date,
+      workLocation: record?.workLocation,
+      task: record?.task,
+      project: record?.project,
+      startTime: record?.startTime,
+      endTime: record?.endTime,
+      totalHours: record?.totalHours,
+      description: record?.description,
+      reportingTo: record?.reportingTo, // Set default value to reportingManagerId if available
     });
+  
+    console.log("clicked", initialValue);
     setIsEdited(true);
   };
+  
 
   // Function to handle submitting the form (including both adding and editing tasks)
   const handleFormSubmit = async (values: any, { setSubmitting, resetForm }: FormikHelpers<any>) => {
@@ -886,15 +920,15 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       dataIndex: 'actions',
       key: 'actions',
       render: (_, record, index) => {
-        // const isExistingTask = taskList.some(task => task.task_id === record.task_id);
-        const isDateSelected = selectedKeysToHide.includes(record.date);
+        // const isExistingTask = taskList.some(task => task.task_id === record?.task_id);
+        const isDateSelected = selectedKeysToHide.includes(record?.date);
         
         
         // Filter tasks by userId
-        //const userTasks = taskList.filter(task => task.userId === record.userId);
+        //const userTasks = taskList.filter(task => task.userId === record?.userId);
         
         // Check if the user has tasks for the selected date
-        //const hasUserTasksForDate = userTasks.some(task => task.date === record.date);
+        //const hasUserTasksForDate = userTasks.some(task => task.date === record?.date);
     
         return (
           <div>
