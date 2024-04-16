@@ -61,8 +61,7 @@ export interface SetGroupedTasks{
   [key: string]: GroupedTasks
 }
 export interface UserGroupedTask {
-  [userId: string]: SetGroupedTasks;   
-  
+  [userId: string]: SetGroupedTasks;    
 }
 export interface GroupedTasks {
   uniqueRequestId: string[];
@@ -73,7 +72,6 @@ export interface GroupedTasks {
   daysRequested: string;
   totalDays: number;
   daysFilled: number;
- 
 }
 
 const ApprovalRequest:React.FC = () => { 
@@ -865,13 +863,13 @@ const ApprovalRequest:React.FC = () => {
                 const formattedMonth = `${monthNumber}-${year}`;
                 // Pass TaskObject and formattedMonth to handleRowClick
                 //handleRowClick(tasksObject, formattedMonth, event);
-                navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`);
-              //   navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
-              //     uniqueRequestId,
-              //     formattedMonth: month, 
-              //     employeeId: employeeId,
-              //     employeeName:employeeName
-              // }});
+                //navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`);
+                navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
+                  uniqueRequestId,
+                  formattedMonth: month, 
+                  employeeId: employeeId,
+                  employeeName:employeeName
+              }});
               },
             })}
             rowClassName={(record: GroupedTasks, index: number) =>
