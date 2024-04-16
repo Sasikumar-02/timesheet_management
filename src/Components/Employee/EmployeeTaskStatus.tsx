@@ -95,7 +95,7 @@ const EmployeeTaskStatus = () => {
         Meeting: 0,
         Training: 0,
         Project: 0,
-        Other:0
+        Interview:0
     })
     const [doughChartData, setDoughChartData]= useState({
         ClientLocation: 0,

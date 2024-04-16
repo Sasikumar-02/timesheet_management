@@ -142,7 +142,7 @@ const AddTask: React.FC = () => {
   const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
   //const [reportingOptions, setReportingOptions]= useState<any>('');
   const reportingOptions = ['ManagerA', 'ManagerB', 'ManagerC'];
-  const taskOptions = ['Project','Learning','Training','Meeting', 'Other'];
+  const taskOptions = ['Project','Learning','Training','Meeting', 'Interview'];
   const [filterOption, setFilterOption] = useState('Date');
   const [isEdited, setIsEdited]= useState<boolean>(false);
   // State to manage the search input

@@ -87,7 +87,7 @@ const MonthTasks: React.FC = () => {
     const [projectTotalHours, setProjectTotalHours]=useState<any[]>([]);
     const [learningTotalHours, setLearningTotalHours]=useState<any[]>([]);
     const [trainingTotalHours, setTrainingTotalHours]=useState<any[]>([]);
-    const [otherTaskTotalHours, setOtherTaskTotalHours]=useState<any[]>([]);
+    const [interviewTotalHours, setInterviewTotalHours]=useState<any[]>([]);
     const [overallTotalHours, setOverallTotalHours]=useState<any[]>([]);
     const [extraTotalHours, setExtraTotalHours]=useState<any[]>([]);
     const [meetingTotalHours, setMeetingTotalHours]=useState<any[]>([]);
@@ -98,7 +98,7 @@ const MonthTasks: React.FC = () => {
         Meeting: 0,
         Training: 0,
         Project: 0,
-        Other:0
+        Interview:0
     })
     const [doughChartData, setDoughChartData]= useState({
         ClientLocation: 0,
@@ -317,7 +317,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         const trainingTotalHoursArray = selectedRows.map(row => row.trainingTotalHours);
         const meetingTotalHoursArray = selectedRows.map(row => row.meetingTotalHours);
         const learningTotalHoursArray = selectedRows.map(row => row.learningTotalHours);
-        const otherTaskTotalHoursArray = selectedRows.map(row => row.otherTaskTotalHours);
+        const interviewTotalHoursArray = selectedRows.map(row => row.interviewTotalHours);
         const overallTotalHoursArray = selectedRows.map(row => row.overallTotalHours);
         const extraTotalHoursArray = selectedRows.map(row => row.extraTotalHours);
         
@@ -325,7 +325,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         setTrainingTotalHours(trainingTotalHoursArray);
         setMeetingTotalHours(meetingTotalHoursArray);
         setLearningTotalHours(learningTotalHoursArray);
-        setOtherTaskTotalHours(otherTaskTotalHoursArray);
+        setInterviewTotalHours(interviewTotalHoursArray);
         setOverallTotalHours(overallTotalHoursArray);
         setExtraTotalHours(extraTotalHoursArray);
     
@@ -444,7 +444,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             learningTotalHours:learningTotalHours,
             meetingTotalHours: meetingTotalHours,
             projectTotalHours: projectTotalHours,
-            otherTaskTotalHours: otherTaskTotalHours,
+            interviewTotalHours: interviewTotalHours,
             trainingTotalHours: trainingTotalHours,
             overallTotalHours:overallTotalHours,
             extraTotalHours: extraTotalHours
@@ -476,7 +476,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                     learningTotalHours:learningTotalHours,
                     meetingTotalHours: meetingTotalHours,
                     projectTotalHours: projectTotalHours,
-                    otherTaskTotalHours: otherTaskTotalHours,
+                    interviewTotalHours: interviewTotalHours,
                     trainingTotalHours: trainingTotalHours,
                     overallTotalHours:overallTotalHours,
                     extraTotalHours: extraTotalHours
@@ -812,15 +812,15 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },  
         {
-            title: 'Other',
-            dataIndex: 'otherTaskTotalHours',
-            key: 'otherTaskTotalHours',
+            title: 'Interview',
+            dataIndex: 'interviewTotalHours',
+            key: 'interviewTotalHours',
             // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
                     <div>
-                        {hoursDecimalToHoursMinutes(record?.otherTaskTotalHours)}
+                        {hoursDecimalToHoursMinutes(record?.interviewTotalHours)}
                     </div>
                 );
             }
