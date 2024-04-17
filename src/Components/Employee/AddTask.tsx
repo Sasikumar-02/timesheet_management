@@ -159,6 +159,7 @@ const AddTask: React.FC = () => {
       projectName: "Other"
     }
   ]);
+  const [submissionEnable, setSubmissionEnable] = useState(true);
   const [refetch, setRefetch] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [initialValue, setInitialValue] = useState<any>(() => {
@@ -204,30 +205,57 @@ useEffect(() => {
     setEditTaskId(record?.timeSheetId);
   }
 }, [record]);
-
-  useEffect(() => {
-    if(!isEdited){
+console.log("submissionEnable", submissionEnable);
+useEffect(() => {
+  if (!isEdited) {
       if (filterOption === 'Date') {
-        setInitialValue({
-          ...initialValue,
-          date: currentDate.format('YYYY-MM-DD'),
-        });
-        setAllowDate(currentDate.format('YYYY-MM-DD'))
+          const selectedDate = dayjs(currentDate);
+          const todayDate = dayjs();
+          setInitialValue({
+              ...initialValue,
+              date: selectedDate.format('YYYY-MM-DD'),
+          });
+          setAllowDate(selectedDate.format('YYYY-MM-DD'));
+
+          // Check if selected date is in the past
+          if (selectedDate.isBefore(todayDate, 'month')) {
+              setSubmissionEnable(false);
+          } else {
+              setSubmissionEnable(true);
+          }
       } else if (filterOption === 'Week') {
-        setInitialValue({
-          ...initialValue,
-          date: currentWeek.format('YYYY-MM-DD'),
-        });
-        setAllowDate(currentWeek.format('YYYY-MM-DD'))
+          const selectedWeek = dayjs(currentWeek);
+          const todayDate = dayjs();
+          setInitialValue({
+              ...initialValue,
+              date: selectedWeek.format('YYYY-MM-DD'),
+          });
+          setAllowDate(selectedWeek.format('YYYY-MM-DD'));
+
+          // Check if selected week is in the past
+          if (selectedWeek.isBefore(todayDate, 'month')) {
+              setSubmissionEnable(false);
+          } else {
+              setSubmissionEnable(true);
+          }
       } else if (filterOption === 'Month') {
-        setInitialValue({
-          ...initialValue,
-          date: currentMonth.format('YYYY-MM-DD'),
-        });
-        setAllowDate(currentMonth.format('YYYY-MM-DD'))
+          const selectedMonth = dayjs(currentMonth);
+          const todayDate = dayjs();
+          setInitialValue({
+              ...initialValue,
+              date: selectedMonth.format('YYYY-MM-DD'),
+          });
+          setAllowDate(selectedMonth.format('YYYY-MM-DD'));
+
+          // Check if selected month is in the past
+          if (selectedMonth.isBefore(todayDate, 'month')) {
+              setSubmissionEnable(false);
+          } else {
+              setSubmissionEnable(true);
+          }
       }
-    }
-  }, [filterOption, isEdited, currentDate, currentMonth, currentWeek]); // Run this effect whenever filterOption changes
+  }
+}, [filterOption, isEdited, currentDate, currentMonth, currentWeek]);
 
   // useEffect(()=>{
   //   if(!isEdited){
@@ -791,23 +819,41 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
 
   const handleRequestSubmit = async (values: any, { setSubmitting, resetForm }: FormikHelpers<any>) => {
     try {
-      // Your submission logic here
-      console.log("handleRequestSubmit", values);
-      // Show notification if submission is successful
-      notification.success({
-        message: 'Request Submitted Successfully',
-        duration: 3, // Duration in seconds
-      });
-  
-      // Reset form after successful submission
-      resetForm();
+        // Prepare the payload
+        const payload = {
+            requestedMonthAndYear: dayjs(values.month).format('YYYY-MM'),
+            description: values.description,
+            reportingToId: values.reportingTo,
+        };
+
+        // Send POST request to the API endpoint
+        const response = await api.post('/api/v1/timeSheet/request-submission-by-month', payload);
+
+        // Log the response
+        console.log("API response:", response.data);
+
+        // Show notification if submission is successful
+        notification.success({
+            message: 'Request Submitted Successfully',
+            duration: 3, // Duration in seconds
+        });
+
+        // Reset form after successful submission
+        resetForm();
     } catch (error) {
-      // Handle errors if submission fails
-      console.error('Submission error:', error);
+        // Handle errors if submission fails
+        console.error('Submission error:', error);
+
+        // Show notification for error
+        notification.error({
+            message: 'Failed to submit request',
+            description:  'An error occurred while submitting the request.',
+            duration: 3, // Duration in seconds
+        });
     } finally {
-      setSubmitting(false);
+        setSubmitting(false);
     }
-  };
+};
   
   
 
@@ -1066,7 +1112,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
             )
           }
         </div>
-        {(isFormEnabled && cancelButton) ? ( 
+        {(isFormEnabled && cancelButton && submissionEnable) ? ( 
         <Formik
           initialValues={initialValue}
           validationSchema={validationSchema}
@@ -1089,7 +1135,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
          return (  
           <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
             <div>
-              {(isFormEnabled )&& ( //&& filterOption!=='Date'
+              {(isFormEnabled && submissionEnable)&& ( //&& filterOption!=='Date'
                 <CloseCircleOutlined
                   style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'1000px' }}
                   title='Click the icon to disable the form'
@@ -1521,7 +1567,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           
          
           <div style={{display:'flex', justifyContent:'flex-end'}}>
-         
+         { !submissionEnable && (
           <Button 
               id='cancel-new'
               onClick={handleRequest} 
@@ -1529,6 +1575,8 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           >
               Request
           </Button>
+         )
+         }
           <Modal
             title="Request"
             className='modalTitle'
@@ -1668,7 +1716,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
               )}
             </Formik>
             </Modal>
-        {!cancelButton && !isFormEnabled && (
+        {!cancelButton && !isFormEnabled && submissionEnable && (
             <Button
               id='cancel-new'
               onClick={handleToggleForm}
