@@ -646,6 +646,8 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
   
     console.log("clicked", initialValue);
     setIsEdited(true);
+    setIsFormEnabled(prev=>!prev);
+    setCancelButton(true);
   };
   
 
@@ -1024,7 +1026,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
             )
           }
         </div>
-        {(((filterOption === 'Date' || filterOption === 'Week' || filterOption === 'Month') && isEdited)) || isFormEnabled  ? ( 
+        {(isFormEnabled && cancelButton) ? ( 
         <Formik
           initialValues={initialValue}
           validationSchema={validationSchema}
