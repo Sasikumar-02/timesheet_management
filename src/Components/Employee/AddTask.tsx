@@ -1052,6 +1052,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
               {(isFormEnabled )&& ( //&& filterOption!=='Date'
                 <CloseCircleOutlined
                   style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'1000px' }}
+                  title='Click the icon to disable the form'
                   onClick={handleToggleForm} // Call the handleToggleForm function on click
                 />
               )}
