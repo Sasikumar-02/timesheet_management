@@ -25,7 +25,7 @@ import {
   Menu,
   Dropdown,
 } from "antd";
-
+import * as ExcelJS from 'exceljs';
 import { ExpandableConfig } from 'antd/lib/table/interface';
 import 'moment/locale/en-in';
 import {
@@ -166,6 +166,204 @@ const ApprovalRequest:React.FC = () => {
     setSelectedMonth(currentMonth);
     setSelectedYear(currentYear);
   };
+
+  const fetchTaskByUniqueId = async (uniqueRequestIds: any[]) => {
+    console.log('exportToExcel - 1', uniqueRequestIds);
+    try {
+        // Flatten the 2D array to 1D
+        const flattenedIds = uniqueRequestIds.flat();
+        console.log('exportToExcel - 2', flattenedIds);
+
+        // Map each uniqueRequestId to a promise that fetches its corresponding tasks
+        const tasksPromises = flattenedIds.map(async (uniqueRequestId) => {
+            const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
+            return response?.data?.response?.data;
+        });
+
+        // Wait for all promises to resolve
+        const tasks = await Promise.all(tasksPromises);
+        console.log("exportToExcel - tasks", tasks);
+        return tasks;
+    } catch (error) {
+        console.error('Error fetching data by unique IDs:', error);
+        throw error; // Rethrow the error for handling in the caller function
+    }
+};
+// const exportToExcel = async () => {
+//   try {
+//       let imgId1: number;
+//       let imgId2: number;
+//       console.log("exportToExcel - selectedRows", selectedRows);
+//       console.log("exportToExcel - monthTasks", monthTasks);
+      
+//       let dataToExport: any[] = [];
+//       if (selectedRows?.length > 0) {
+//           console.log("sleectedRows", selectedRows);
+//           let ids = monthTasks
+//               .filter(row => selectedRows.includes(row.uniqueRequestId))
+//               .map(row => row.uniqueRequestId);
+//           const fetchedData = await fetchTaskByUniqueId(ids);
+      
+//           // Flatten the fetchedData array of arrays
+//           dataToExport = fetchedData.flat();
+//       } else {
+//           // If no rows are selected, export all monthTasks data
+//           console.log("sleectedRows -1", overallData)
+//           dataToExport = overallData.flat();
+//       }
+//       // Map over dataToExport to extract values for Excel
+//       const data = dataToExport.map((rowData: any) => {
+//           return [
+//               rowData.date || '',          // Date
+//               rowData.workLocation || '',  // Work Location
+//               rowData.task || '',          // Task
+//               rowData.project || '',       // Title
+//               rowData.startTime || '',     // Start Time
+//               rowData.endTime || '',       // End Time
+//               rowData.totalHours || '',    // Shift Hours
+//               rowData.description || '',   // Description
+//               rowData.reportingTo || ''   // Reporting To
+//           ];
+//       });
+//       console.log("exportToExcel - dataToExport", dataToExport);
+          
+//       const header = ['Date', 'Work Location', 'Task', 'Project', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];         
+
+//       // Flatten the array
+//       console.log("exportToExcel- data", data);
+      
+//       // Create a workbook and add a worksheet
+//       const workbook = new ExcelJS.Workbook();
+//       const worksheet = workbook.addWorksheet('Sheet1');
+
+//       worksheet.views = [{
+//           showGridLines: false
+//       }];
+
+//       // Add Timesheet row with background color, bold, and 24px font size
+//       const timesheetRow = worksheet.addRow(['TimeSheet']);
+//       timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
+//       timesheetRow.fill = {
+//           type: 'pattern',
+//           pattern: 'solid',
+//           fgColor: { argb: '0B4266' } // Blue color
+//       };
+
+//       // Add Name and Month rows with specified values
+//       const nameRow = worksheet.addRow([]);
+//       nameRow.getCell(1).value = 'Name:';
+//       nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+//       nameRow.getCell(2).value = employeeName;
+//       const userIdRow = worksheet.addRow([]);
+//       userIdRow.getCell(1).value = 'UserID:';
+//       userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+//       userIdRow.getCell(2).value = employeeId;
+
+//       const monthRow = worksheet.addRow([]);
+//       monthRow.getCell(1).value = 'Month:';
+//       monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
+//       monthRow.getCell(2).value = formattedMonth; // Dynamically convert date to "Month Year" format
+          
+//       // Add empty rows
+//       for (let i = 0; i < 1; i++) {
+//           worksheet.addRow([]);
+//       }
+
+//       // Call exportCharts to get the images
+//       const { pieChartImage, lineChartImage } = await exportCharts();
+
+//       // Calculate the current row number
+//       const currentRow = worksheet.rowCount + 2;
+
+//       // Add the images to the worksheet
+//       const pieChartImageId = workbook.addImage({
+//           base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
+//           extension: 'png',
+//       });
+
+//       const lineChartImageId = workbook.addImage({
+//           base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
+//           extension: 'png',
+//       });
+
+//       //Add both images to the same row
+//       worksheet.addImage(pieChartImageId, {
+//           tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+//           br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
+//       });
+
+//       worksheet.addImage(lineChartImageId, {
+//           tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+//           br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
+//       });
+      
+//       // Add a row with horizontal gridline (6th row)
+//       const gridlineRow = worksheet.addRow(Array(header.length).fill('')); // Add empty content for each column
+//       gridlineRow.eachCell(cell => {
+//           cell.border = {
+//               bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+//           };
+//       });
+
+//       // Add header row with styles starting from 8th row
+//       const headerRow = worksheet.addRow(header);
+//       headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
+
+//       // Set background color for header cells
+//       headerRow.eachCell(cell => {
+//           cell.fill = {
+//               type: 'pattern',
+//               pattern: 'solid',
+//               fgColor: { argb: '0B4266' } // Blue color
+//           };
+//       });
+
+//       console.log("exportToExcel - Data to export:", data);
+
+//       // Add data rows
+//       data?.forEach(rowData => {
+//           console.log("exportToExcel - rowData", rowData);
+//           const row = worksheet.addRow(rowData);
+//           // Set border and text alignment for data rows
+//           row.eachCell(cell => {
+//               cell.border = {
+//                   top: { style: 'thin' },
+//                   left: { style: 'thin' },
+//                   bottom: { style: 'thin' },
+//                   right: { style: 'thin' }
+//               };
+//               cell.alignment = { horizontal: 'left' }; // Align text to the left
+//           });
+//       });
+
+
+//       // Set column widths based on header length
+//       worksheet.columns?.forEach((column, index) => {
+//           if (index < header.length) {
+//               column.width = 23; // Adjust width as needed
+//           } else {
+//               column.hidden = true; // Hide columns beyond the header length
+//           }
+//       });
+
+//       // Add a row with horizontal gridline (6th row)
+//       const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns?.length).fill('')); // Add empty content for each column
+//       gridlineRowEnd.eachCell(cell => {
+//           cell.border = {
+//               bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+//           };
+//       });
+
+//       // Generate Excel file
+//       const buffer = await workbook.xlsx.writeBuffer();
+//       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+//       saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+//       setSelectedRows([]);
+
+//   } catch (error) {
+//       console.error('Error exporting to Excel:', error);
+//   }
+// };
   
   
   // useEffect(() => {
@@ -351,9 +549,13 @@ const ApprovalRequest:React.FC = () => {
   //   setApprovalRequests([]);
   // };
   
-  const handleRowSelection = (selectedRowKeys: React.Key[]) => {
-    console.log("handleRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
-    setSelectedRows(selectedRowKeys as string[]);
+  const handleRowSelection = (selectedRowKeys:any, selectedRows:any) => {
+    // Extracting uniqueRequestId array from selectedRows
+    console.log("handleRowSelection", selectedRows, selectedRowKeys);
+    const uniqueRequestIds = selectedRows.map((row:any) => row.uniqueRequestId);
+    console.log("handleRowSelection-1", uniqueRequestIds);
+    // Update selectedRows state with the array of uniqueRequestId
+    setSelectedRows(uniqueRequestIds);
   };
 
 
@@ -852,8 +1054,13 @@ const ApprovalRequest:React.FC = () => {
               Clear Filter
               </Button>
           </div>
-
+          <button onClick={()=>fetchTaskByUniqueId(selectedRows)}>Click</button>
           <Table
+            rowSelection={{
+                type: 'checkbox',
+                selectedRowKeys: selectedRows,
+                onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
+            }}
             onRow={(record: GroupedTasks) => ({
               onClick: (event: React.MouseEvent<HTMLElement>) => {
                 const { uniqueRequestId, employeeId, month, employeeName } = record;
@@ -879,6 +1086,7 @@ const ApprovalRequest:React.FC = () => {
             columns={columns}
            dataSource={userTasks}
             pagination={false}
+            rowKey="uniqueRequestId" // Set the rowKey prop to 'uniqueRequestId'
 
           />
         

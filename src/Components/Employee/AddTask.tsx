@@ -81,19 +81,12 @@ interface UserManager {
   reportingManagerName: string;
   reportingManagerId: string;
 }
-
 interface PieChartData {
   options: {
     labels: string[];
   };
   series: number[];
 }
-
-type AddTaskProps = {
-  setPieChartData: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
-  setApprovalRequestsData: React.Dispatch<React.SetStateAction<Task[]>>;
-  approvalRequestsData: Task[];
-};
 
 const config: ThemeConfig = {
   token: {
@@ -142,6 +135,8 @@ const AddTask: React.FC = () => {
     reportingTo: reportingToID,
   });
   const [deletedTaskIdx, setDeletedTaskIdx] = useState<number | null>(null);
+  const [allowDate, setAllowDate]= useState(dayjs().format('YYYY-MM-DD'));
+  console.log("allowDate", allowDate);
   const [taskList, setTaskList] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
   //const [reportingOptions, setReportingOptions]= useState<any>('');
@@ -165,6 +160,7 @@ const AddTask: React.FC = () => {
     }
   ]);
   const [refetch, setRefetch] = useState<boolean>(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [initialValue, setInitialValue] = useState<any>(() => {
     if (record) {
         return {
@@ -194,6 +190,11 @@ const AddTask: React.FC = () => {
         };
     }
 });
+const [modalInitialValue, setModalInitialValue]= useState<any>({
+  month: '',
+  reportingTo:'',
+  description:''
+})
 console.log("isFormEnabled-cancelButton-isEdited", isFormEnabled, cancelButton, isEdited);
 useEffect(() => {
   if (record) { // Check if record is defined and has a length property
@@ -211,16 +212,19 @@ useEffect(() => {
           ...initialValue,
           date: currentDate.format('YYYY-MM-DD'),
         });
+        setAllowDate(currentDate.format('YYYY-MM-DD'))
       } else if (filterOption === 'Week') {
         setInitialValue({
           ...initialValue,
           date: currentWeek.format('YYYY-MM-DD'),
         });
+        setAllowDate(currentWeek.format('YYYY-MM-DD'))
       } else if (filterOption === 'Month') {
         setInitialValue({
           ...initialValue,
           date: currentMonth.format('YYYY-MM-DD'),
         });
+        setAllowDate(currentMonth.format('YYYY-MM-DD'))
       }
     }
   }, [filterOption, isEdited, currentDate, currentMonth, currentWeek]); // Run this effect whenever filterOption changes
@@ -429,12 +433,6 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     setTotalHours(newTotalHours);
   }, [startTime, endTime]);
 
-
-  const updateSlNo = (tasks: Task[], deleteTask: boolean): Task[] => {
-    return tasks.map((task, index) => ({
-      ...task
-    }));
-  };
   const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
   const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
   const workLocation = ['Work From Home', 'Office', 'Client Location', 'On-Duty'];
@@ -622,9 +620,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     }
   };
 
-  useEffect(()=>{
-    console.log("initialValue", initialValue);
-  },[initialValue])
+  const handleRequest = () => {
+        setModalVisible(true);
+  };
+  const handleCancel = () => {
+    setModalVisible(false);
+  };
+
   // Function to handle editing a task
   const handleEditTask = (record: any) => {
     console.log("after - filteredTasks", filteredTasks);
@@ -656,6 +658,15 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     console.log("handleFormSubmit-filteredTasks", filteredTasks);
     console.log("handleFormSubmit-values", values)
     // Check for overlapping tasks in the specified time range
+
+    // Check if any field is empty
+    if (!values.startTime || !values.endTime || !values.workLocation || !values.task || !values.project || !values.description || !values.reportingTo) {
+        notification.warning({
+            message: 'Missing Information',
+            description: 'Please fill in all fields before submitting the task.',
+        });
+        return; // Abort submission
+    }
 
     const overlappingTask = filteredTasks.find((task:any )=> {
       
@@ -777,6 +788,27 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       });
     }
   };
+
+  const handleRequestSubmit = async (values: any, { setSubmitting, resetForm }: FormikHelpers<any>) => {
+    try {
+      // Your submission logic here
+      console.log("handleRequestSubmit", values);
+      // Show notification if submission is successful
+      notification.success({
+        message: 'Request Submitted Successfully',
+        duration: 3, // Duration in seconds
+      });
+  
+      // Reset form after successful submission
+      resetForm();
+    } catch (error) {
+      // Handle errors if submission fails
+      console.error('Submission error:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
   
 
   const handleDeleteTask = useCallback((task_id:any) => {
@@ -978,7 +1010,15 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
   const handleClearForm = (resetForm:any) => {
     resetForm(); // Reset the form to its initial values
   };
-
+  const modalValidationSchema = yup.object().shape({
+    month: yup.string()
+      .required('Month is required'), // Validate that the month field is not empty
+    reportingTo: yup.string()
+      .required('ReportingTo is required'), // Validate that the reportingTo field is not empty
+    description: yup.string()
+      .required('Description is required') // Validate that the description field is not empty
+      .max(500, 'Description must be at most 500 characters long') // Validate that the description is at most 500 characters long
+  });
     // Define validation schema using Yup
   const validationSchema = yup.object().shape({
     date: yup.string().required('Date is required'),
@@ -1067,57 +1107,62 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                     style={{ padding: "10px" }}
                   >
                     <DatePicker
-                        style={{
-                          height: "50px",
-                          width: "470px",
-                          borderRadius: "4px",
-                          margin: "0px",
-                        }}
-                        format="YYYY-MM-DD" // Set the format of the displayed date
-                        value={
-                            isEdited
-                                ? (values.date ? dayjs(values.date) : null)
-                                : filterOption === 'Week'
-                                ? currentWeek
-                                    ? dayjs(currentWeek)
-                                    : null
-                                : filterOption === 'Month'
-                                ? currentMonth
-                                    ? dayjs(currentMonth)
-                                    : null
-                                : currentDate
-                                ? dayjs(currentDate)
-                                : null
-                        }                 
-                        onChange={(date, dateString) => {
-                          if (date) {
-                            // Update currentDate, currentWeek, or currentMonth based on filterOption
-                            if (filterOption === 'Week') {
-                              setCurrentWeek(date);
-                            } else if (filterOption === 'Month') {
-                              setCurrentMonth(date);
-                            } else {
-                              setCurrentDate(date);
-                            }
-                            // Set Formik field value
-                            setFieldValue('date', dayjs(dateString).format('YYYY-MM-DD'));
+                      style={{
+                        height: "50px",
+                        width: "470px",
+                        borderRadius: "4px",
+                        margin: "0px",
+                      }}
+                      format="YYYY-MM-DD"
+                      value={
+                        isEdited
+                          ? (values.date ? dayjs(values.date) : null)
+                          : filterOption === 'Week'
+                          ? currentWeek
+                            ? dayjs(currentWeek)
+                            : null
+                          : filterOption === 'Month'
+                          ? currentMonth
+                            ? dayjs(currentMonth)
+                            : null
+                          : currentDate
+                          ? dayjs(currentDate)
+                          : null
+                      }                 
+                      onChange={(date, dateString) => {
+                        if (date) {
+                          // Update currentDate, currentWeek, or currentMonth based on filterOption
+                          if (filterOption === 'Week') {
+                            setCurrentWeek(date);
+                            setAllowDate(date.format('YYYY-MM-DD')); // Update allowDate
+                          } else if (filterOption === 'Month') {
+                            setCurrentMonth(date);
+                            setAllowDate(date.format('YYYY-MM-DD')); // Update allowDate
+                          } else {
+                            setCurrentDate(date);
+                            setAllowDate(date.format('YYYY-MM-DD')); // Update allowDate
                           }
-                        }}
-                        onBlur={handleBlur}
-                        disabledDate={(current) => {
-                          // Disable dates after today
-                          return current && current > moment().endOf('day');
-                        }}
-                      />
+                          // Set Formik field value
+                          setAllowDate(dayjs(dateString).format('YYYY-MM-DD')); // Update allowDate
+                          setFieldValue('date', dayjs(dateString).format('YYYY-MM-DD'));
+                        }
+                      }}
+                      onBlur={handleBlur}
+                      disabledDate={(current) => {
+                        // Disable dates after today
+                        return current && current > moment().endOf('day');
+                      }}
+                    />
                     <div>
                       <Typography.Text
                         type="danger"
-                        style={{ wordBreak: "break-word", textAlign:'left' }}
+                        style={{ wordBreak: "break-word", textAlign: 'left' }}
                       >
                         <ErrorMessage name="date" />
                       </Typography.Text>
                     </div>
                   </Form.Item>
+
                     <Form.Item<FieldType>
                       label="Work Location"
                       className="label-strong"
@@ -1416,11 +1461,11 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                       <Button
                         //type="primary"
                         htmlType="button"
-                        style={{ width: "100px", height: "41px", cursor: selectedKeysToHide.includes(getCurrentDate()) ? 'not-allowed' : 'pointer'}}
+                        style={{ width: "100px", height: "41px", cursor: selectedKeysToHide.includes(values.date) ? 'not-allowed' : 'pointer'}}
                         className="Button"
                         id='cancel-addTask'
                         onClick={() => handleClearForm(resetForm)}
-                        disabled={selectedKeysToHide.includes(getCurrentDate())} // Disable if currentDate is in selectedKeysToHide
+                        disabled={selectedKeysToHide.includes(values.date)} // Disable if currentDate is in selectedKeysToHide
                       >
                         Clear
                       </Button>
@@ -1429,10 +1474,10 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                         <Button
                           type="primary"
                           htmlType="submit"
-                          style={{ width: "100%", height: "41px" , marginLeft:'10px', cursor: selectedKeysToHide.includes(getCurrentDate()) ? 'not-allowed' : 'pointer'}}
+                          style={{ width: "100%", height: "41px" , marginLeft:'10px', cursor: (selectedKeysToHide.includes(values.date) || Object.keys(errors).length > 0)  ? 'not-allowed' : 'pointer'}}
                           className="Button"
-                          disabled={isSubmitting || selectedKeysToHide.includes(getCurrentDate()) }
-                          title={selectedKeysToHide.includes(getCurrentDate()) ? 'Approved date should not have the access to add the task' : ''}
+                          disabled={isSubmitting || selectedKeysToHide.includes(values.date) || Object.keys(errors).length > 0 } // Disable if submitting, date is in selectedKeysToHide, or there are form errors
+                          title={selectedKeysToHide.includes(values.date) ? 'Approved date should not have the access to add the task' :  Object.keys(errors).length > 0 ? 'Kindly fill all the required fields':''}
                         >
                           {isSubmitting ? 'Submitting...' : (isEdited ? 'Save' : 'Add Task')}
                         </Button>
@@ -1477,7 +1522,152 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
          
           <div style={{display:'flex', justifyContent:'flex-end'}}>
          
-        
+          <Button 
+              id='cancel-new'
+              onClick={handleRequest} 
+              //title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
+          >
+              Request
+          </Button>
+          <Modal
+            title="Request"
+            className='modalTitle'
+            visible={modalVisible}
+            onCancel={handleCancel}
+            footer={false}
+            >
+            <Formik
+              initialValues={modalInitialValue}
+              validationSchema={modalValidationSchema}
+              onSubmit={handleRequestSubmit}
+              enableReinitialize={true}
+            >
+            {({
+              values,
+              handleChange,
+              setFieldValue,
+              setFieldTouched,
+              handleBlur,
+              handleSubmit,
+              errors,
+              isSubmitting,
+              resetForm
+            }) => (
+              <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
+                <div style={{display:'flex'}}>
+                  <Form.Item
+                    label="Month"
+                    className="label-strong"
+                    name="month"
+                    required
+                    style={{ padding: "10px" }}
+                  >
+                    <DatePicker
+                      style={{
+                        height: "50px",
+                        width: "470px",
+                        borderRadius: "4px",
+                        margin: "0px",
+                      }}
+                      picker="month" // Set picker to "month" to allow only month and year selection
+                      format="MMMM YYYY" // Use the format for month and year (e.g., "April 2024")
+                      value={values.month ? dayjs(values.month, "MMMM YYYY") : null} // Parse the value using dayjs if it exists
+                      onChange={(date, dateString) => {
+                        setFieldValue('month', dateString); // Update the value using the formatted date string
+                      }}
+                      onBlur={() => {
+                        setFieldTouched("month", true); // Mark "workLocation" field as touched
+                      }}
+                    />
+                    <div>
+                      <Typography.Text
+                        type="danger"
+                        style={{ wordBreak: "break-word", textAlign: 'left' }}
+                      >
+                        <ErrorMessage name="month" />
+                      </Typography.Text>
+                    </div>
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Reporting To"
+                    className="label-strong"
+                    name="reportingTo"
+                    required
+                    style={{ padding: "10px" }}
+                  >
+                    <Select
+                      style={{
+                        height: "50px",
+                        width: "470px",
+                        borderRadius: "4px",
+                        margin: "0px",
+                      }}
+                      value={values.reportingTo}
+                      onChange={(value, option) => {
+                        setFieldValue("reportingTo", value); // Update "workLocation" field value
+                      }}
+                      onBlur={() => {
+                        setFieldTouched("reportingTo", true); // Mark "workLocation" field as touched
+                      }}
+                    >
+                      <Select.Option value="" disabled>
+                        Select the Reporting Manager
+                      </Select.Option>
+                      {reportingTo.map((option, index) => (  // Use 'index' as the key
+                        <Option key={index} value={option.reportingManagerId}>
+                          {option.reportingManagerName}
+                        </Option>
+                      ))}
+                    </Select>
+                    <div>
+                      <Typography.Text
+                        type="danger"
+                        style={{ wordBreak: "break-word", textAlign: "left" }}
+                      >
+                        <ErrorMessage name="reportingTo" /> {/* Display error message if any */}
+                      </Typography.Text>
+                    </div>
+                  </Form.Item>
+                </div>
+                <Form.Item
+                  label="Description"
+                  className="label-strong"
+                  name="description"
+                  required
+                  style={{ padding: "10px" }}
+                >
+                  <TextArea
+                    style={{
+                      height: "150px",
+                      width: "960px",
+                      borderRadius: "4px",
+                      margin: "0px",
+                    }}
+                    name="description"
+                    value={values.description}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                  <div>
+                    <Typography.Text
+                      type="danger"
+                      style={{ wordBreak: "break-word", textAlign:'left' }}
+                    >
+                      <ErrorMessage name="description" />
+                    </Typography.Text>
+                  </div>
+                </Form.Item>
+                <Button
+                type="primary"
+                htmlType="submit"
+                >Submit
+                </Button>
+              </Form>
+              
+              )}
+            </Formik>
+            </Modal>
         {!cancelButton && !isFormEnabled && (
             <Button
               id='cancel-new'
@@ -1514,16 +1704,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
           <Button
             id='submit-overall'
             onClick={handleOverallSubmit}
-            disabled={selectedKeysToHide.includes(getCurrentDate())} // Disable if currentDate is in selectedKeysToHide
-            style={{ cursor: selectedKeysToHide.includes(getCurrentDate()) ? 'not-allowed' : 'pointer' }}
-            title={selectedKeysToHide.includes(getCurrentDate()) ? 'Approved date should not have the access to submit the task' : ''}
+            disabled={selectedKeysToHide.includes(allowDate)} // Disable if currentDate is in selectedKeysToHide
+            style={{ cursor: selectedKeysToHide.includes(allowDate) ? 'not-allowed' : 'pointer' }}
+            title={selectedKeysToHide.includes(allowDate) ? 'Approved date should not have the access to submit the task' : ''}
           >
             Submit
           </Button>
-
-
-        </div>
-           
+        </div>           
         </>
       </div>
     </ConfigProvider>
