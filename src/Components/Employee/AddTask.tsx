@@ -821,7 +821,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     try {
         // Prepare the payload
         const payload = {
-            requestedMonthAndYear: dayjs(values.month).format('YYYY-MM'),
+            requestedMonth: dayjs(values.month).format('YYYY-MM'),
             description: values.description,
             reportingToId: values.reportingTo,
         };
@@ -840,6 +840,7 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
 
         // Reset form after successful submission
         resetForm();
+        setModalVisible(false);
     } catch (error) {
         // Handle errors if submission fails
         console.error('Submission error:', error);

@@ -25,18 +25,19 @@ const Calendar = () => {
   const location = useLocation();
   const {confirm}= Modal;
   const [events, setEvents] = useState<Event[]>([]);
-  const [currentMonth, setCurrentMonth] = useState(dayjs());
   const { month, year, clickedDate } = location.state;
   const [uniqueRequestId, setUniqueRequestId]= useState('');
+  console.log("uniqueRequestId",uniqueRequestId);
   const [formattedDate, setFormattedDate] = useState<string>('');
   const [clickedRecord, setClickedRecord] = useState<any>();
   const [modalVisible, setModalVisible] = useState(false);
   const [refetch, setRefetch] = useState<boolean>(false);
   const [selectedKeysToHide, setSelectedKeysToHide]=useState<string[]>([]);
   console.log("uniqueRequestId",uniqueRequestId);
-  useEffect(() => {
-    fetchCalendarView(month, year);
-  }, [month, year]);
+  console.log("formattedDate",formattedDate);
+  console.log("clickedDate", clickedDate);
+  const [newMonth, setNewMonth]= useState(month);
+  const [newYear, setNewYear]= useState(year);
 
   const handleDateClick = (arg: DateClickArg) => {
     const clickedDate = dayjs(arg.date);
@@ -53,10 +54,6 @@ const Calendar = () => {
       });
     } else {
       const formattedDate = clickedDate.format("YYYY-MM-DD");
-     // fetchDataByUniqueId(uniqueRequestId);
-      // navigate(`/employee/addtask?date=${formattedDate}`, {
-      //   state: { formattedDate },
-      // });
       console.log("formattedDate",formattedDate);
       setFormattedDate(formattedDate);
       setModalVisible(true);
@@ -68,8 +65,8 @@ const Calendar = () => {
         try {
             const response = await api.get("/api/v1/timeSheet/task-calendar-view", {
                 params: {
-                    month,
-                    year,
+                    month: newMonth,
+                    year:newYear,
                 },
             });
 
@@ -83,74 +80,56 @@ const Calendar = () => {
                     setUniqueRequestId(task.uniqueId);
                 }
             });
+
+            const events = calendarData?.map((task: any) => {
+              let color = "";
+              let title = "";
+      
+              switch (task.status) {
+                case "Approved":
+                  color = "green";
+                  title = "Approved";
+                  break;
+                case "Rejected":
+                  color = "red";
+                  title = `Rejected - ${task.comments}`;
+                  break;
+                default:
+                  color = "orange";
+                  title = "Pending";
+                  break;
+              }
+      
+              return {
+                title,
+                start: task.date, // Convert date string to Date object
+                color,
+              };
+            });
+      
+            console.log("events", events);
+            setEvents(events);
         } catch (err) {
             throw err;
         }
     };
 
     fetchData();
-}, [formattedDate]);
+}, [formattedDate, newMonth, newYear]);
 
 
-
-  const fetchCalendarView = async (month: any, year: any) => {
-    try {
-      const response = await api.get("/api/v1/timeSheet/task-calendar-view", {
-        params: {
-          month,
-          year,
-        },
-      });
-
-      const calendarData = response?.data?.response?.data;
-
-      const events = calendarData?.map((task: any) => {
-        let color = "";
-        let title = "";
-
-        switch (task.status) {
-          case "Approved":
-            color = "green";
-            title = "Approved";
-            break;
-          case "Rejected":
-            color = "red";
-            title = `Rejected - ${task.comments}`;
-            break;
-          default:
-            color = "orange";
-            title = "Pending";
-            break;
-        }
-
-        return {
-          title,
-          start: task.date, // Convert date string to Date object
-          color,
-        };
-      });
-
-      console.log("events", events);
-      setEvents(events);
-    } catch (err) {
-      throw err;
-    }
-  };
 
   useEffect(()=>{
     fetchDataByUniqueId(uniqueRequestId)
   }, [uniqueRequestId])
 
-  const handleDatesSet = (arg: any) => {
-    const currentMonthDate = dayjs(arg.start);
-    setCurrentMonth(currentMonthDate);
-  };
-
   const handlePrevNextClick = (arg: any) => {
     setRefetch((prev)=>!prev);
-    const newMonth = dayjs(arg.view.currentStart).format("MMMM");
-    const newYear = dayjs(arg.view.currentStart).format("YYYY");
-    fetchCalendarView(newMonth, newYear);
+    const month = dayjs(arg.view.currentStart).format("MMMM");
+    const year = dayjs(arg.view.currentStart).format("YYYY");
+    setNewMonth(month);
+    setNewYear(year);
+    setFormattedDate(dayjs(arg.view.currentStart).format("YYYY-MM-DD"))
   };
 
   useEffect(() => {
@@ -193,8 +172,9 @@ const Calendar = () => {
     },[refetch])
     const fetchDataByUniqueId = async (uniqueRequestId: string) => {
       try {
+        console.log("Response Data: unique", uniqueRequestId);
           const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
-          console.log('Response data:', response.data);
+          console.log('Response data:', response.data.response.data);
           setClickedRecord(response?.data?.response?.data);
           // Process response data if needed
       } catch (error) {
@@ -432,6 +412,11 @@ const Calendar = () => {
           setModalVisible(true);
       }
   };
+
+  const handleModalVisible=()=>{
+    setModalVisible(false) 
+    setUniqueRequestId('')
+  }
   
 
     const modalContent = clickedRecord && (
@@ -514,7 +499,7 @@ const Calendar = () => {
       <Modal
           title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
           visible={modalVisible}
-          onCancel={() => setModalVisible(false)}
+          onCancel={handleModalVisible}
           footer={null}
       >
           {modalContent}
