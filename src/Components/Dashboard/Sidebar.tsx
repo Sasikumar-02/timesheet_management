@@ -102,7 +102,15 @@ const Sidebar: React.FC = () => {
                             icon={<ScheduleOutlined />}
                             className={activeKey === "timesheet" ? "active" : ""}
                         >
-                            <Link to="/manager/timesheet">TimeSheet</Link>
+                            <Link to="/manager/timesheet">Timesheet</Link>
+                        </Menu.Item>
+                        <Menu.Item
+                            id="menu"
+                            key="monthRequest"
+                            icon={<ScheduleOutlined />}
+                            className={activeKey === "monthRequest" ? "active" : ""}
+                        >
+                            <Link to="/manager/monthRequest">Employee Request</Link>
                         </Menu.Item>
                     </>
                 );

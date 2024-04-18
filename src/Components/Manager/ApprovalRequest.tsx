@@ -779,7 +779,7 @@ const ApprovalRequest:React.FC = () => {
     
     const columns: ColumnsType<GroupedTasks> = [
       {
-        title: 'Sl.no',
+        title: 'Sl.No',
         className: 'ant-table-column-title',
         dataIndex: 'slNo',
         key: 'slNo',
