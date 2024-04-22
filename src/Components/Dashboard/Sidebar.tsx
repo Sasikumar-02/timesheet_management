@@ -46,6 +46,14 @@ const Sidebar: React.FC = () => {
                         >
                             <Link to="/employee/addtask">TimeSheet</Link>
                         </Menu.Item>
+                        <Menu.Item
+                            id="menu"
+                            key="monthRequest"
+                            icon={<ScheduleOutlined />}
+                            className={activeKey === "monthRequest" ? "active" : ""}
+                        >
+                            <Link to="/employee/monthRequest">Month Request</Link>
+                        </Menu.Item>
                     </>
                 );
             case 'ROLE_HR':

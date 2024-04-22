@@ -10,7 +10,8 @@ import {
   } from "@ant-design/icons";
   import type { ThemeConfig } from "antd";
 import api from '../../Api/Api-Service';
-
+import { DecodedToken } from '../Employee/EmployeeTaskStatus';
+import { jwtDecode } from 'jwt-decode';
 const config: ThemeConfig = {
     token: {
       colorPrimary: "#0b4266",
@@ -24,6 +25,10 @@ const config: ThemeConfig = {
   };
 
 const MonthRequest = () => {
+    const token = localStorage.getItem("authToken");
+    const decoded = jwtDecode(token || "") as DecodedToken;
+    const role = decoded.Role;
+    console.log("decoded", decoded);
     const {Option}= Select
     const statusOptions = ['Pending', 'Approved', 'Rejected'];
     const [request, setRequest]= useState<any[]>([]);
@@ -189,53 +194,58 @@ const MonthRequest = () => {
             rowKey="id" // Set the rowKey prop to 'uniqueRequestId'
 
         />
-        <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}> 
-            {selectedStatus !== 'Approved' && selectedStatus !== 'Rejected' && (
-                <>
-                    <Button 
-                        style={{
-                            height: '200%',
-                            width: '100px',
-                            backgroundColor: selectedRows.length===0?'#FC8267': 'red',
-                            color: 'white',
-                            marginRight: '10px',
-                            cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
-                        }} 
-                        onClick={handleReject} 
-                        title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
-                    >
-                        Reject
-                    </Button>
-                    <Button 
-                        style={{
-                            height: '200%', 
-                            width: '100px', 
-                            backgroundColor: selectedRows.length===0?'#6CB66B':'green', 
-                            color: 'white', 
-                            cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
-                        }} 
-                        onClick={handleApprove} 
-                        title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}
-                    >
-                        Approve
-                    </Button>
-                </>
-            )}
+        {
+          role === 'ROLE_MANAGER' && (
+            <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}> 
+              {selectedStatus !== 'Approved' && selectedStatus !== 'Rejected' && (
+                  <>
+                      <Button 
+                          style={{
+                              height: '200%',
+                              width: '100px',
+                              backgroundColor: selectedRows.length===0?'#FC8267': 'red',
+                              color: 'white',
+                              marginRight: '10px',
+                              cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
+                          }} 
+                          onClick={handleReject} 
+                          title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
+                      >
+                          Reject
+                      </Button>
+                      <Button 
+                          style={{
+                              height: '200%', 
+                              width: '100px', 
+                              backgroundColor: selectedRows.length===0?'#6CB66B':'green', 
+                              color: 'white', 
+                              cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
+                          }} 
+                          onClick={handleApprove} 
+                          title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}
+                      >
+                          Approve
+                      </Button>
+                  </>
+              )}
 
-            <Modal
-            title="Comments"
-            className='modalTitle'
-            visible={commentVisible}
-            onCancel={handleCancel}
-            footer={[
-                <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
-                Submit
-                </Button>,
-            ]}
-            >
-            <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
-            </Modal>
-        </div>
+              <Modal
+              title="Comments"
+              className='modalTitle'
+              visible={commentVisible}
+              onCancel={handleCancel}
+              footer={[
+                  <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
+                  Submit
+                  </Button>,
+              ]}
+              >
+              <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
+              </Modal>
+            </div>
+          )
+        }
+        
     </ConfigProvider>
   )
 }

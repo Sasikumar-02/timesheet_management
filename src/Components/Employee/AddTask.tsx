@@ -230,48 +230,87 @@ useEffect(() => {
   if (!isEdited) {
       if (filterOption === 'Date') {
           const selectedDate = dayjs(currentDate);
-          const todayDate = dayjs();
+          const todayDate = dayjs().format('YYYY-MM-DD');
           setInitialValue({
               ...initialValue,
               date: selectedDate.format('YYYY-MM-DD'),
           });
           setAllowDate(selectedDate.format('YYYY-MM-DD'));
           handleApprovedRequest(selectedDate.format('YYYY-MM'));
+          // if (selectedDate.isBefore(todayDate, 'month')) {
+          //   setSubmissionEnable(false);
+          // } else {
+          //     setSubmissionEnable(true);
+          // }
           // Check if selected date is in the past
-          if (selectedDate.isBefore(todayDate, 'month')) {
-              setSubmissionEnable(false);
-          } else {
-              setSubmissionEnable(true);
-          }
+          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')//dayjs().startOf('month') // First day of the current month
+          const previousMonth = dayjs(firstDayOfCurrentMonth).subtract(1, 'month').startOf('month');
+          console.log("todayDate-firstDayOfCurrentMonth-previousMonth-selectedDate",todayDate,firstDayOfCurrentMonth,previousMonth, selectedDate)
+          if ((selectedDate.isSame(firstDayOfCurrentMonth, 'day')|| selectedDate.isAfter(firstDayOfCurrentMonth,'day')) && selectedDate.isSame(firstDayOfCurrentMonth, 'month')) {
+            // If the selected date is the first day of the current month
+            // Enable submission for the previous month
+            setSubmissionEnable(true);
+        } else if ( (todayDate===firstDayOfCurrentMonth) && dayjs(selectedDate).format('YYYY-MM') === previousMonth.format('YYYY-MM')) {
+          // If the selected date is in the previous month compared to firstDayOfCurrentMonth
+          // Enable submission
+          setSubmissionEnable(true);
+      } else {
+          // If the selected date is after the first day of the current month
+          // Disable submission
+          setSubmissionEnable(false);
+      }
+
       } else if (filterOption === 'Week') {
           const selectedWeek = dayjs(currentWeek);
-          const todayDate = dayjs();
+          const todayDate = dayjs().format('YYYY-MM-DD');
           setInitialValue({
               ...initialValue,
               date: selectedWeek.format('YYYY-MM-DD'),
           });
           setAllowDate(selectedWeek.format('YYYY-MM-DD'));
           handleApprovedRequest(selectedWeek.format('YYYY-MM'));
-          // Check if selected week is in the past
-          if (selectedWeek.isBefore(todayDate, 'month')) {
-              setSubmissionEnable(false);
+          // Check if selected date is in the past
+          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')//dayjs().startOf('month') // First day of the current month
+          const previousMonth = dayjs(firstDayOfCurrentMonth).subtract(1, 'month').startOf('month');
+          console.log("todayDate-firstDayOfCurrentMonth-previousMonth-selectedWeek",todayDate,firstDayOfCurrentMonth,previousMonth, selectedWeek)
+          if ((selectedWeek.isSame(firstDayOfCurrentMonth, 'day')|| selectedWeek.isAfter(firstDayOfCurrentMonth,'day')) && selectedWeek.isSame(firstDayOfCurrentMonth, 'month')) {
+            // If the selected date is the first day of the current month
+            // Enable submission for the previous month
+            setSubmissionEnable(true);
+          } else if ( (todayDate===firstDayOfCurrentMonth) && dayjs(selectedWeek).format('YYYY-MM') === previousMonth.format('YYYY-MM')) {
+            // If the selected date is in the previous month compared to firstDayOfCurrentMonth
+            // Enable submission
+            setSubmissionEnable(true);
           } else {
-              setSubmissionEnable(true);
+              // If the selected date is after the first day of the current month
+              // Disable submission
+              setSubmissionEnable(false);
           }
       } else if (filterOption === 'Month') {
           const selectedMonth = dayjs(currentMonth);
-          const todayDate = dayjs();
+          const todayDate = dayjs().format('YYYY-MM-DD');
           setInitialValue({
               ...initialValue,
               date: selectedMonth.format('YYYY-MM-DD'),
           });
           setAllowDate(selectedMonth.format('YYYY-MM-DD'));
           handleApprovedRequest(selectedMonth.format('YYYY-MM'));
-          // Check if selected month is in the past
-          if (selectedMonth.isBefore(todayDate, 'month')) {
-              setSubmissionEnable(false);
+          // Check if selected date is in the past
+          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')//dayjs().startOf('month') // First day of the current month
+          const previousMonth = dayjs(firstDayOfCurrentMonth).subtract(1, 'month').startOf('month');
+          console.log("todayDate-firstDayOfCurrentMonth-previousMonth-selectedMonth",todayDate,firstDayOfCurrentMonth,previousMonth, selectedMonth)
+          if ((selectedMonth.isSame(firstDayOfCurrentMonth, 'day')|| selectedMonth.isAfter(firstDayOfCurrentMonth,'day')) && selectedMonth.isSame(firstDayOfCurrentMonth, 'month')) {
+            // If the selected date is the first day of the current month
+            // Enable submission for the previous month
+            setSubmissionEnable(true);
+          } else if ( (todayDate===firstDayOfCurrentMonth) && dayjs(selectedMonth).format('YYYY-MM') === previousMonth.format('YYYY-MM')) {
+            // If the selected date is in the previous month compared to firstDayOfCurrentMonth
+            // Enable submission
+            setSubmissionEnable(true);
           } else {
-              setSubmissionEnable(true);
+              // If the selected date is after the first day of the current month
+              // Disable submission
+              setSubmissionEnable(false);
           }
       }
   }
@@ -294,8 +333,6 @@ useEffect(() => {
     setSubmissionEnable(true);
   }
 }, [approvedRequest, dayjs(allowDate).format('YYYY-MM')]); // Include 'date' as a dependency if it's used in the effect
-
-
 
 
   useEffect(() => {
