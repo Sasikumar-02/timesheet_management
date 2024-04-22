@@ -293,7 +293,7 @@ useEffect(() => {
   if (approvedRequest.includes(allowDate)) {
     setSubmissionEnable(true);
   }
-}, [approvedRequest, allowDate]); // Include 'date' as a dependency if it's used in the effect
+}, [approvedRequest, dayjs(allowDate).format('YYYY-MM')]); // Include 'date' as a dependency if it's used in the effect
 
 
 
