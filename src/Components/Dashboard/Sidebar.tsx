@@ -120,6 +120,14 @@ const Sidebar: React.FC = () => {
                         >
                             <Link to="/manager/monthRequest">Employee Request</Link>
                         </Menu.Item>
+                        <Menu.Item
+                            id="menu"
+                            key="taskassign"
+                            icon={<ScheduleOutlined />}
+                            className={activeKey === "taskassign" ? "active" : ""}
+                        >
+                            <Link to="/manager/taskassign">Assign Task</Link>
+                        </Menu.Item>
                     </>
                 );
             default:

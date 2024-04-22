@@ -73,7 +73,7 @@ export interface Task {
   reportingTo: string;
 }
 
-interface ProjectDetails {
+export interface ProjectDetails {
   projectName: string;
 }
 
