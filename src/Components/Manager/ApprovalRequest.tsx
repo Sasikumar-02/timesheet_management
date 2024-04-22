@@ -86,7 +86,6 @@ const ApprovalRequest:React.FC = () => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   //const [rejectedKeys, setRejectedKeys] = useState<RecentRejected[]>([]);
   const navigate = useNavigate();
-  //const [selectedRows, setSelectedRows] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedInnerRows, setSelectedInnerRows] = useState<string[]>([]);
   //const[daysInMonth, getDaysInMonth]=useState<string[]>([]);

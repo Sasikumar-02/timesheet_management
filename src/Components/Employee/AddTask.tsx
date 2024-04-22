@@ -160,8 +160,11 @@ const AddTask: React.FC = () => {
     }
   ]);
   const [submissionEnable, setSubmissionEnable] = useState(true);
+  console.log("submissionEnable",submissionEnable);
   const [refetch, setRefetch] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [approvedRequest, setApprovedRequest]= useState<any[]>([]);
+  console.log("approvedRequest",approvedRequest);
   const [initialValue, setInitialValue] = useState<any>(() => {
     if (record) {
         return {
@@ -197,6 +200,23 @@ const [modalInitialValue, setModalInitialValue]= useState<any>({
   description:''
 })
 console.log("isFormEnabled-cancelButton-isEdited", isFormEnabled, cancelButton, isEdited);
+
+useEffect(() => {
+  const fetchData = async () => {
+      const response = await api.get('/api/v1/timeSheet/fetch-month-block-requests');
+      console.log("response", response.data.response.data);
+      let approvedArray:any[]=[];
+      response.data.response.data.map((status:any)=>{
+        console.log("status", status);
+        if (status.approvalStatus === "Approved") {
+          approvedArray.push(status.requestedMonth);
+        }
+      })
+      setApprovedRequest(approvedArray);
+  }
+  fetchData();
+}, []);
+
 useEffect(() => {
   if (record) { // Check if record is defined and has a length property
     setIsEdited(true); 
@@ -216,7 +236,7 @@ useEffect(() => {
               date: selectedDate.format('YYYY-MM-DD'),
           });
           setAllowDate(selectedDate.format('YYYY-MM-DD'));
-
+          handleApprovedRequest(selectedDate.format('YYYY-MM'));
           // Check if selected date is in the past
           if (selectedDate.isBefore(todayDate, 'month')) {
               setSubmissionEnable(false);
@@ -231,7 +251,7 @@ useEffect(() => {
               date: selectedWeek.format('YYYY-MM-DD'),
           });
           setAllowDate(selectedWeek.format('YYYY-MM-DD'));
-
+          handleApprovedRequest(selectedWeek.format('YYYY-MM'));
           // Check if selected week is in the past
           if (selectedWeek.isBefore(todayDate, 'month')) {
               setSubmissionEnable(false);
@@ -246,7 +266,7 @@ useEffect(() => {
               date: selectedMonth.format('YYYY-MM-DD'),
           });
           setAllowDate(selectedMonth.format('YYYY-MM-DD'));
-
+          handleApprovedRequest(selectedMonth.format('YYYY-MM'));
           // Check if selected month is in the past
           if (selectedMonth.isBefore(todayDate, 'month')) {
               setSubmissionEnable(false);
@@ -257,22 +277,27 @@ useEffect(() => {
   }
 }, [filterOption, isEdited, currentDate, currentMonth, currentWeek]);
 
-  // useEffect(()=>{
-  //   if(!isEdited){
-  //     setInitialValue({
-  //       timeSheetId: 0,
-  //       date: currentDate.format('YYYY-MM-DD'),
-  //       workLocation: '',
-  //       task: '',
-  //       project: '',
-  //       startTime: '',
-  //       endTime: '',
-  //       totalHours: '',
-  //       description: '',
-  //       reportingTo: '', // Set default value to reportingManagerId if available
-  //     })
-  //   }
-  // },[currentDate, currentMonth, currentWeek, filterOption, isEdited])
+const handleApprovedRequest = (date: string) => {
+  console.log("handleApprovedRequest", date);
+  setApprovedRequest((prevApprovedRequest) => {
+    const updatedApprovedRequest = [...prevApprovedRequest];
+    if (updatedApprovedRequest.includes(date)) {
+      setSubmissionEnable(true);
+    }
+    return updatedApprovedRequest;
+  });
+};
+
+useEffect(() => {
+  // Assuming 'date' is defined elsewhere
+  if (approvedRequest.includes(allowDate)) {
+    setSubmissionEnable(true);
+  }
+}, [approvedRequest, allowDate]); // Include 'date' as a dependency if it's used in the effect
+
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
