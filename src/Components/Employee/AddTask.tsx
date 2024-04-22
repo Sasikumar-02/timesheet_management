@@ -1047,8 +1047,8 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
     {
       title: 'Reporting To',
       //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
-      dataIndex: 'reportingTo',
-      key: 'reportingTo',
+      dataIndex: 'reportingToName',
+      key: 'reportingToName',
       fixed: 'left',
     }, 
     {
