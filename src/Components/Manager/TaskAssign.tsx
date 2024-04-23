@@ -23,8 +23,10 @@ import { jwtDecode } from 'jwt-decode';
   }
 
   interface Employee {
+    employeeId?:string;
     employeeName?:string;
   }
+
   interface ProjectDetails{
     active: boolean;
     createdOn: string;
@@ -57,29 +59,39 @@ const TaskAssign = () => {
                 description: '',
     });
     const [project, setProject] = useState<ProjectDetails[]>([]);
+    console.log("project", project);
     const [employee, setEmployee]= useState<Employee[]>([
     {
         employeeName:"Other"
     }
     ])
+    const [allemployees, setAllEmployees]= useState<Employee[]>([]);
     const token = localStorage.getItem("authToken");
     const decoded = jwtDecode(token || "") as DecodedToken;
     const userId = decoded.UserId;
     console.log("employee-1", employee);
     console.log("project", project);
 
-    useEffect(()=>{
-        const fetchData=async()=>{
-            try{
-                const response = await api.get('/api/v1/employee/fetch-reporting-manager-users');
-                console.log("allemployees", response.data.response.data);
-            }
-            catch(error){
-                throw error;
-            }
-        }
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await api.get('/api/v1/employee/fetch-reporting-manager-users');
+            console.log("allemployees", response.data.response.data);
+            const employeeNames = response.data.response.data.map((emp: any) => {
+              return {
+                employeeName: emp.firstName + ' ' + emp.lastName, // Concatenate first and last name
+                employeeId: emp.userId
+              };
+            });
+            setAllEmployees(employeeNames);
+          } catch (error) {
+            console.error('Error fetching reporting manager users:', error);
+          }
+        };
+      
         fetchData();
-    },[])
+      }, []);
+      
     useEffect(() => {
         const fetchData = async () => {
           try {
@@ -120,7 +132,7 @@ const TaskAssign = () => {
               projectManagerName: '', // Example value
               projectManagerProfile: '', // Example value
               projectManagerUserId: '', // Example value
-              projectMembers: [], // Example value
+              projectMembers: employee, // Example value
               projectName: 'Other',
               projectOwner: '', // Example value
               projectOwnerName: '', // Example value
@@ -134,10 +146,14 @@ const TaskAssign = () => {
             setProject([...projectsData, otherProject]);
             
             // Extract employee names
-            let employeeNames: any[] = [];
+            let employeeNames: Employee[] = [];
             response.data.response.data.forEach((project: any) => {
               project.projectMembers.forEach((member: any) => {
-                employeeNames.push(member.userName);
+                employeeNames.push(
+                    {
+                        employeeName: member.userName,
+                        employeeId: member.userId,
+                    });
               });
             });
             setEmployee(employeeNames);
@@ -148,6 +164,27 @@ const TaskAssign = () => {
       
         fetchData();
       }, []);
+
+      const handleEmployeeName=(value:string)=>{
+        console.log("handleEmployeeName", value);
+        if(value === 'Other'){
+            setEmployee(allemployees);
+        } else{
+            let employeeNames:any[]=[];
+            project.map((project:any)=>{
+                if(project.projectName === value){
+                    project.projectMembers.forEach((member: any) => {
+                        employeeNames.push(
+                        {
+                            employeeName: member.userName,
+                            employeeId: member.userId,
+                        });
+                    });
+                }
+            })
+            setEmployee(employeeNames);
+        }
+      }
 
 
     const handleFormSubmit=()=>{
@@ -347,36 +384,38 @@ const TaskAssign = () => {
                 <div>
                   <div style={{display:'flex'}}>
                     <Form.Item
-                    label="Project"
-                    className="label-strong"
-                    name="project"
-                    required
-                    style={{ padding: "10px" }}
-                    >
-                    <Select
-                        style={{
-                        height: "50px",
-                        width: "470px",
-                        borderRadius: "4px",
-                        margin: "0px",
-                        }}
-                        value={values.project}
-                        onChange={(value, option) => {
-                        setFieldValue("project", value); // Update "workLocation" field value
-                        }}
-                        onBlur={() => {
-                        setFieldTouched("project", true); // Mark "workLocation" field as touched
-                        }}
-                    >
-                        <Select.Option value="" disabled>
-                        Select the Project
-                        </Select.Option>
-                        {project.map((option, index) => (  
-                        <Select.Option key={index} value={option.projectName}>
-                            {option.projectName}
-                        </Select.Option>
-                        ))}
-                    </Select>
+                        label="Project"
+                        className="label-strong"
+                        name="project"
+                        required
+                        style={{ padding: "10px" }}
+                        >
+                        <Select
+                            style={{
+                            height: "50px",
+                            width: "470px",
+                            borderRadius: "4px",
+                            margin: "0px",
+                            }}
+                            value={values.project}
+                            onChange={(value, option) => {
+                                handleEmployeeName(value)
+                                setFieldValue("project", value); // Update "workLocation" field value
+                                
+                            }}
+                            onBlur={() => {
+                            setFieldTouched("project", true); // Mark "workLocation" field as touched
+                            }}
+                        >
+                            <Select.Option value="" disabled>
+                            Select the Project
+                            </Select.Option>
+                            {project.map((option, index) => (  
+                            <Select.Option key={index} value={option.projectName}>
+                                {option.projectName}
+                            </Select.Option>
+                            ))}
+                        </Select>
                     <div>
                         <Typography.Text
                         type="danger"
@@ -513,7 +552,7 @@ const TaskAssign = () => {
                             Select the Employee
                             </Select.Option>
                             {employee.map((option, index) => (
-                            <Select.Option key={index} value={option.employeeName}> {/* Using Select.Option */}
+                            <Select.Option key={index} value={option.employeeId}> {/* Using Select.Option */}
                                 {option.employeeName}
                             </Select.Option>
                             ))}
