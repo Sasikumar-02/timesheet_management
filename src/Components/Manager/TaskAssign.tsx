@@ -254,13 +254,21 @@ const TaskAssign = () => {
         } else {
           // Handle other response statuses
           console.error('Failed to assign the task', response.status);
+          notification.error({
+            message: 'Failure',
+            description: 'Something went wrongx',
+          });
         }
       }
       catch (error) {
         // Handle errors
         setSubmitting(false);
         console.error('Error adding/editing task:', error);
-        // You can also show a notification or perform other error handling here
+        // Display error notification
+        notification.error({
+          message: 'Error',
+          description: 'Failed to assign the task. Please try again later.',
+      });
       }
     }
       
@@ -361,7 +369,7 @@ const TaskAssign = () => {
                         </div>
                         </Form.Item>
                         <Form.Item<FieldType>
-                          label="Task"
+                          label="Task Name"
                           className="label-strong"
                           name="task"
                           required

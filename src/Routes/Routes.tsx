@@ -22,6 +22,7 @@ import UserMonthlyTask from "../Components/Employee/UserMonthlyTask";
 import UserEveryDateTask from "../Components/Employee/UserEveryDateTask";
 import MonthRequest from "../Components/Manager/MonthRequest";
 import TaskAssign from "../Components/Manager/TaskAssign";
+import TaskAssignTable from "../Components/Manager/TaskAssignTable";
 interface RouteBase {
   path: string;
   element: React.ReactNode;
@@ -118,6 +119,11 @@ export const ManagerRoutes: ProtectedRoutes[] = [
   {
     path:"/manager/taskassign", 
     element:<TaskAssign />,
+    roles: Roles.ROLE_MANAGER
+  },
+  {
+    path:"/manager/taskassigntable", 
+    element:<TaskAssignTable />,
     roles: Roles.ROLE_MANAGER
   }
 ];

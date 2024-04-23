@@ -110,6 +110,10 @@ const MonthRequest = () => {
         console.log("selectedRowKeys",selectedRowKeys);
         setSelectedRows(selectedRowKeys);
       };
+
+      const handleClearFilter = () => {
+        setSelectedStatus(null); // Clear the selected status
+    };
       
 
     const columns: ColumnsType<any> = [
@@ -166,9 +170,13 @@ const MonthRequest = () => {
   return (
     <ConfigProvider theme={config}>
         <div>
+          <div style={{textAlign:'left', marginLeft:'20px', color:"#0B4266"}}>
+            <h2>{role==='ROLE_MANAGER' ?'Employee Request':'Request Status'}</h2>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'left' }}>
             <Select
                 showSearch
-                style={{ width: 200, marginRight: 8, height: 40 }}
+                style={{ width: 200, marginRight: 8, height: 40, marginLeft:'20px' }}
                 placeholder="Filter by Status"
                 onChange={(value) => setSelectedStatus(value)}
                 value={selectedStatus}
@@ -180,6 +188,8 @@ const MonthRequest = () => {
                     </Option>
                 ))}
             </Select>
+            <Button type="default" onClick={handleClearFilter} style={{ width: '100px', height: '40px' }}>Clear Filter</Button>
+          </div>
         </div>
         <Table
             rowSelection={{
@@ -235,7 +245,7 @@ const MonthRequest = () => {
               visible={commentVisible}
               onCancel={handleCancel}
               footer={[
-                  <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
+                  <Button style={{ width:'100px', height:'40px', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
                   Submit
                   </Button>,
               ]}

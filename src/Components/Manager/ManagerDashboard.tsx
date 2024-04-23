@@ -32,6 +32,7 @@ import { TaskRequestedOn } from '../Employee/AddTask';
 import api from '../../Api/Api-Service';
 import { DecodedToken } from '../Employee/EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
+import MonthRequest from './MonthRequest';
 interface PerformanceDatum {
     taskName: string;
     totalHours: number;
@@ -985,6 +986,7 @@ const fetchDoughReport=async(month:any, year:any)=>{
                 </button>
             ))}
         </div> */}
+        <MonthRequest/>
       </>
     )
 }

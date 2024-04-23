@@ -736,6 +736,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         return `${hours}h ${minutes}min`;
       };
 
+      const handleClearFilter = () => {
+        setSelectedStatus(null); // Clear the selected status
+    };
+
   
     const column: ColumnsType<any> = [
         {
@@ -1053,10 +1057,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div style={{ display: 'flex', alignItems: 'left' }}>
                         <Select
                             showSearch
-                            style={{ width: 200, marginRight: 8, height: 40 }}
+                            style={{ width: 200, marginRight: 8, height: 40, marginLeft:'20px' }}
                             placeholder="Filter by Status"
                             onChange={(value) => setSelectedStatus(value)}
                             value={selectedStatus}
@@ -1068,6 +1072,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                                 </Option>
                             ))}
                         </Select>
+                        <Button type="default" onClick={handleClearFilter} style={{ width: '100px', height: '40px' }}>Clear Filter</Button>
                     </div>
 
                    
