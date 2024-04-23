@@ -17,6 +17,8 @@ import { jwtDecode } from 'jwt-decode';
 import { CatchingPokemonSharp } from '@mui/icons-material';
 import '../Styles/CreateUser.css';
 import '../Styles/AddTask.css';
+import { useLocation } from 'react-router-dom';
+import { initial } from 'lodash';
   type FieldType={
     members?:Array<any>;
     task?: string;
@@ -62,38 +64,49 @@ import '../Styles/AddTask.css';
   };
 
 const TaskAssign = () => {
-    
+    const location = useLocation();
+    const { state } = location;
+    const record = state && state.record ? state.record : null;
     const [project, setProject] = useState<ProjectDetails[]>([]);
     console.log("project", project);
-    const [employee, setEmployee]= useState<Employee[]>([
-    {
-        employeeName:"Other"
-    }
-    ])
+    const [employee, setEmployee]= useState<Employee[]>([])
     const [allemployees, setAllEmployees]= useState<Employee[]>([]);
+    console.log("employee,allemployees", employee,allemployees);
     const token = localStorage.getItem("authToken");
     const decoded = jwtDecode(token || "") as DecodedToken;
     const userId = decoded.UserId;
-    const [initialValue, setInitialValue] = useState<any>({
-      members: allemployees,
-      task: '',
-      project: '',
-      startDate: '',
-      endDate: '',
-      description: '',
+    const [initialValue, setInitialValue] = useState<any>(() => {
+      if (record) {
+        console.log("record.employees", record.employees);
+          return {
+              members: record.employees.map((emp:any)=>emp.employeeId),
+              task: record.taskName,
+              project: record.projectName,
+              startDate: record.startDate,
+              endDate: record.estimatedEndDate,
+              description: record.taskDescription,
+          };
+      } else {
+          return {
+              members: allemployees,
+              task: '',
+              project: '',
+              startDate: '',
+              endDate: '',
+              description: '',
+          };
+      }
     });
-
+  console.log("initialValue", initialValue)
     useEffect(() => {
         const fetchData = async () => {
           try {
             const response = await api.get('/api/v1/employee/fetch-reporting-manager-users');
             console.log("allemployees", response.data.response.data);
-            const employeeNames = response.data.response.data.map((emp: any) => {
-              return {
-                employeeName: emp.firstName + ' ' + emp.lastName, 
-                employeeId: emp.userId
-              };
-            });
+            const employeeNames = response.data.response.data.map((emp: any) => ({
+              employeeName: emp.firstName + ' ' + emp.lastName,
+              employeeId: emp.userId
+          }));
             setAllEmployees(employeeNames);
           } catch (error) {
             console.error('Error fetching reporting manager users:', error);
@@ -319,7 +332,7 @@ const TaskAssign = () => {
               isSubmitting,
               resetForm
             }) => 
-          { console.log(values,errors)
+          { console.log("values",values,errors)
             return (  
               <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
                 <div>
@@ -469,52 +482,54 @@ const TaskAssign = () => {
                       </div>
                       <div style={{display:'flex'}}>
                       <Form.Item
-                          label="Employee"
-                          className="label-strong"
-                          name="members"
-                          required
-                          style={{ padding: "10px" }}
-                      >
-                          <Select
-                              mode="multiple"
-                              style={{
-                                  height: "50px",
-                                  width: "960px",
-                                  borderRadius: "4px",
-                                  margin: "0px",
-                              }}
-                              value={values.members}
-                              onChange={(value, option) => {
-                                  setFieldValue("members", value);
-                              }}
-                              onBlur={() => {
-                                  setFieldTouched("members", true);
-                              }}
-                              maxTagCount={6} // Display up to 3 selected options
-                              maxTagPlaceholder={(omittedValues) => (
-                                  <div title={`${omittedValues.length} more items`}>
-                                      {`+ ${omittedValues.length} more`}
-                                  </div>
-                              )}
-                          >
-                              <Select.Option value="" disabled>
-                                  Select the Employee
-                              </Select.Option>
-                              {employee.map((option, index) => (
-                                  <Select.Option key={index} value={option.employeeId}>
-                                      {option.employeeName}
-                                  </Select.Option>
-                              ))}
-                          </Select>
-                          <div>
-                              <Typography.Text
-                                  type="danger"
-                                  style={{ wordBreak: "break-word", textAlign: "left" }}
-                              >
-                                  <ErrorMessage name="members" />
-                              </Typography.Text>
-                          </div>
-                      </Form.Item>
+    label="Employee"
+    className="label-strong"
+    name="members"
+    required
+    style={{ padding: "10px" }}
+>
+    <Select
+        mode="multiple"
+        style={{
+            height: "50px",
+            width: "960px",
+            borderRadius: "4px",
+            margin: "0px",
+        }}
+        defaultValue={record? record.employees.map((emp:any)=>emp.employeeId): null}
+        // value={record ? record.employees.map((emp: any) => emp.employeeId) : values.members}
+        onChange={(value, option) => {
+            setFieldValue("members", value);
+        }}
+        onBlur={() => {
+            setFieldTouched("members", true);
+        }}
+        maxTagCount={6} // Display up to 6 selected options
+        maxTagPlaceholder={(omittedValues) => (
+            <div title={`${omittedValues.length} more items`}>
+                {`+ ${omittedValues.length} more`}
+            </div>
+        )}
+    >
+        <Select.Option value="" disabled>
+            Select the Employee
+        </Select.Option>
+        {employee.map((option, index) => (
+                <Select.Option key={index} value={option.employeeId}>
+                    {option.employeeName}
+                </Select.Option>
+            ))
+        }
+    </Select>
+    <div>
+        <Typography.Text
+            type="danger"
+            style={{ wordBreak: "break-word", textAlign: "left" }}
+        >
+            <ErrorMessage name="members" />
+        </Typography.Text>
+    </div>
+</Form.Item>
 
 
 
@@ -572,7 +587,7 @@ const TaskAssign = () => {
                               //disabled={isSubmitting || selectedKeysToHide.includes(values.date) || Object.keys(errors).length > 0 } // Disable if submitting, date is in selectedKeysToHide, or there are form errors
                               //title={selectedKeysToHide.includes(values.date) ? 'Approved date should not have the access to add the task' :  Object.keys(errors).length > 0 ? 'Kindly fill all the required fields':''}
                             >
-                              {isSubmitting ? 'Submitting...' : 'Add Task'}
+                              {isSubmitting ? 'Submitting...' : record? 'Save':'Assign Task'}
                             </Button>
                           </Form.Item>
                         

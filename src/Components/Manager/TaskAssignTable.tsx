@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { ColumnsType } from 'antd/es/table';
 import { Space, Avatar } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined } from '@mui/icons-material';
 import {
     UserOutlined,
@@ -15,6 +16,7 @@ interface EmployeeDetails{
     employeeId?:string;
 }
 interface TaskTable{
+    taskId?:string;
     projectName?:string;
     taskName?:string;
     startDate?:string;
@@ -24,9 +26,9 @@ interface TaskTable{
     taskStatus?:string;
 }
 const TaskAssignTable = () => {
-    const [taskTable,setTaskTable]= useState<any>([]);
-    const [employee, setEmployee]= useState<EmployeeDetails[]>([]);
-    console.log("taskTable,employee", taskTable, employee);
+    const navigate = useNavigate();
+    const [taskTable,setTaskTable]= useState<TaskTable[]>([]);
+    console.log("taskTable,employee", taskTable);
 
         const handleEmployees = async (employeeId: string[]) => {
             try {
@@ -43,7 +45,7 @@ const TaskAssignTable = () => {
                     }));
                     return filteredEmployees;
                 // Update the state with the filtered employee data
-                setEmployee(filteredEmployees);
+                //setEmployee(filteredEmployees);
             } catch (error) {
                 console.error("Error fetching employees:", error);
             }
@@ -59,6 +61,7 @@ const TaskAssignTable = () => {
                     const updatedTaskTablePromises = response.data.response.data.map(async (task: any) => {
                         const filteredEmployees = await handleEmployees(task.employees);
                         return {
+                            taskId: task.taskId,
                             projectName: task.projectName,
                             taskName: task.taskName,
                             startDate: task.startDate,
@@ -86,7 +89,8 @@ const TaskAssignTable = () => {
 
 
     const handleEditTask=(record:any)=>{
-
+        console.log("handleEditTask-record", record);
+        navigate('/manager/taskassign', {state:{record}})
     }
     const handleDeleteTask=(record: any)=>{
 
