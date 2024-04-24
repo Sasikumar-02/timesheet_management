@@ -178,6 +178,40 @@ console.log("isFormEnabled-cancelButton-isEdited", isFormEnabled, cancelButton, 
 
 useEffect(() => {
   const fetchData = async () => {
+      try {
+          const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
+          console.log("fetchTaskManager", response.data.response.data);
+          // Map over tasks and call handleEmployees for each task
+          // const updatedTaskTablePromises = response.data.response.data.map(async (task: any) => {
+          //     const filteredEmployees = await handleEmployees(task.employees);
+          //     return {
+          //         taskId: task.taskId,
+          //         projectName: task.projectName,
+          //         taskName: task.taskName,
+          //         startDate: task.startDate,
+          //         estimatedEndDate: task.estimatedEndDate,
+          //         taskStatus: task.taskStatus,
+          //         taskDescription: task.taskDescription,
+          //         employees: filteredEmployees
+          //     };
+          // });
+
+          // // Wait for all handleEmployees calls to complete
+          // const updatedTaskTable = await Promise.all(updatedTaskTablePromises);
+
+          // Update the task table state with the new data
+          //setTaskTable(updatedTaskTable);
+      } catch (error) {
+          throw error;
+      }
+  };
+
+  fetchData();
+}, []);
+
+
+useEffect(() => {
+  const fetchData = async () => {
       const response = await api.get('/api/v1/timeSheet/fetch-month-block-requests');
       console.log("response", response.data.response.data);
       let approvedArray:any[]=[];
@@ -581,7 +615,7 @@ useEffect(() => {
       if(nextDate.isAfter(dayjs(), 'day')){
         notification.warning({
           message: 'Warning',
-          description: 'Cannot navigate to future weeks.',
+          description: 'Cannot navigate to future dates.',
         });
         return;
       }
@@ -1793,6 +1827,8 @@ useEffect(() => {
                 <Button
                 type="primary"
                 htmlType="submit"
+                // id='cancel-new'
+                style={{width:'10%', height:'100%'}}
                 >Submit
                 </Button>
               </Form>

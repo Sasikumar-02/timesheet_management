@@ -69,6 +69,7 @@ const TaskAssign = () => {
     const navigate = useNavigate();
     const { state } = location;
     const record = state && state.record ? state.record : null;
+    console.log("record", record);
     const [project, setProject] = useState<ProjectDetails[]>([]);
     console.log("project", project);
     const [employee, setEmployee]= useState<Employee[]>([])
@@ -78,7 +79,7 @@ const TaskAssign = () => {
     const decoded = jwtDecode(token || "") as DecodedToken;
     const userId = decoded.UserId;
     const [initialValue, setInitialValue] = useState<any>(() => {
-      if (record) {
+      if (record!==null) {
         console.log("record.employees", record.employees);
           return {
               members: record.employees.map((emp:any)=>emp.employeeId),
@@ -255,7 +256,7 @@ const TaskAssign = () => {
         }
 
         console.log("payload-1", payload);
-        if(record){
+        if(record!==null){
           const edit_payload={
             taskId: record.taskId,
             projectName: values.project,
@@ -272,19 +273,11 @@ const TaskAssign = () => {
             // Display a notification when the task is submitted successfully
             notification.success({
               message: 'Success',
-              description: 'Task Assigned Successfully',
+              description: 'Task Edited Successfully',
             });
             navigate('/manager/taskassigntable')
             setSubmitting(true);
             resetForm();
-            setInitialValue({
-              members: allemployees,
-              task: '',
-              project: '',
-              startDate: '',
-              endDate: '',
-              description: '',
-            })
           } else {
             // Handle other response statuses
             console.error('Failed to assign the task', response.status);
@@ -302,6 +295,7 @@ const TaskAssign = () => {
               message: 'Success',
               description: 'Task Assigned Successfully',
             });
+            navigate('/manager/taskassigntable')
             setSubmitting(true);
             resetForm();
           } else {
@@ -397,6 +391,7 @@ const TaskAssign = () => {
                                 value={values.project}
                                 onChange={(value, option) => {
                                     handleEmployeeName(value)
+                                    setFieldValue("members", []); // Set "members" field value to an empty array
                                     setFieldValue("project", value); // Update "workLocation" field value
                                     
                                 }}
@@ -537,8 +532,8 @@ const TaskAssign = () => {
             borderRadius: "4px",
             margin: "0px",
         }}
-        defaultValue={record? record.employees.map((emp:any)=>emp.employeeId): null}
-        // value={record ? record.employees.map((emp: any) => emp.employeeId) : values.members}
+        defaultValue={(record!==null)? record.employees.map((emp:any)=>emp.employeeId): null}
+        value={values.members} // Control the value based on Formik values
         onChange={(value, option) => {
             setFieldValue("members", value);
         }}
@@ -552,9 +547,9 @@ const TaskAssign = () => {
             </div>
         )}
     >
-        <Select.Option value="" disabled>
+        {/* <Select.Option value="" disabled>
             Select the Employee
-        </Select.Option>
+        </Select.Option> */}
         {employee.map((option, index) => (
                 <Select.Option key={index} value={option.employeeId}>
                     {option.employeeName}

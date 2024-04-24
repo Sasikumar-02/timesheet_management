@@ -22,7 +22,7 @@ const Sidebar: React.FC = () => {
 
     const isRequestsActive = activeKey === "approvalrequest" || activeKey === "monthtasks";
     const isEmployeeRequestActive = activeKey === 'calendar' || activeKey === 'dashboard';
-
+    const isAssignTask = activeKey ==='taskassign' || activeKey ==='taskassigntable'
     const renderMenuItems = () => {
         const userEmail = localStorage.getItem('role');
 
@@ -132,7 +132,7 @@ const Sidebar: React.FC = () => {
                             id="menu"
                             key="taskassigntable"
                             icon={<ScheduleFilled />}
-                            className={activeKey === "taskassigntable" ? "active" : ""}
+                            className={isAssignTask ? "active" : ""}
                         >
                             <Link to="/manager/taskassigntable">Assign Task</Link>
                         </Menu.Item>

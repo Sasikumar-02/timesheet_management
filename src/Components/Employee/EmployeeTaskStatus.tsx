@@ -96,7 +96,8 @@ const EmployeeTaskStatus = () => {
         Meeting: 0,
         Training: 0,
         Project: 0,
-        Interview:0
+        Interview:0,
+        ManagerAssignedTask:0
     })
     const [doughChartData, setDoughChartData]= useState({
         ClientLocation: 0,
@@ -104,7 +105,6 @@ const EmployeeTaskStatus = () => {
         OnDuty: 0,
         WorkFromHome: 0
     })
-
     const token = localStorage.getItem("authToken");
     const decoded = jwtDecode(token || "") as DecodedToken;
     const userId = decoded.UserId;
@@ -113,20 +113,20 @@ const EmployeeTaskStatus = () => {
         responsive: true,
         plugins: {
             legend: {
-              position: 'right' as 'right', // Display the legend at the right side
-              align: 'center' as 'center', // Align the legend to the start of the position (right side)
+              position: 'right' as 'right', 
+              align: 'center' as 'center',
             },
             tooltip: { 
                 enabled: true, 
                 backgroundColor: "white",
                 titleColor: "#042a0b", 
                 bodyColor: "#042a0b", 
-                titleFont: { weight: 'bold' as 'bold' }, // Set weight to 'bold' explicitly 
+                titleFont: { weight: 'bold' as 'bold' }, 
                 padding: 10, 
                 cornerRadius: 10, 
                 borderColor: "#042a0b", 
                 borderWidth: 2, 
-                xAlign: "left" as "left", // Set xAlign to "left"
+                xAlign: "left" as "left",
             },
           },
         width: 200,
@@ -149,8 +149,8 @@ const EmployeeTaskStatus = () => {
         labels: Object.keys(pieChartData),
         datasets: [{
             data: Object.values(pieChartData),
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0'],
-            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0']
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0', '#FF9800'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0', '#FF9800']            
         }]
     };
       
@@ -198,8 +198,8 @@ const EmployeeTaskStatus = () => {
       },[])
       
       useEffect(() => {
-        const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
-        const year = currentMonth.format('YYYY'); // Get year (e.g., "2024")
+        const monthName = currentMonth.format('MMMM'); 
+        const year = currentMonth.format('YYYY'); 
       
         fetchMonthlyReport(monthName, year);
         fetchPieReport(monthName, year, userId);
@@ -297,7 +297,6 @@ const EmployeeTaskStatus = () => {
     };
     
     const handleCountClick = (status: string, filterOption: string, currentDate: string, currentMonth: string, currentWeek: any) => {
-        // Determine the clickedDate based on the filterOption
         let clickedDate;
         if (filterOption === "Month") {
             clickedDate = dayjs(currentMonth).startOf('month').format('YYYY-MM-DD');
@@ -306,16 +305,12 @@ const EmployeeTaskStatus = () => {
         } else {
             clickedDate = dayjs(currentDate).format('YYYY-MM-DD');
         }
-        // Navigate to the calendar for the specific month based on the filter option
         const month = getCurrentMonth(filterOption, currentDate, currentMonth, currentWeek);
         const year = getCurrentYear(filterOption, currentDate, currentMonth, currentWeek);
     
         console.log("handleCountClick", month, year);
         setSelectedYear(year);
         setSelectedMonth(month);
-        
-        // Store the clickedDate in localStorage
-       // localStorage.setItem('clickedDate', clickedDate);
         
         navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`, {state:{month, year, clickedDate}});
     };

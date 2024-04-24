@@ -35,7 +35,7 @@ const TaskAssignTable = () => {
             try {
                 // Fetch all employee details
                 const response = await api.get('/api/v1/employee/fetch-reporting-manager-users');
-                const allEmployees = response.data.response.data;
+                const allEmployees = response?.data?.response?.data;
         
                 // Filter the employee details based on the employeeId array
                 const filteredEmployees = allEmployees
@@ -59,7 +59,7 @@ const TaskAssignTable = () => {
                     const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
                     
                     // Map over tasks and call handleEmployees for each task
-                    const updatedTaskTablePromises = response.data.response.data.map(async (task: any) => {
+                    const updatedTaskTablePromises = response?.data?.response?.data?.map(async (task: any) => {
                         const filteredEmployees = await handleEmployees(task.employees);
                         return {
                             taskId: task.taskId,
@@ -74,7 +74,7 @@ const TaskAssignTable = () => {
                     });
         
                     // Wait for all handleEmployees calls to complete
-                    const updatedTaskTable = await Promise.all(updatedTaskTablePromises);
+                    const updatedTaskTable = await Promise?.all(updatedTaskTablePromises);
         
                     // Update the task table state with the new data
                     setTaskTable(updatedTaskTable);
