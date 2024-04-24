@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import { ColumnsType } from 'antd/es/table'
+import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import TextArea from 'antd/es/input/TextArea';
 import { Input, TimePicker, Select, notification, DatePicker, Button, Modal, Col,
@@ -65,6 +66,7 @@ import { initial } from 'lodash';
 
 const TaskAssign = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { state } = location;
     const record = state && state.record ? state.record : null;
     const [project, setProject] = useState<ProjectDetails[]>([]);
@@ -252,25 +254,64 @@ const TaskAssign = () => {
           employeeIds: values.members
         }
 
-        console.log("payload", payload);
-
-        const responses = await api.post('/api/v1/task/create-task', payload);
-        console.log("responses", responses);
-        if (responses.status === 200) {
-          // Display a notification when the task is submitted successfully
-          notification.success({
-            message: 'Success',
-            description: 'Task Assigned Successfully',
-          });
-          setSubmitting(true);
-          resetForm();
-        } else {
-          // Handle other response statuses
-          console.error('Failed to assign the task', response.status);
-          notification.error({
-            message: 'Failure',
-            description: 'Something went wrongx',
-          });
+        console.log("payload-1", payload);
+        if(record){
+          const edit_payload={
+            taskId: record.taskId,
+            projectName: values.project,
+            taskName: values.task,
+            assignerId: userId,
+            startDate: values.startDate,
+            estimatedEndDate: values.endDate,
+            taskDescription: values.description,
+            employeeIds: values.members
+          }
+          const responses = await api.put('/api/v1/task/edit-task-by-manager', edit_payload);
+          console.log("payload-1responses", responses);
+          if (responses.status === 200) {
+            // Display a notification when the task is submitted successfully
+            notification.success({
+              message: 'Success',
+              description: 'Task Assigned Successfully',
+            });
+            navigate('/manager/taskassigntable')
+            setSubmitting(true);
+            resetForm();
+            setInitialValue({
+              members: allemployees,
+              task: '',
+              project: '',
+              startDate: '',
+              endDate: '',
+              description: '',
+            })
+          } else {
+            // Handle other response statuses
+            console.error('Failed to assign the task', response.status);
+            notification.error({
+              message: 'Failure',
+              description: 'Something went wrongx',
+            });
+          }
+        } else{
+          const responses = await api.post('/api/v1/task/create-task', payload);
+          console.log("payload-1responses", responses);
+          if (responses.status === 200) {
+            // Display a notification when the task is submitted successfully
+            notification.success({
+              message: 'Success',
+              description: 'Task Assigned Successfully',
+            });
+            setSubmitting(true);
+            resetForm();
+          } else {
+            // Handle other response statuses
+            console.error('Failed to assign the task', response.status);
+            notification.error({
+              message: 'Failure',
+              description: 'Something went wrongx',
+            });
+          }
         }
       }
       catch (error) {

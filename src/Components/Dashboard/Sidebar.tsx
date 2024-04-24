@@ -4,7 +4,7 @@ import { Link, useNavigate,useLocation } from "react-router-dom";
 import { useMsal } from '@azure/msal-react';
 import '../Styles/Dashboard.css';
 import mindgraph from "../../assets/images/mindgraph-logo.png";
-import { PoweroffOutlined, HomeFilled, UserAddOutlined, AppstoreAddOutlined, UserOutlined, UsergroupAddOutlined, ScheduleOutlined, PullRequestOutlined } from "@ant-design/icons";
+import { PoweroffOutlined, HomeFilled, UserAddOutlined, AppstoreAddOutlined, UserOutlined, UsergroupAddOutlined, ScheduleOutlined, PullRequestOutlined, ScheduleFilled } from "@ant-design/icons";
 import { ScheduleSendOutlined } from "@mui/icons-material";
 
 const Sidebar: React.FC = () => {
@@ -41,19 +41,19 @@ const Sidebar: React.FC = () => {
                         <Menu.Item
                             id="menu"
                             key="addtask"
-                            icon={<ScheduleSendOutlined />}
+                            icon={<ScheduleOutlined />}
                             className={activeKey === "addtask" ? "active" : ""}
                         >
                             <Link to="/employee/addtask">TimeSheet</Link>
                         </Menu.Item>
-                        <Menu.Item
+                        {/* <Menu.Item
                             id="menu"
                             key="monthRequest"
                             icon={<ScheduleOutlined />}
                             className={activeKey === "monthRequest" ? "active" : ""}
                         >
                             <Link to="/employee/monthRequest">Month Request</Link>
-                        </Menu.Item>
+                        </Menu.Item> */}
                     </>
                 );
             case 'ROLE_HR':
@@ -112,29 +112,29 @@ const Sidebar: React.FC = () => {
                         >
                             <Link to="/manager/timesheet">Timesheet</Link>
                         </Menu.Item>
-                        <Menu.Item
+                        {/* <Menu.Item
                             id="menu"
                             key="monthRequest"
                             icon={<ScheduleOutlined />}
                             className={activeKey === "monthRequest" ? "active" : ""}
                         >
                             <Link to="/manager/monthRequest">Employee Request</Link>
-                        </Menu.Item>
-                        <Menu.Item
+                        </Menu.Item> */}
+                        {/* <Menu.Item
                             id="menu"
                             key="taskassign"
                             icon={<ScheduleOutlined />}
                             className={activeKey === "taskassign" ? "active" : ""}
                         >
                             <Link to="/manager/taskassign">Assign Task</Link>
-                        </Menu.Item>
+                        </Menu.Item> */}
                         <Menu.Item
                             id="menu"
                             key="taskassigntable"
-                            icon={<ScheduleOutlined />}
+                            icon={<ScheduleFilled />}
                             className={activeKey === "taskassigntable" ? "active" : ""}
                         >
-                            <Link to="/manager/taskassigntable">Assign Task Table</Link>
+                            <Link to="/manager/taskassigntable">Assign Task</Link>
                         </Menu.Item>
                     </>
                 );

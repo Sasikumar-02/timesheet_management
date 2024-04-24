@@ -44,6 +44,7 @@ import { theme } from "antd";
 import api from '../../Api/Api-Service';
 import { DatePicker } from 'antd';
 import moment, { Moment } from 'moment';
+import { saveAs } from 'file-saver';
 //import 'antd/dist/antd.css';
 const {Option}= Select;
 const config: ThemeConfig = {
@@ -188,276 +189,182 @@ const ApprovalRequest:React.FC = () => {
         throw error; // Rethrow the error for handling in the caller function
     }
 };
-// const exportToExcel = async () => {
-//   try {
-//       let imgId1: number;
-//       let imgId2: number;
-//       console.log("exportToExcel - selectedRows", selectedRows);
-//       console.log("exportToExcel - monthTasks", monthTasks);
+const exportToExcel = async () => {
+  try {
+      let imgId1: number;
+      let imgId2: number;
+      console.log("exportToExcel - selectedRows", selectedRows);
       
-//       let dataToExport: any[] = [];
-//       if (selectedRows?.length > 0) {
-//           console.log("sleectedRows", selectedRows);
-//           let ids = monthTasks
-//               .filter(row => selectedRows.includes(row.uniqueRequestId))
-//               .map(row => row.uniqueRequestId);
-//           const fetchedData = await fetchTaskByUniqueId(ids);
+      let dataToExport: any[] = [];
+      if (selectedRows?.length > 0) {
+          console.log("sleectedRows", selectedRows);
+          let ids = userTasks
+          .filter(row => row.uniqueRequestId.some(id => selectedRows.includes(id)))
+          .map(row => row.uniqueRequestId);
+
+          const fetchedData = await fetchTaskByUniqueId(ids);
       
-//           // Flatten the fetchedData array of arrays
-//           dataToExport = fetchedData.flat();
-//       } else {
-//           // If no rows are selected, export all monthTasks data
-//           console.log("sleectedRows -1", overallData)
-//           dataToExport = overallData.flat();
-//       }
-//       // Map over dataToExport to extract values for Excel
-//       const data = dataToExport.map((rowData: any) => {
-//           return [
-//               rowData.date || '',          // Date
-//               rowData.workLocation || '',  // Work Location
-//               rowData.task || '',          // Task
-//               rowData.project || '',       // Title
-//               rowData.startTime || '',     // Start Time
-//               rowData.endTime || '',       // End Time
-//               rowData.totalHours || '',    // Shift Hours
-//               rowData.description || '',   // Description
-//               rowData.reportingTo || ''   // Reporting To
-//           ];
-//       });
-//       console.log("exportToExcel - dataToExport", dataToExport);
+          // Flatten the fetchedData array of arrays
+          dataToExport = fetchedData.flat();
+      } 
+      // else {
+      //     // If no rows are selected, export all monthTasks data
+      //     console.log("sleectedRows -1", overallData)
+      //     dataToExport = overallData.flat();
+      // }
+      // Map over dataToExport to extract values for Excel
+      const data = dataToExport.map((rowData: any) => {
+          return [
+              rowData.date || '',          // Date
+              rowData.workLocation || '',  // Work Location
+              rowData.task || '',          // Task
+              rowData.project || '',       // Title
+              rowData.startTime || '',     // Start Time
+              rowData.endTime || '',       // End Time
+              rowData.totalHours || '',    // Shift Hours
+              rowData.description || '',   // Description
+              rowData.reportingTo || ''   // Reporting To
+          ];
+      });
+      console.log("exportToExcel - dataToExport", dataToExport);
           
-//       const header = ['Date', 'Work Location', 'Task', 'Project', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];         
+      const header = ['Date', 'Work Location', 'Task', 'Project', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];         
 
-//       // Flatten the array
-//       console.log("exportToExcel- data", data);
+      // Flatten the array
+      console.log("exportToExcel- data", data);
       
-//       // Create a workbook and add a worksheet
-//       const workbook = new ExcelJS.Workbook();
-//       const worksheet = workbook.addWorksheet('Sheet1');
+      // Create a workbook and add a worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Sheet1');
 
-//       worksheet.views = [{
-//           showGridLines: false
-//       }];
+      worksheet.views = [{
+          showGridLines: false
+      }];
 
-//       // Add Timesheet row with background color, bold, and 24px font size
-//       const timesheetRow = worksheet.addRow(['TimeSheet']);
-//       timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
-//       timesheetRow.fill = {
-//           type: 'pattern',
-//           pattern: 'solid',
-//           fgColor: { argb: '0B4266' } // Blue color
-//       };
+      // Add Timesheet row with background color, bold, and 24px font size
+      const timesheetRow = worksheet.addRow(['TimeSheet']);
+      timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
+      timesheetRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: '0B4266' } // Blue color
+      };
 
-//       // Add Name and Month rows with specified values
-//       const nameRow = worksheet.addRow([]);
-//       nameRow.getCell(1).value = 'Name:';
-//       nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
-//       nameRow.getCell(2).value = employeeName;
-//       const userIdRow = worksheet.addRow([]);
-//       userIdRow.getCell(1).value = 'UserID:';
-//       userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
-//       userIdRow.getCell(2).value = employeeId;
+      // Add Name and Month rows with specified values
+      const nameRow = worksheet.addRow([]);
+      nameRow.getCell(1).value = 'Name:';
+      nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+      nameRow.getCell(2).value = "employeeName";
+      const userIdRow = worksheet.addRow([]);
+      userIdRow.getCell(1).value = 'UserID:';
+      userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+      userIdRow.getCell(2).value = "employeeId";
 
-//       const monthRow = worksheet.addRow([]);
-//       monthRow.getCell(1).value = 'Month:';
-//       monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
-//       monthRow.getCell(2).value = formattedMonth; // Dynamically convert date to "Month Year" format
+      const monthRow = worksheet.addRow([]);
+      monthRow.getCell(1).value = 'Month:';
+      monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
+      monthRow.getCell(2).value = "formattedMonth"; // Dynamically convert date to "Month Year" format
           
-//       // Add empty rows
-//       for (let i = 0; i < 1; i++) {
-//           worksheet.addRow([]);
-//       }
+      // Add empty rows
+      for (let i = 0; i < 1; i++) {
+          worksheet.addRow([]);
+      }
 
-//       // Call exportCharts to get the images
-//       const { pieChartImage, lineChartImage } = await exportCharts();
+      // Call exportCharts to get the images
+     // const { pieChartImage, lineChartImage } = await exportCharts();
 
-//       // Calculate the current row number
-//       const currentRow = worksheet.rowCount + 2;
+      // Calculate the current row number
+      const currentRow = worksheet.rowCount + 2;
 
-//       // Add the images to the worksheet
-//       const pieChartImageId = workbook.addImage({
-//           base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
-//           extension: 'png',
-//       });
+      // Add the images to the worksheet
+      // const pieChartImageId = workbook.addImage({
+      //     base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
+      //     extension: 'png',
+      // });
 
-//       const lineChartImageId = workbook.addImage({
-//           base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
-//           extension: 'png',
-//       });
+      // const lineChartImageId = workbook.addImage({
+      //     base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
+      //     extension: 'png',
+      // });
 
-//       //Add both images to the same row
-//       worksheet.addImage(pieChartImageId, {
-//           tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-//           br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
-//       });
+      //Add both images to the same row
+      // worksheet.addImage(pieChartImageId, {
+      //     tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+      //     br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
+      // });
 
-//       worksheet.addImage(lineChartImageId, {
-//           tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-//           br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
-//       });
+      // worksheet.addImage(lineChartImageId, {
+      //     tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
+      //     br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
+      // });
       
-//       // Add a row with horizontal gridline (6th row)
-//       const gridlineRow = worksheet.addRow(Array(header.length).fill('')); // Add empty content for each column
-//       gridlineRow.eachCell(cell => {
-//           cell.border = {
-//               bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
-//           };
-//       });
+      // Add a row with horizontal gridline (6th row)
+      const gridlineRow = worksheet.addRow(Array(header.length).fill('')); // Add empty content for each column
+      gridlineRow.eachCell(cell => {
+          cell.border = {
+              bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+          };
+      });
 
-//       // Add header row with styles starting from 8th row
-//       const headerRow = worksheet.addRow(header);
-//       headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
+      // Add header row with styles starting from 8th row
+      const headerRow = worksheet.addRow(header);
+      headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
 
-//       // Set background color for header cells
-//       headerRow.eachCell(cell => {
-//           cell.fill = {
-//               type: 'pattern',
-//               pattern: 'solid',
-//               fgColor: { argb: '0B4266' } // Blue color
-//           };
-//       });
+      // Set background color for header cells
+      headerRow.eachCell(cell => {
+          cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '0B4266' } // Blue color
+          };
+      });
 
-//       console.log("exportToExcel - Data to export:", data);
+      console.log("exportToExcel - Data to export:", data);
 
-//       // Add data rows
-//       data?.forEach(rowData => {
-//           console.log("exportToExcel - rowData", rowData);
-//           const row = worksheet.addRow(rowData);
-//           // Set border and text alignment for data rows
-//           row.eachCell(cell => {
-//               cell.border = {
-//                   top: { style: 'thin' },
-//                   left: { style: 'thin' },
-//                   bottom: { style: 'thin' },
-//                   right: { style: 'thin' }
-//               };
-//               cell.alignment = { horizontal: 'left' }; // Align text to the left
-//           });
-//       });
-
-
-//       // Set column widths based on header length
-//       worksheet.columns?.forEach((column, index) => {
-//           if (index < header.length) {
-//               column.width = 23; // Adjust width as needed
-//           } else {
-//               column.hidden = true; // Hide columns beyond the header length
-//           }
-//       });
-
-//       // Add a row with horizontal gridline (6th row)
-//       const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns?.length).fill('')); // Add empty content for each column
-//       gridlineRowEnd.eachCell(cell => {
-//           cell.border = {
-//               bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
-//           };
-//       });
-
-//       // Generate Excel file
-//       const buffer = await workbook.xlsx.writeBuffer();
-//       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-//       saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
-//       setSelectedRows([]);
-
-//   } catch (error) {
-//       console.error('Error exporting to Excel:', error);
-//   }
-// };
-  
-  
-  // useEffect(() => {
-  //     // Retrieve approvalRequestsData from local storage
-  //     const storedData = localStorage.getItem('approvalRequestedData');
-  //     console.log("approvalRequests", storedData);
-  //     if (storedData) {
-  //         const approvalRequestsData: { [key: string]: Task[] } = JSON.parse(storedData);
-  //         console.log("approvalRequests", approvalRequestsData);
-
-  //         // Convert the object to an array of DateTask objects
-  //         const dateTasks: DateTask[] = Object.keys(approvalRequestsData).map(key => ({
-  //           key: key,
-  //           tasks: approvalRequestsData[key], // Assuming approvalRequestsData[key] represents tasks
-  //           status: "Pending" // Assuming you want to set status as "Pending" initially
-  //       }));
-        
-  //         console.log("approvalRequests-datetasks", dateTasks);
-
-  //         setApprovalRequests(dateTasks); // Update the state with fetched data
-  //     }
-  //     console.log("approvalRequests-approvalrequests", approvalRequests);
-  // }, []); // Fetch data only once on component mount
-
-  // useEffect(() => {
-  //       const storedKeysString: string | null = localStorage.getItem('selectedKeys');
-  //       if (storedKeysString !== null) {
-  //           const storedKeys: SelectedKeys = JSON.parse(storedKeysString);
-           
-  //           if (storedKeys.hasOwnProperty(userId)) {
-  //               setSelectedKeys(storedKeys[userId]);
-  //           } else {
-  //               console.log("User ID not found in stored keys");
-  //           }
-  //       } else {
-  //           console.log("else-useEffect", storedKeysString);
-  //       }
-  // }, []);
-
-  // useEffect(() => {
-  //     const storedKeysString: string | null = localStorage.getItem('rejectedKeys');
-  //     if (storedKeysString !== null) {
-  //         const storedKeys: RejectedKeys = JSON.parse(storedKeysString);
-  //         const userRejectedKeys = storedKeys[userId];
-  //         if (userRejectedKeys) {
-  //           console.log("userRejectedKeys", userRejectedKeys);
-  //             setRejectedKeys(userRejectedKeys);
-  //         }
-  //     } else {
-  //         console.log("else-useEffect", storedKeysString);
-  //     }
-  // }, []);
+      // Add data rows
+      data?.forEach(rowData => {
+          console.log("exportToExcel - rowData", rowData);
+          const row = worksheet.addRow(rowData);
+          // Set border and text alignment for data rows
+          row.eachCell(cell => {
+              cell.border = {
+                  top: { style: 'thin' },
+                  left: { style: 'thin' },
+                  bottom: { style: 'thin' },
+                  right: { style: 'thin' }
+              };
+              cell.alignment = { horizontal: 'left' }; // Align text to the left
+          });
+      });
 
 
-  // useEffect(() => {
-  //   console.log("useeffect", approvalRequests.length);
-  //   if (approvalRequests.length > 0) { // Check if approvalRequests has data
-  //       // Process approvalRequests data
-  //       handleGroupedTasks(approvalRequests);
-  //   }
-  // }, [approvalRequests]);
+      // Set column widths based on header length
+      worksheet.columns?.forEach((column, index) => {
+          if (index < header.length) {
+              column.width = 23; // Adjust width as needed
+          } else {
+              column.hidden = true; // Hide columns beyond the header length
+          }
+      });
 
-//   useEffect(() => {
-//     const storedData = localStorage.getItem('groupedTasks');
-//     if (storedData && (selectedKeys.length > 0 || rejectedKeys.length > 0)) {
-//         const parsedData: UserGroupedTask = JSON.parse(storedData);
-//         const updatedData = { ...parsedData }; // Create a copy of the parsed data
+      // Add a row with horizontal gridline (6th row)
+      const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns?.length).fill('')); // Add empty content for each column
+      gridlineRowEnd.eachCell(cell => {
+          cell.border = {
+              bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+          };
+      });
 
-//         // Check if there are tasks to filter for the specified user
-//         if (selectedKeys.length > 0) {
-//             // Filter tasks for the specified user (e.g., userId='1234')
-//             if (updatedData[userId]) {
-//                 Object.keys(updatedData[userId]).forEach(monthKey => {
-//                     const monthData = updatedData[userId][monthKey];
-//                     const filteredTasks: TaskObject = {};
-//                     Object.keys(monthData.tasks).forEach(dateKey => {
-//                         if (!selectedKeys.includes(dateKey) && !rejectedKeys.some(rejected => rejected.date === dateKey)) {
-//                             filteredTasks[dateKey] = monthData.tasks[dateKey];
-//                         }
-//                     });
-//                     if (Object.keys(filteredTasks).length > 0) {
-//                         updatedData[userId][monthKey].tasks = filteredTasks;
-//                     } else {
-//                         delete updatedData[userId][monthKey];
-//                     }
-//                 });
-//             }
-//         }
+      // Generate Excel file
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+      saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+      setSelectedRows([]);
 
-//         // Update the state with the filtered data
-//         setGroupedTasks(updatedData);
-//     }
-// }, [selectedKeys, rejectedKeys]);
-
-
+  } catch (error) {
+      console.error('Error exporting to Excel:', error);
+  }
+};
 
   const handleReject = () => {
     setCommentVisible(true);
@@ -622,6 +529,27 @@ const ApprovalRequest:React.FC = () => {
       console.log("handleInnerRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
       setSelectedInnerRows(selectedRowKeys as string[]);
     };
+
+    const handleExportOption = async (key: string) => {
+      try {
+          if (key === 'all') {
+              await exportToExcel();
+          } else if (selectedRows?.length > 0) {
+              await exportToExcel();
+          } else {
+              message.warning('Please select rows to export.');
+          }
+      } catch (error) {
+          console.error('Error exporting to Excel:', error);
+      }
+  }; 
+
+    const exportMenu = (
+      <Menu onClick={(e) => handleExportOption(e.key as string)}>
+        <Menu.Item key="selectedData">Export</Menu.Item>
+        <Menu.Item key="all">Export All</Menu.Item>
+      </Menu>
+    );
     
     const column: ColumnsType<DateTask> = [
         {
@@ -1053,7 +981,18 @@ const ApprovalRequest:React.FC = () => {
               Clear Filter
               </Button>
           </div>
+
           <button onClick={()=>fetchTaskByUniqueId(selectedRows)}>Click</button>
+          <div style={{marginRight:'20px', marginTop:'25px'}}>
+              <Dropdown overlay={exportMenu} placement="bottomLeft">
+                <Button
+                  type="primary"
+                  style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
+                >
+                  Export
+                </Button>
+              </Dropdown>
+          </div>
           <Table
             rowSelection={{
                 type: 'checkbox',

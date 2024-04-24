@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { ColumnsType } from 'antd/es/table';
-import { Space, Avatar } from 'antd';
+import { Space, Avatar, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined } from '@mui/icons-material';
+import '../Styles/AddTask.css';
 import {
     UserOutlined,
     DownOutlined,
@@ -94,6 +95,9 @@ const TaskAssignTable = () => {
     }
     const handleDeleteTask=(record: any)=>{
 
+    }
+    const handleClick=()=>{
+      navigate('/manager/taskassign');
     }
 
     const columns: ColumnsType<any> = [
@@ -212,6 +216,10 @@ const TaskAssignTable = () => {
 
   return (
     <div>
+      <div style={{display:'flex', justifyContent:'space-between', margin:'10px 20px'}}>
+        <h2 >Assign Task Details</h2>
+        <Button id='cancel-new' onClick={handleClick}>Assign Task</Button>
+      </div>
         <Table
             style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266' }}
             className='addtask-table'

@@ -107,7 +107,6 @@ const AddTask: React.FC = () => {
   const [startTime, setStartTime]= useState('');
   const [endTime, setEndTime] = useState('');
   const [totalHours, setTotalHours]=useState('');
-  const [userProject, setProjectUser]= useState([]);
   const [editTaskId, setEditTaskId]= useState<any>();
   const { Option } = Select; // Destructure the Option component from Select
   const navigate = useNavigate();
@@ -115,45 +114,21 @@ const AddTask: React.FC = () => {
   // Define a state variable to hold the currently edited task
   //const [editedTask, setEditedTask] = useState<Task | null>(null);
   const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
-  const [deletedTask, setDeletedTask] = useState(false);
   const [formWidth, setFormWidth] = useState(800);
   const [currentDate, setCurrentDate] = useState(dayjs(record?.date || formattedDate));
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf('month'));
   const [isFormEnabled, setIsFormEnabled] = useState(false);
   const [cancelButton, setCancelButton] = useState(false);
-  const [isDateChanged, setIsDateChanged] = useState(false);
-  const [addTask, setAddTask] = useState<Task>({
-    date: currentDate.format('YYYY-MM-DD'),
-    workLocation: '',
-    task: '',
-    project: '',
-    startTime: '',
-    endTime: '',
-    totalHours: '',
-    description: '',
-    reportingTo: reportingToID,
-  });
-  const [deletedTaskIdx, setDeletedTaskIdx] = useState<number | null>(null);
   const [allowDate, setAllowDate]= useState(dayjs().format('YYYY-MM-DD'));
   console.log("allowDate", allowDate);
-  const [taskList, setTaskList] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
   //const [reportingOptions, setReportingOptions]= useState<any>('');
-  const reportingOptions = ['ManagerA', 'ManagerB', 'ManagerC'];
-  const taskOptions = ['Project','Learning','Training','Meeting', 'Interview'];
+  const taskOptions = ['Manager Assigned Task','Project','Learning','Training','Meeting', 'Interview'];
   const [filterOption, setFilterOption] = useState('Date');
   const [isEdited, setIsEdited]= useState<boolean>(false);
-  // State to manage the search input
-  const [searchInput, setSearchInput] = useState('');
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const [selectedKeysToHide, setSelectedKeysToHide]=useState<string[]>([]);
   const [pieChartDataInForm, setPieChartDataInForm] = useState<PieChartData>({ options: { labels: [] }, series: [] });
-  // Define a loading state
-  const [loading, setLoading] = useState(true);
-  const [count, setCount] = useState(0);
-  const [descCount, setDescCount]=useState(0);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [projectData, setProjectData] = useState<ProjectDetails[]>([
     {
       projectName: "Other"
@@ -497,34 +472,6 @@ useEffect(() => {
       setFieldValue("totalHours", formattedDuration.toFixed(2)); // Update totalHours
     }
 };
-
-const calculateTotalHours = (startTime: any, endTime: any) => {
-  if (!startTime || !endTime) return ''; // Handle cases where either start or end time is missing
-  const start = dayjs(startTime, 'HH:mm');
-      console.log("calculateTotalHours-start", start);
-      const end = dayjs(endTime, 'HH:mm');
-      console.log("calculateTotalHours-end", end);
-      const duration = end.diff(start, 'minute', true); // Calculate difference in minutes
-      console.log("calculateTotalHours-duration", duration);
-      const hours = Math.floor(duration / 60); // Extract hours
-      console.log("calculateTotalHours-hours", hours);
-      const minutes = duration % 60; // Extract remaining minutes
-      console.log("calculateTotalHours-minutes", minutes);
-      const formattedDuration = hours + (minutes / 100); // Combine hours and minutes
-      console.log("calculateTotalHours-formattedDuration", formattedDuration);
-      console.log("calculateTotalHours-formattedDuration", formattedDuration.toFixed(2));
-      return formattedDuration.toFixed(2); // Format hours and minutes
-};
-
-  
-  useEffect(() => {
-    const newTotalHours = calculateTotalHours(startTime, endTime);
-    console.log("newtotalHours", newTotalHours);
-    setTotalHours(newTotalHours);
-  }, [startTime, endTime]);
-
-  const projectTitle = ['Project','TMS', 'LMS','SAASPE', 'Timesheet'];
-  const meetingTitle = ['Meeting', 'TMS', 'LMS','SAASPE', 'Timesheet', 'HR-Meet', 'Others'];
   const workLocation = ['Work From Home', 'Office', 'Client Location', 'On-Duty'];
 
   useEffect(() => {
@@ -694,20 +641,6 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
   const handleToggleForm = () => {
     setIsFormEnabled((prevIsFormEnabled) => !prevIsFormEnabled);
     setCancelButton((prevIsFormEnabled) => !prevIsFormEnabled);
-    // If you want to reset the form when disabling it, you can reset the form state here
-    if (!isFormEnabled) {
-      setAddTask({
-        date: dayjs(currentDate).format('YYYY-MM-DD'),
-        workLocation: '',
-        task: '',
-        project:'',
-        startTime: '',
-        endTime: '',
-        totalHours:'',
-        description: '',
-        reportingTo: reportingToID,
-      });
-    }
   };
 
   const handleRequest = () => {
@@ -785,9 +718,6 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       });
       return;
     }
-
-    
-    
     try {
       setSubmitting(true);
       let response: any;
@@ -843,8 +773,6 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
             description: '',
             reportingTo: '', 
         })
-        setIsFormSubmitted(true);
-        setIsDateChanged(true);
       } else {
         // Handle other response statuses
         console.error('Failed to add/edit task. Status:', response.status);
@@ -1354,48 +1282,141 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
                         </Typography.Text>
                       </div>
                     </Form.Item>
-                    <Form.Item<FieldType>
-                      label="Project"
-                      className="label-strong"
-                      name="project"
-                      required
-                      style={{ padding: "10px" }}
-                    >
-                     
-                      <Select
-                        style={{
-                          height: "50px",
-                          width: "470px",
-                          borderRadius: "4px",
-                          margin: "0px",
-                        }}
-                        value={values.project}
-                        onChange={(value, option) => {
-                          setFieldValue("project", value); // Update "workLocation" field value
-                        }}
-                        onBlur={() => {
-                          setFieldTouched("project", true); // Mark "workLocation" field as touched
-                        }}
+                    {values.task === 'Manager Assigned Task' ?(
+                    <div>
+                      <Form.Item<FieldType>
+                        label="Manager Assigned TaskName"
+                        className="label-strong"
+                        name="project"
+                        required
+                        style={{ padding: "10px" }}
                       >
-                        <Select.Option value="" disabled>
-                          Select the Project
-                        </Select.Option>
-                        {projectData.map((option, index) => (  // Use 'index' as the key
-                          <Option key={index} value={option.projectName}>
-                            {option.projectName}
-                          </Option>
-                        ))}
-                      </Select>
-                      <div>
-                        <Typography.Text
-                          type="danger"
-                          style={{ wordBreak: "break-word", textAlign: "left" }}
+                        
+                        <Select
+                          style={{
+                            height: "50px",
+                            width: "470px",
+                            borderRadius: "4px",
+                            margin: "0px",
+                          }}
+                          value={values.project}
+                          onChange={(value, option) => {
+                            setFieldValue("project", value); // Update "workLocation" field value
+                          }}
+                          onBlur={() => {
+                            setFieldTouched("project", true); // Mark "workLocation" field as touched
+                          }}
                         >
-                          <ErrorMessage name="project" /> {/* Display error message if any */}
-                        </Typography.Text>
-                      </div>
-                    </Form.Item>
+                          <Select.Option value="" disabled>
+                            Select the Project
+                          </Select.Option>
+                          {projectData.map((option, index) => (  // Use 'index' as the key
+                            <Option key={index} value={option.projectName}>
+                              {option.projectName}
+                            </Option>
+                          ))}
+                        </Select>
+                        <div>
+                          <Typography.Text
+                            type="danger"
+                            style={{ wordBreak: "break-word", textAlign: "left" }}
+                          >
+                            <ErrorMessage name="project" /> {/* Display error message if any */}
+                          </Typography.Text>
+                        </div>
+                      </Form.Item>
+                    </div>
+                    ):(
+                        <div>
+                          <Form.Item<FieldType>
+                            label="Project"
+                            className="label-strong"
+                            name="project"
+                            required
+                            style={{ padding: "10px" }}
+                          >
+                            
+                            <Select
+                              style={{
+                                height: "50px",
+                                width: "470px",
+                                borderRadius: "4px",
+                                margin: "0px",
+                              }}
+                              value={values.project}
+                              onChange={(value, option) => {
+                                setFieldValue("project", value); // Update "workLocation" field value
+                              }}
+                              onBlur={() => {
+                                setFieldTouched("project", true); // Mark "workLocation" field as touched
+                              }}
+                            >
+                              <Select.Option value="" disabled>
+                                Select the Project
+                              </Select.Option>
+                              {projectData.map((option, index) => (  // Use 'index' as the key
+                                <Option key={index} value={option.projectName}>
+                                  {option.projectName}
+                                </Option>
+                              ))}
+                            </Select>
+                            <div>
+                              <Typography.Text
+                                type="danger"
+                                style={{ wordBreak: "break-word", textAlign: "left" }}
+                              >
+                                <ErrorMessage name="project" /> {/* Display error message if any */}
+                              </Typography.Text>
+                            </div>
+                          </Form.Item>
+                        </div>
+                    )}
                   </div>
+                  {/* {values.task === 'Manager Assigned Task' &&(
+                    <div>
+                      <Form.Item<FieldType>
+                        label="Project"
+                        className="label-strong"
+                        name="project"
+                        required
+                        style={{ padding: "10px" }}
+                      >
+                        
+                        <Select
+                          style={{
+                            height: "50px",
+                            width: "470px",
+                            borderRadius: "4px",
+                            margin: "0px",
+                          }}
+                          value={values.project}
+                          onChange={(value, option) => {
+                            setFieldValue("project", value); // Update "workLocation" field value
+                          }}
+                          onBlur={() => {
+                            setFieldTouched("project", true); // Mark "workLocation" field as touched
+                          }}
+                        >
+                          <Select.Option value="" disabled>
+                            Select the Project
+                          </Select.Option>
+                          {projectData.map((option, index) => (  // Use 'index' as the key
+                            <Option key={index} value={option.projectName}>
+                              {option.projectName}
+                            </Option>
+                          ))}
+                        </Select>
+                        <div>
+                          <Typography.Text
+                            type="danger"
+                            style={{ wordBreak: "break-word", textAlign: "left" }}
+                          >
+                            <ErrorMessage name="project" /> 
+                          </Typography.Text>
+                        </div>
+                      </Form.Item>
+                    </div>
+                  )} */}
                   <div style={{display:'flex'}}>
                     <Form.Item<FieldType>
                       label="Start Time"
