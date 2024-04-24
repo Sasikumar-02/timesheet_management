@@ -53,6 +53,7 @@ type FieldType={
   workLocation?: string;
   task?: string;
   project?: string;
+  managerAssignedTask?:string;
   startTime?: string;
   endTime?: string;
   totalHours?: string;
@@ -66,6 +67,7 @@ export interface Task {
   workLocation: string;
   task: string;
   project: string;
+  managerAssignedTask:string;
   startTime: string;
   endTime: string;
   totalHours: string;
@@ -77,6 +79,10 @@ export interface ProjectDetails {
   projectName: string;
 }
 
+interface ManagerAssignedTask{
+  taskId?:any;
+  taskName?:string;
+}
 interface UserManager {
   reportingManagerName: string;
   reportingManagerId: string;
@@ -134,6 +140,7 @@ const AddTask: React.FC = () => {
       projectName: "Other"
     }
   ]);
+  const [managerGivenTask, setManagerGivenTask]= useState<ManagerAssignedTask[]>([]);
   const [submissionEnable, setSubmissionEnable] = useState(true);
   console.log("submissionEnable",submissionEnable);
   const [refetch, setRefetch] = useState<boolean>(false);
@@ -148,6 +155,7 @@ const AddTask: React.FC = () => {
             workLocation: record?.workLocation,
             task: record?.task,
             project: record?.project,
+            managerAssignedTask:record?.managerAssignedTask.managerAssignedTaskName,
             startTime: record?.startTime,
             endTime: record?.endTime,
             totalHours: record?.totalHours,
@@ -161,6 +169,7 @@ const AddTask: React.FC = () => {
             workLocation: '',
             task: '',
             project: '',
+            managerAssignedTask:'',
             startTime: '',
             endTime: '',
             totalHours: '',
@@ -324,6 +333,80 @@ useEffect(() => {
       }
   }
 }, [filterOption, isEdited, currentDate, currentMonth, currentWeek]);
+
+const handleProject=async(value:string)=>{
+  console.log("handleProject-value", value);
+  if (value === 'Manager Assigned Task') {
+    const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
+    let projectArray: any[] = [];
+
+    response.data.response.data.forEach((project: any) => {
+        // Check if the project name already exists in projectArray
+        const exists = projectArray.some(item => item.projectName === project.projectName);
+
+        // If the project name doesn't exist, push it to projectArray
+        if (!exists) {
+            projectArray.push({
+                projectName: project.projectName,
+            });
+        }
+    });
+
+    setProjectData(projectArray);
+  } else{
+    try {
+      const response = await api.get('/api/v1/project/get-project-of-user/' + userId);
+      console.log("userId", userId);
+      const data = response?.data?.response?.data;
+      console.log("fetchData", data);
+
+      // Initialize an empty array to store updated projects
+      const updatedProjects: any[] = [];
+
+      // Loop through each project to update only the projectName
+      data.forEach((project: any) => {
+        // Store the updated project with modified projectName in the array
+        const updatedProject = {
+          ...project,
+          projectName: project?.projectName, // Replace "New Project Name" with the desired value
+        };
+        console.log("updatedProject", updatedProject);
+        updatedProjects.push(updatedProject);
+      });
+      const otherProject = {
+        projectName: "Other",
+        // Add other properties as needed
+      };
+      
+      // Add the "Other" project data object to the updatedProjects array
+      const updatedProjectsWithOther = [...updatedProjects, otherProject];
+      
+      // Set the projectData state with the updated array including the "Other" project
+      setProjectData(updatedProjectsWithOther);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        message.error("Session expired. Redirecting to login page...", 5, () => {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("role");
+          navigate("/login");
+        });
+      }
+    }
+  }
+}
+
+const handleManagerAssignedTask=async(value:string)=>{
+  console.log("handleManagerAssignedTask-value", value);
+  const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
+  let taskArray: any[] = [];
+  response.data.response.data.map((task:any)=>{
+    taskArray.push({
+      taskId: task.taskId,
+      taskName: task.taskName
+    })
+  })
+  setManagerGivenTask(taskArray);
+}
 
 const handleApprovedRequest = (date: string) => {
   console.log("handleApprovedRequest", date);
@@ -696,6 +779,7 @@ useEffect(() => {
       workLocation: record?.workLocation,
       task: record?.task,
       project: record?.project,
+      managerAssignedTask: record?.managerTaskName,
       startTime: record?.startTime,
       endTime: record?.endTime,
       totalHours: record?.totalHours,
@@ -757,22 +841,54 @@ useEffect(() => {
       let response: any;
       if (isEdited && values) {
         // If editing an existing task, send a PUT request to the edit-task API endpoint
-        response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
-            date: values?.date,
-            workLocation: values?.workLocation,
-            task: values?.task,
-            project: values?.project,
-            startTime: values?.startTime,
-            endTime: values?.endTime,
-            totalHours: values?.totalHours,
-            description: values?.description,
-            reportingTo: values?.reportingTo,
-        });
+        if(values.task ==='Manager Assigned Task'){
+          response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
+              date: values?.date,
+              workLocation: values?.workLocation,
+              task: values?.task,
+              project: values?.project,
+              managerAssignedTaskId: values?.managerAssignedTask,
+              startTime: values?.startTime,
+              endTime: values?.endTime,
+              totalHours: values?.totalHours,
+              description: values?.description,
+              reportingTo: values?.reportingTo,
+          });
+          console.log("response-handleformsubmit", response);
+        } else{
+          response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
+              date: values?.date,
+              workLocation: values?.workLocation,
+              task: values?.task,
+              project: values?.project,
+              managerAssignedTaskId: values?.managerAssignedTask,
+              startTime: values?.startTime,
+              endTime: values?.endTime,
+              totalHours: values?.totalHours,
+              description: values?.description,
+              reportingTo: values?.reportingTo,
+          });
+          console.log("response-handleformsubmit", response);
+        }
       } else {
-       
         console.log("inside here");
         // If adding a new task, send a POST request to the add-task API endpoint
-        response = await api.post('/api/v1/timeSheet/add-task', {
+        if(values.task ==='Manager Assigned Task'){
+          response = await api.post('/api/v1/timeSheet/add-task', {
+            date: values?.date,
+            workLocation: values?.workLocation,
+            task: values?.task,
+            project: values?.project,
+            managerAssignedTaskId: values?.managerAssignedTask,
+            startTime: values?.startTime,
+            endTime: values?.endTime,
+            totalHours: values?.totalHours,
+            description: values?.description,
+            reportingTo: values?.reportingTo,
+        }) 
+        console.log("response-handleformsubmit", response);
+        } else{
+          response = await api.post('/api/v1/timeSheet/add-task', {
             date: values?.date,
             workLocation: values?.workLocation,
             task: values?.task,
@@ -783,9 +899,11 @@ useEffect(() => {
             description: values?.description,
             reportingTo: values?.reportingTo,
         });
+        console.log("response-handleformsubmit", response);
+        }
       }
       console.log("handleformsubmit 1");
-      console.log("response", response.data);
+      console.log("response-handleformsubmit", response.data);
       // Check the response status
       if (response.status === 200) {
         // Handle successful response
@@ -801,6 +919,7 @@ useEffect(() => {
             workLocation: '',
             task: '',
             project: '',
+            managerAssignedTask:'',
             startTime: '',
             endTime: '',
             totalHours: '',
@@ -957,6 +1076,13 @@ useEffect(() => {
       key: 'project',
       fixed: 'left',
     },
+    {
+      title: 'Manager Assigned Task',
+      dataIndex: 'managerTaskName',
+      key: 'managerTaskName',
+      fixed: 'left',
+      render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
+    },  
     {
       title: 'Start Time',
       //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
@@ -1293,6 +1419,9 @@ useEffect(() => {
                         value={values.task}
                         onChange={(value, option) => {
                           setFieldValue("task", value); // Update "workLocation" field value
+                          handleProject(value);
+                          setFieldValue("project", null);
+                          setFieldValue("managerAssignedTask", null);
                         }}
                         onBlur={() => {
                           setFieldTouched("task", true); // Mark "workLocation" field as touched
@@ -1316,102 +1445,56 @@ useEffect(() => {
                         </Typography.Text>
                       </div>
                     </Form.Item>
-                    {values.task === 'Manager Assigned Task' ?(
-                    <div>
-                      <Form.Item<FieldType>
-                        label="Manager Assigned TaskName"
-                        className="label-strong"
-                        name="project"
-                        required
-                        style={{ padding: "10px" }}
+                    <Form.Item<FieldType>
+                      label="Project"
+                      className="label-strong"
+                      name="project"
+                      required
+                      style={{ padding: "10px" }}
+                    >  
+                      <Select
+                        style={{
+                          height: "50px",
+                          width: "470px",
+                          borderRadius: "4px",
+                          margin: "0px",
+                        }}
+                        value={values.project}
+                        onChange={(value, option) => {
+                          setFieldValue("project", value); // Update "workLocation" field value
+                          setFieldValue("managerAssignedTask", null);
+                          handleManagerAssignedTask(value);
+                        }}
+                        onBlur={() => {
+                          setFieldTouched("project", true); // Mark "workLocation" field as touched
+                        }}
                       >
-                        
-                        <Select
-                          style={{
-                            height: "50px",
-                            width: "470px",
-                            borderRadius: "4px",
-                            margin: "0px",
-                          }}
-                          value={values.project}
-                          onChange={(value, option) => {
-                            setFieldValue("project", value); // Update "workLocation" field value
-                          }}
-                          onBlur={() => {
-                            setFieldTouched("project", true); // Mark "workLocation" field as touched
-                          }}
+                        <Select.Option value="" disabled>
+                          Select the Project
+                        </Select.Option>
+                        {projectData.map((option, index) => (  // Use 'index' as the key
+                          <Option key={index} value={option.projectName}>
+                            {option.projectName}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div>
+                        <Typography.Text
+                          type="danger"
+                          style={{ wordBreak: "break-word", textAlign: "left" }}
                         >
-                          <Select.Option value="" disabled>
-                            Select the Project
-                          </Select.Option>
-                          {projectData.map((option, index) => (  // Use 'index' as the key
-                            <Option key={index} value={option.projectName}>
-                              {option.projectName}
-                            </Option>
-                          ))}
-                        </Select>
-                        <div>
-                          <Typography.Text
-                            type="danger"
-                            style={{ wordBreak: "break-word", textAlign: "left" }}
-                          >
-                            <ErrorMessage name="project" /> {/* Display error message if any */}
-                          </Typography.Text>
-                        </div>
-                      </Form.Item>
-                    </div>
-                    ):(
-                        <div>
-                          <Form.Item<FieldType>
-                            label="Project"
-                            className="label-strong"
-                            name="project"
-                            required
-                            style={{ padding: "10px" }}
-                          >
-                            
-                            <Select
-                              style={{
-                                height: "50px",
-                                width: "470px",
-                                borderRadius: "4px",
-                                margin: "0px",
-                              }}
-                              value={values.project}
-                              onChange={(value, option) => {
-                                setFieldValue("project", value); // Update "workLocation" field value
-                              }}
-                              onBlur={() => {
-                                setFieldTouched("project", true); // Mark "workLocation" field as touched
-                              }}
-                            >
-                              <Select.Option value="" disabled>
-                                Select the Project
-                              </Select.Option>
-                              {projectData.map((option, index) => (  // Use 'index' as the key
-                                <Option key={index} value={option.projectName}>
-                                  {option.projectName}
-                                </Option>
-                              ))}
-                            </Select>
-                            <div>
-                              <Typography.Text
-                                type="danger"
-                                style={{ wordBreak: "break-word", textAlign: "left" }}
-                              >
-                                <ErrorMessage name="project" /> {/* Display error message if any */}
-                              </Typography.Text>
-                            </div>
-                          </Form.Item>
-                        </div>
-                    )}
+                          <ErrorMessage name="project" /> {/* Display error message if any */}
+                        </Typography.Text>
+                      </div>
+                    </Form.Item>
+                   
                   </div>
-                  {/* {values.task === 'Manager Assigned Task' &&(
+                  {values.task === 'Manager Assigned Task' &&(
                     <div>
                       <Form.Item<FieldType>
-                        label="Project"
+                        label="Manager Assigned Task"
                         className="label-strong"
-                        name="project"
+                        name="managerAssignedTask"
                         required
                         style={{ padding: "10px" }}
                       >
@@ -1423,20 +1506,20 @@ useEffect(() => {
                             borderRadius: "4px",
                             margin: "0px",
                           }}
-                          value={values.project}
+                          value={values.task==='Manager Assigned Task' ? values.managerAssignedTask: null}
                           onChange={(value, option) => {
-                            setFieldValue("project", value); // Update "workLocation" field value
+                            setFieldValue("managerAssignedTask", value); // Update "workLocation" field value
                           }}
                           onBlur={() => {
-                            setFieldTouched("project", true); // Mark "workLocation" field as touched
+                            setFieldTouched("managerAssignedTask", true); // Mark "workLocation" field as touched
                           }}
                         >
                           <Select.Option value="" disabled>
-                            Select the Project
+                            Select the Manager Assigned Task
                           </Select.Option>
-                          {projectData.map((option, index) => (  // Use 'index' as the key
-                            <Option key={index} value={option.projectName}>
-                              {option.projectName}
+                          {managerGivenTask.map((option:any, index:any) => (  // Use 'index' as the key
+                            <Option key={index} value={option.taskId}>
+                              {option.taskName}
                             </Option>
                           ))}
                         </Select>
@@ -1450,7 +1533,7 @@ useEffect(() => {
                         </div>
                       </Form.Item>
                     </div>
-                  )} */}
+                  )}
                   <div style={{display:'flex'}}>
                     <Form.Item<FieldType>
                       label="Start Time"
