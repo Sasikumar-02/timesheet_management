@@ -48,18 +48,22 @@ export interface TaskRequestedOn {
   [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
 }
 
-type FieldType={
+type FieldType = {
   date?: string;
   workLocation?: string;
   task?: string;
   project?: string;
-  managerAssignedTask?:string;
+  managerAssignedTask?: {
+    managerAssignedTaskId: string;
+    managerAssignedTaskName: string;
+  } | null;
   startTime?: string;
   endTime?: string;
   totalHours?: string;
   description?: string;
   reportingTo?: string;
-}
+};
+
 export interface Task {
   userId?:string;
   task_id?:string;
@@ -789,7 +793,7 @@ useEffect(() => {
   
     console.log("clicked", initialValue);
     setIsEdited(true);
-    setIsFormEnabled(prev=>!prev);
+    setIsFormEnabled(true);
     setCancelButton(true);
   };
   
@@ -801,13 +805,13 @@ useEffect(() => {
     // Check for overlapping tasks in the specified time range
 
     // Check if any field is empty
-    if (!values.startTime || !values.endTime || !values.workLocation || !values.task || !values.project || !values.description || !values.reportingTo) {
-        notification.warning({
-            message: 'Missing Information',
-            description: 'Please fill in all fields before submitting the task.',
-        });
-        return; // Abort submission
-    }
+    // if (!values.startTime || !values.endTime || !values.workLocation || !values.task || !values.project || !values.description || !values.reportingTo) {
+    //     notification.warning({
+    //         message: 'Missing Information',
+    //         description: 'Please fill in all fields before submitting the task.',
+    //     });
+    //     return; // Abort submission
+    // }
 
     const overlappingTask = filteredTasks.find((task:any )=> {
       
@@ -842,12 +846,13 @@ useEffect(() => {
       if (isEdited && values) {
         // If editing an existing task, send a PUT request to the edit-task API endpoint
         if(values.task ==='Manager Assigned Task'){
+          console.log("3")
           response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
               date: values?.date,
               workLocation: values?.workLocation,
               task: values?.task,
               project: values?.project,
-              managerAssignedTaskId: values?.managerAssignedTask,
+              managerAssignedTaskId: values && values?.managerAssignedTask || null,
               startTime: values?.startTime,
               endTime: values?.endTime,
               totalHours: values?.totalHours,
@@ -856,12 +861,13 @@ useEffect(() => {
           });
           console.log("response-handleformsubmit", response);
         } else{
+          console.log("4");
           response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
               date: values?.date,
               workLocation: values?.workLocation,
               task: values?.task,
               project: values?.project,
-              managerAssignedTaskId: values?.managerAssignedTask,
+              managerAssignedTaskId: null,
               startTime: values?.startTime,
               endTime: values?.endTime,
               totalHours: values?.totalHours,
@@ -874,12 +880,13 @@ useEffect(() => {
         console.log("inside here");
         // If adding a new task, send a POST request to the add-task API endpoint
         if(values.task ==='Manager Assigned Task'){
+          console.log("1");
           response = await api.post('/api/v1/timeSheet/add-task', {
             date: values?.date,
             workLocation: values?.workLocation,
             task: values?.task,
             project: values?.project,
-            managerAssignedTaskId: values?.managerAssignedTask,
+            managerAssignedTaskId: values && values?.managerAssignedTask || null,
             startTime: values?.startTime,
             endTime: values?.endTime,
             totalHours: values?.totalHours,
@@ -888,11 +895,13 @@ useEffect(() => {
         }) 
         console.log("response-handleformsubmit", response);
         } else{
+          console.log("2");
           response = await api.post('/api/v1/timeSheet/add-task', {
             date: values?.date,
             workLocation: values?.workLocation,
             task: values?.task,
             project: values?.project,
+            managerAssignedTaskId: null,
             startTime: values?.startTime,
             endTime: values?.endTime,
             totalHours: values?.totalHours,
@@ -1721,10 +1730,10 @@ useEffect(() => {
                         <Button
                           type="primary"
                           htmlType="submit"
-                          style={{ width: "100%", height: "41px" , marginLeft:'10px', cursor: (selectedKeysToHide.includes(values.date) || Object.keys(errors).length > 0)  ? 'not-allowed' : 'pointer'}}
+                          style={{ width: "100%", height: "41px" , marginLeft:'10px', cursor: (selectedKeysToHide.includes(values.date))  ? 'not-allowed' : 'pointer'}} //|| Object.keys(errors).length > 0
                           className="Button"
-                          disabled={isSubmitting || selectedKeysToHide.includes(values.date) || Object.keys(errors).length > 0 } // Disable if submitting, date is in selectedKeysToHide, or there are form errors
-                          title={selectedKeysToHide.includes(values.date) ? 'Approved date should not have the access to add the task' :  Object.keys(errors).length > 0 ? 'Kindly fill all the required fields':''}
+                          disabled={isSubmitting || selectedKeysToHide.includes(values.date) } //|| Object.keys(errors).length > 0 Disable if submitting, date is in selectedKeysToHide, or there are form errors
+                          title={selectedKeysToHide.includes(values.date) ? 'Approved date should not have the access to add the task' :  ''} //Object.keys(errors).length > 0 ? 'Kindly fill all the required fields':
                         >
                           {isSubmitting ? 'Submitting...' : (isEdited ? 'Save' : 'Add Task')}
                         </Button>
