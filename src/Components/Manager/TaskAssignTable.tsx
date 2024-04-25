@@ -223,6 +223,12 @@ const TaskAssignTable = () => {
         <Table
             style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266' }}
             className='addtask-table'
+            onRow={(record: any) => ({
+              onClick: (event: React.MouseEvent<HTMLElement>) => {
+                console.log("record-onRow", record);
+                navigate(`/manager/employeetaskassigndetails?${record.taskName}`, { state: { taskId: record.taskId } });
+              },
+            })}
             columns={columns}
             dataSource={taskTable}
             pagination={false}

@@ -22,7 +22,7 @@ const Sidebar: React.FC = () => {
 
     const isRequestsActive = activeKey === "approvalrequest" || activeKey === "monthtasks";
     const isEmployeeRequestActive = activeKey === 'calendar' || activeKey === 'dashboard';
-    const isAssignTask = activeKey ==='taskassign' || activeKey ==='taskassigntable'
+    const isAssignTask = activeKey ==='taskassign' || activeKey ==='taskassigntable' || activeKey == 'employeetaskassigndetails'
     const renderMenuItems = () => {
         const userEmail = localStorage.getItem('role');
 
