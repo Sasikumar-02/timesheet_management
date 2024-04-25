@@ -908,6 +908,13 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           fixed: 'left',
         },
         {
+            title: 'Manager Assigned Task',
+            dataIndex: 'managerTaskName',
+            key: 'managerTaskName',
+            fixed: 'left',
+            render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
+        },  
+        {
           title: 'Date',
         //   sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
           dataIndex: 'date',

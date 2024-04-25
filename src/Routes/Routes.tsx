@@ -164,5 +164,10 @@ export const UserRoutes: ProtectedRoutes[] = [
       path:"/employee/monthrequest", 
       element:<MonthRequest />,
       roles: Roles.ROLE_EMPLOYEE
-    }
+    },
+    {
+      path:"/employee/taskassigntable", 
+      element:<TaskAssignTable />,
+      roles: Roles.ROLE_EMPLOYEE
+    },
 ];
