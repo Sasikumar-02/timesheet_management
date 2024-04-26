@@ -36,11 +36,11 @@
   margin: auto; /* Center the modal horizontally */
 }
 
-.ant-modal-body {
+/* .ant-modal-body {
   display: flex;
-  justify-content: center; /* Center the modal vertically */
-  align-items: center; /* Center the modal vertically */
-}
+  justify-content: center; 
+  align-items: center; 
+} */
 
 .rowstyle{
     border: 1px solid grey;

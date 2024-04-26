@@ -56,7 +56,9 @@ const Calendar = () => {
       const formattedDate = clickedDate.format("YYYY-MM-DD");
       console.log("formattedDate",formattedDate);
       setFormattedDate(formattedDate);
-      setModalVisible(true);
+      setTimeout(() => {
+        setModalVisible(true);
+      }, 200);      
     }
   };
 
@@ -120,6 +122,7 @@ const Calendar = () => {
 
 
   useEffect(()=>{
+    console.log("uniqueRequestId",uniqueRequestId);
     fetchDataByUniqueId(uniqueRequestId)
   }, [uniqueRequestId])
 
@@ -409,13 +412,17 @@ const Calendar = () => {
       } else {
           const formattedDate = clickedDate.format("YYYY-MM-DD");
           setFormattedDate(formattedDate);
-          setModalVisible(true);
+          setTimeout(() => {
+            setModalVisible(true);
+          }, 200);
+          
       }
   };
 
   const handleModalVisible=()=>{
     setModalVisible(false) 
     setUniqueRequestId('')
+    setFormattedDate('');
   }
   
 

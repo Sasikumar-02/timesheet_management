@@ -778,7 +778,22 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
               </div>
               
             )
-        },        
+        },  
+        {
+            title: 'Manager Assigned Task',
+            dataIndex: 'managerAssignedTotalHours',
+            key: 'managerAssignedTotalHours',
+            // width: '15%',
+            fixed:'left',
+            render: (_, record) => {
+                console.log('record-managerAssignedTask', record)
+                return (
+                    <div>
+                        {hoursDecimalToHoursMinutes(record?.managerAssignedTotalHours)}
+                    </div>
+                );
+            }
+        },      
         {
             title: 'Project',
             dataIndex: 'projectTotalHours',

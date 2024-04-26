@@ -60,7 +60,7 @@ const Sidebar: React.FC = () => {
                             icon={<ScheduleFilled />}
                             className={isAssignTask ? "active" : ""}
                         >
-                            <Link to="/employee/taskassigntable">Assign Task</Link>
+                            <Link to="/employee/taskassigntable">Assigned Task</Link>
                         </Menu.Item>
                     </>
                 );

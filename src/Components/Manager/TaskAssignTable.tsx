@@ -4,6 +4,7 @@ import { Space, Avatar, Button,notification, Modal, Select, Input, Typography, F
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined } from '@mui/icons-material';
 import '../Styles/AddTask.css';
+import '../Styles/TaskAssignTable.css';
 import {
     UserOutlined,
     DownOutlined,
@@ -64,6 +65,7 @@ const TaskAssignTable = () => {
     const decoded = jwtDecode(token || "") as DecodedToken;
     const role = decoded.Role
     const [taskTable,setTaskTable]= useState<TaskTable[]>([]);
+    const [specificTaskTable, setSpecificTaskTable]= useState<TaskTable>();
     const [taskData, setTaskData] = useState<TaskData | null>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -134,6 +136,13 @@ const TaskAssignTable = () => {
             fetchData();
         }, [statuses]);
 
+        // useEffect hook to handle data display after state update
+        useEffect(() => {
+          if (specificTaskTable) {
+            console.log('Task data available:', specificTaskTable);
+          }
+        }, [specificTaskTable]);
+
         const fetchData = async (taskId:any) => {
             try {
                 const response = await api.get('/api/v1/task/fetch-timesheet-by-task', {
@@ -156,12 +165,35 @@ const TaskAssignTable = () => {
           setSelectedRows(selectedRowKeys);
         };
 
+        useEffect(() => {
+          if (taskData !== null ) {
+            console.log("handleRowClick-if taskData", taskData);
+            setModalVisible(true);
+          }
+        },[taskData])
+
+        const hoursDecimalToHoursMinutes = (decimalHours:any) => {
+          // Split the decimal value into hours and minutes
+          const hours = Math.floor(decimalHours);
+          const minutes = Math.round((decimalHours - hours) * 100);
+          console.log("hours minutes",hours, minutes)
+          // Return the formatted string
+          if(hours===0 && minutes===0){
+              return '➖';
+          }
+          return `${hours}h ${minutes}min`;
+      };
+
         const handleRowClick = (record: any) => {
           console.log("record-onRow", record);
           setTaskName(record.taskName);
-          fetchData(record.taskId)
-          setModalVisible(true);
-      };
+          fetchData(record.taskId);
+          console.log("fetchData", fetchData(record.taskId));
+          console.log("handleRowClick-taskData", taskData);
+          
+          // setModalVisible(true);
+        };
+        
 
       const handleEmployeeChange = (value: string) => {
         setSelectedEmployee(value);
@@ -182,19 +214,21 @@ const TaskAssignTable = () => {
 
     }
 
-    const handleApproveTask =async(taskId: any)=>{
+    const handleApproveTask =async(task:any, taskId: any)=>{
       console.log("handleRejectTask-1", taskId);
       setTaskId(taskId);
       setApprovalVisible(true);
       await new Promise(resolve => setTimeout(resolve, 0)); // Wait for state update
-      
+      setSpecificTaskTable(task)
     }
-    const handleRejectTask = async(taskId: any) => {
+    const handleRejectTask = async(task:any, taskId: any) => {
       console.log("handleRejectTask", taskId);
+      console.log("handleRejectTask-task", task);
+      
       setTaskId(taskId);
       setCommentVisible(true);
       await new Promise(resolve => setTimeout(resolve, 0)); // Wait for state update
-      
+      setSpecificTaskTable(task);
     };
   
     const handleCancel = () => {
@@ -439,7 +473,7 @@ const TaskAssignTable = () => {
                     <Button
                       onClick={() => {
                         if (record.endDate !== null) {
-                          handleRejectTask(record?.taskId);
+                          handleRejectTask(record, record?.taskId);
                         }
                       }}
                       style={{
@@ -459,7 +493,7 @@ const TaskAssignTable = () => {
                     <Button
                       onClick={() => {
                         if (record.endDate !== null) {
-                          handleApproveTask(record?.taskId);
+                          handleApproveTask(record, record?.taskId);
                         }
                       }}
                       style={{
@@ -481,6 +515,14 @@ const TaskAssignTable = () => {
             },
           ]
         : []),    
+    ];
+
+    const modalColumns = [
+      { title: 'Task Name', dataIndex: 'taskName' },
+      { title: 'Project Name', dataIndex: 'projectName' },
+      { title: 'Start Date', dataIndex: 'startDate' },
+      { title: 'End Date', dataIndex: 'endDate' },
+      { title: 'Estimated End Date', dataIndex: 'estimatedEndDate' },
     ];
     
 
@@ -510,6 +552,13 @@ const TaskAssignTable = () => {
             title: 'Total Hours',
             dataIndex: 'totalHours',
             key: 'totalHours',
+            render: (_:any, record:any) => {
+              return (
+                <div>
+                    {hoursDecimalToHoursMinutes(record?.totalHours)}
+                </div>
+              );
+          }
         },
         {
             title: 'Description',
@@ -532,7 +581,9 @@ const TaskAssignTable = () => {
             <div style={{ color: '#0B4266', margin: '10px 20px' }}>
                 <h1>Assigned Task Details</h1>
             </div>
-          <Button id='cancel-new' onClick={handleClick}>Assign Task</Button>
+          {role==='ROLE_MANAGER'&&(
+            <Button id='cancel-new' onClick={handleClick} style={{marginTop:'30px'}}>Assign Task</Button>
+          )}
         </div>
           <Table
               // rowSelection={{
@@ -589,98 +640,137 @@ const TaskAssignTable = () => {
                   
               </Modal>
               <Modal
-                title="Comments"
-                className='modalTitle'
+                title={<div style={{textAlign:'center'}}>Rejection Comment</div>}
+                className="ant-modal-body"
                 visible={commentVisible}
                 onCancel={handleCancel}
                 footer={[
-                    <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
+                    <Button style={{ width: '100px', backgroundColor: '#0B4266', color: 'white', cursor: 'pointer', height:'100%' }} key="submit" type="primary" onClick={handleSubmit}>
                     Submit
                     </Button>,
                 ]}
+                style={{ display: 'block' }}
+                
                 >
-                <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
+                  <div>
+
+                  {specificTaskTable && ( // Conditionally render details only if taskData is available
+                          <div style={{display:'flex', flexDirection:'column'}}>
+                            <div><b>Task Name:</b> {specificTaskTable.taskName}</div>
+                            <div><b>Start Date:</b> {specificTaskTable.startDate}</div>
+                            <div><b>Estimated End Date:</b> {specificTaskTable.estimatedEndDate}</div>
+                            <div><b>End Date:</b> {specificTaskTable.endDate}</div>
+                          </div>    
+                        )}
+                      <div style={{ textAlign: 'left' }}>
+                      <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
+                      </div>
+                  </div>
+                        
+                
               </Modal>
               <Modal
-            title="Request"
-            className='modalTitle'
-            visible={approvalVisible}
-            onCancel={()=>setApprovalVisible(false)}
-            footer={false}
-            >
-            <Formik
-              initialValues={{
-                approvalGrade: '',
-              }}
-              validationSchema={yup.object({
-                approvalGrade: yup.string().required('Grade is required'),
-              })}              
-              onSubmit={handleApproveSubmit}
-              enableReinitialize={true}
-            >
-            {({
-              values,
-              handleChange,
-              setFieldValue,
-              setFieldTouched,
-              handleBlur,
-              handleSubmit,
-              errors,
-              isSubmitting,
-              resetForm
-            }) => (
-              <Form name='basic' autoComplete='off' onFinish={handleSubmit}>
-                <Form.Item
-                  label="Grade"
-                  className="label-strong"
-                  name="approvalGrade"
-                  required
-                  style={{ padding: "10px" }}
-                >
-                   <Select
-                      style={{
-                        height: "50px",
-                        width: "470px",
-                        borderRadius: "4px",
-                        margin: "0px",
+                title="Approve"
+                className='modalTitle'
+                visible={approvalVisible}
+                onCancel={()=>setApprovalVisible(false)}
+                footer={false}
+              >
+               
+                  <div>
+                  {specificTaskTable && ( // Conditionally render details only if taskData is available
+                          <div style={{display:'flex', flexDirection:'column'}}>
+                            <div><b>Task Name:</b> {specificTaskTable.taskName}</div>
+                            <div><b>Start Date:</b> {specificTaskTable.startDate}</div>
+                            <div><b>Estimated End Date:</b> {specificTaskTable.estimatedEndDate}</div>
+                            <div><b>End Date:</b> {specificTaskTable.endDate}</div>
+                          </div>    
+                        )}
+                  </div>
+                  <div>
+                    <Formik
+                      initialValues={{
+                        approvalGrade: '',
                       }}
-                      value={values.approvalGrade}
-                      onChange={(value, option) => {
-                        setFieldValue("approvalGrade", value); // Update "workLocation" field value
-                      }}
-                      onBlur={() => {
-                        setFieldTouched("approvalGrade", true); // Mark "workLocation" field as touched
-                      }}
+                      validationSchema={yup.object({
+                        approvalGrade: yup.string().required('Grade is required'),
+                      })}              
+                      onSubmit={handleApproveSubmit}
+                      enableReinitialize={true}
                     >
-                      <Select.Option value="" disabled>
-                        Select the Grade
-                      </Select.Option>
-                      {grade.map((option, index) => (  // Use 'index' as the key
-                        <Option key={index} value={option}>
-                          {option}
-                        </Option>
-                      ))}
-                    </Select>
-                    <div>
-                      <Typography.Text
-                        type="danger"
-                        style={{ wordBreak: "break-word", textAlign: "left" }}
-                      >
-                        <ErrorMessage name="approvalGrade" /> {/* Display error message if any */}
-                      </Typography.Text>
-                    </div>
-                </Form.Item>
-                <Button
-                type="primary"
-                htmlType="submit"
-                // id='cancel-new'
-                style={{width:'20%', height:'100%'}}
-                >Submit
-                </Button>
-              </Form>
-              
-              )}
-            </Formik>
+                    {({
+                      values,
+                      handleChange,
+                      setFieldValue,
+                      setFieldTouched,
+                      handleBlur,
+                      handleSubmit,
+                      errors,
+                      isSubmitting,
+                      resetForm
+                    }) => (
+                      <Form name='basic' autoComplete='off' onFinish={handleSubmit}>
+                        <div style={{display:'flex', flexDirection:'column'}}>
+                          <div>
+                            <Form.Item
+                              label="Grade"
+                              className="label-strong"
+                              name="approvalGrade"
+                              required
+                              style={{ padding: "10px" }}
+                            >
+                              <Select
+                                  style={{
+                                    height: "50px",
+                                    width: "470px",
+                                    borderRadius: "4px",
+                                    margin: "0px",
+                                  }}
+                                  value={values.approvalGrade}
+                                  onChange={(value, option) => {
+                                    setFieldValue("approvalGrade", value); // Update "workLocation" field value
+                                  }}
+                                  onBlur={() => {
+                                    setFieldTouched("approvalGrade", true); // Mark "workLocation" field as touched
+                                  }}
+                                >
+                                  <Select.Option value="" disabled>
+                                    Select the Grade
+                                  </Select.Option>
+                                  {grade.map((option, index) => (  // Use 'index' as the key
+                                    <Option key={index} value={option}>
+                                      {option}
+                                    </Option>
+                                  ))}
+                                </Select>
+                                <div>
+                                  <Typography.Text
+                                    type="danger"
+                                    style={{ wordBreak: "break-word", textAlign: "left" }}
+                                  >
+                                    <ErrorMessage name="approvalGrade" /> {/* Display error message if any */}
+                                  </Typography.Text>
+                                </div>
+                            </Form.Item>
+                          </div>
+                          <div>
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              // id='cancel-new'
+                              style={{width:'20%', height:'100%'}}
+                              >Submit
+                            </Button>
+                          </div>
+                        </div>
+                        
+                       
+                      </Form>
+                      
+                      )}
+                    </Formik>
+                  </div>
+                
             </Modal>
       </div>
     </ConfigProvider>

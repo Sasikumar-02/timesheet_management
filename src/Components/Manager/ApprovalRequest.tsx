@@ -982,7 +982,7 @@ const exportToExcel = async () => {
               </Button>
           </div>
 
-          <button onClick={()=>fetchTaskByUniqueId(selectedRows)}>Click</button>
+          {/* <button onClick={()=>fetchTaskByUniqueId(selectedRows)}>Click</button>
           <div style={{marginRight:'20px', marginTop:'25px'}}>
               <Dropdown overlay={exportMenu} placement="bottomLeft">
                 <Button
@@ -992,7 +992,7 @@ const exportToExcel = async () => {
                   Export
                 </Button>
               </Dropdown>
-          </div>
+          </div> */}
           <Table
             rowSelection={{
                 type: 'checkbox',
