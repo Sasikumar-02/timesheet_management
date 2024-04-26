@@ -188,7 +188,7 @@ const TaskAssignTable = () => {
           console.log("record-onRow", record);
           setTaskName(record.taskName);
           fetchData(record.taskId);
-          console.log("fetchData", fetchData(record.taskId));
+          //console.log("fetchData", fetchData(record.taskId));
           console.log("handleRowClick-taskData", taskData);
           
           // setModalVisible(true);

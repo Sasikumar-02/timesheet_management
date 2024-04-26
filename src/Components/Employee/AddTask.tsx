@@ -182,13 +182,18 @@ const AddTask: React.FC = () => {
         };
     }
 });
+
 const [modalInitialValue, setModalInitialValue]= useState<any>({
-  month: '',
+  month: filterOption === "Date"
+    ? dayjs(currentDate).startOf('month').format('MMMM YYYY')
+    : filterOption === "Week"
+    ? dayjs(currentWeek).startOf('month').format('MMMM YYYY')
+    : dayjs(currentMonth).startOf('month').format('MMMM YYYY'),
   reportingTo:'',
   description:''
 })
 console.log("isFormEnabled-cancelButton-isEdited", isFormEnabled, cancelButton, isEdited);
-
+console.log("currentDate, currentMonth, currentWeek", currentDate, currentMonth, currentWeek)
 useEffect(() => {
   const fetchData = async () => {
       try {
@@ -221,6 +226,18 @@ useEffect(() => {
 
   fetchData();
 }, []);
+
+useEffect(()=>{
+  setModalInitialValue({
+    month: filterOption === "Date"
+      ? dayjs(currentDate).startOf('month').format('MMMM YYYY')
+      : filterOption === "Week"
+      ? dayjs(currentWeek).startOf('month').format('MMMM YYYY')
+      : dayjs(currentMonth).startOf('month').format('MMMM YYYY'),
+    reportingTo:'',
+    description:''
+  })
+}, [filterOption, currentMonth, currentWeek, currentDate])
 
 
 useEffect(() => {
@@ -1051,7 +1068,6 @@ useEffect(() => {
   const columns: ColumnsType<any> = [
     {
       title: 'Sl. No',
-      width: '132px',
       dataIndex: 'slNo',
       key: 'slNo',
       fixed: 'left',
@@ -1828,7 +1844,7 @@ useEffect(() => {
                         margin: "0px",
                       }}
                       picker="month" // Set picker to "month" to allow only month and year selection
-                      format="MMMM YYYY" // Use the format for month and year (e.g., "April 2024")
+                      format="MMMM YYYY" // Use the format for month and year (e.g., "April 2024")                     
                       value={values.month ? dayjs(values.month, "MMMM YYYY") : null} // Parse the value using dayjs if it exists
                       onChange={(date, dateString) => {
                         setFieldValue('month', dateString); // Update the value using the formatted date string
@@ -1861,6 +1877,7 @@ useEffect(() => {
                         borderRadius: "4px",
                         margin: "0px",
                       }}
+
                       value={values.reportingTo}
                       onChange={(value, option) => {
                         setFieldValue("reportingTo", value); // Update "workLocation" field value
