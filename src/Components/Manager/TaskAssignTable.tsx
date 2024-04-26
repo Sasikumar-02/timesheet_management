@@ -213,14 +213,14 @@ const TaskAssignTable = () => {
           approvalStatus: "Rejected",
           rejectionComments: comments,
         };
-  
+    
         // Send the payload to the API
-        const response = await api.put('/api/v1/timeSheet/review-task-completion', payload);
-        
+        const response = await api.put('/api/v1/task/review-task-completion', payload);
+    
         console.log(response?.data); // Optionally handle the response data
-  
+    
         // Reset the modal state
-        setStatuses(prev=>!prev);
+        setStatuses(prev => !prev);
         setCommentVisible(false);
         setComments('');
         setSelectedRows([]);
@@ -229,6 +229,7 @@ const TaskAssignTable = () => {
         // Optionally handle errors
       }
     };
+    
 
     const handleApproveSubmit=async(values: any, { setSubmitting, resetForm }: FormikHelpers<any>)=>{
       console.log("handleApproveSubmit-values", values, taskId);
@@ -237,13 +238,12 @@ const TaskAssignTable = () => {
         const payload = {
           taskId: taskId,
           approvalStatus: "Approved",
-          approvalComments: values.approvalGrade,
+          approvalGrade: values.approvalGrade,
         };
         console.log("handleApproveSubmit-payload", payload);
   
         // Send the payload to the API
-        const response = await api.put('/api/v1/timeSheet/review-task-completion', payload);
-        
+        const response = await api.put('/api/v1/task/review-task-completion', payload);
         console.log("handleApproveSubmit-response",response?.data); // Optionally handle the response data
   
         // Reset the modal state
