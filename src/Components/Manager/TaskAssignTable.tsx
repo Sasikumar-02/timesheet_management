@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ColumnsType } from 'antd/es/table';
-import { Space, Avatar, Button,notification, Modal, Select, Input } from 'antd';
+import { Space, Avatar, Button,notification, Modal, Select, Input, Typography, Form } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined } from '@mui/icons-material';
 import '../Styles/AddTask.css';
@@ -12,11 +12,12 @@ import {
     CloseOutlined
   } from "@ant-design/icons";
 import { Table } from 'antd/lib';
+import * as yup from "yup";
 import api from '../../Api/Api-Service';
 import { DecodedToken } from '../Employee/EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
 import { ThemeConfig, ConfigProvider } from 'antd';
-
+import { Formik, FormikHelpers, ErrorMessage } from 'formik';
 const {Option}= Select;
 
 interface EmployeeDetails{
@@ -67,11 +68,13 @@ const TaskAssignTable = () => {
     const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [taskName, setTaskName]= useState<string>('');
+    const [taskId, setTaskId]= useState<any>();
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [comments, setComments] = useState('');
     const [commentVisible, setCommentVisible] = useState(false);
     const [approvalVisible, setApprovalVisible]=useState(false);
     const [statuses, setStatuses]= useState<boolean>(false);
+    const grade: any[]=["Excellent", "Good", "Needs Improvement", "Poor"];
     console.log("taskTable,employee", taskTable);
 
         // const handleEmployees = async (employeeId: string[]) => {
@@ -129,13 +132,14 @@ const TaskAssignTable = () => {
             };
         
             fetchData();
-        }, []);
+        }, [statuses]);
 
         const fetchData = async (taskId:any) => {
             try {
                 const response = await api.get('/api/v1/task/fetch-timesheet-by-task', {
                     params: { taskId }
                 });
+                
                 setTaskData(response.data.response.data);
             } catch (error) {
                 notification.error({
@@ -178,13 +182,19 @@ const TaskAssignTable = () => {
 
     }
 
-    const handleApproveTask =(taskId: any)=>{
+    const handleApproveTask =async(taskId: any)=>{
+      console.log("handleRejectTask-1", taskId);
+      setTaskId(taskId);
       setApprovalVisible(true);
-      handleApproveSubmit(taskId);
+      await new Promise(resolve => setTimeout(resolve, 0)); // Wait for state update
+      
     }
-    const handleRejectTask = (taskId: any) => {
+    const handleRejectTask = async(taskId: any) => {
+      console.log("handleRejectTask", taskId);
+      setTaskId(taskId);
       setCommentVisible(true);
-      handleSubmit(taskId);
+      await new Promise(resolve => setTimeout(resolve, 0)); // Wait for state update
+      
     };
   
     const handleCancel = () => {
@@ -196,12 +206,12 @@ const TaskAssignTable = () => {
       setComments(e.target.value);
     };
   
-    const handleSubmit = async (taskId: any) => {
+    const handleSubmit = async () => {
       try {
         const payload = {
           taskId: taskId,
           approvalStatus: "Rejected",
-          approvalComments: comments,
+          rejectionComments: comments,
         };
   
         // Send the payload to the API
@@ -220,23 +230,27 @@ const TaskAssignTable = () => {
       }
     };
 
-    const handleApproveSubmit=async(taskId: any)=>{
+    const handleApproveSubmit=async(values: any, { setSubmitting, resetForm }: FormikHelpers<any>)=>{
+      console.log("handleApproveSubmit-values", values, taskId);
       try {
+        setSubmitting(true);
         const payload = {
           taskId: taskId,
           approvalStatus: "Approved",
-          approvalComments: comments,
+          approvalComments: values.approvalGrade,
         };
+        console.log("handleApproveSubmit-payload", payload);
   
         // Send the payload to the API
         const response = await api.put('/api/v1/timeSheet/review-task-completion', payload);
         
-        console.log(response?.data); // Optionally handle the response data
+        console.log("handleApproveSubmit-response",response?.data); // Optionally handle the response data
   
         // Reset the modal state
         setStatuses(prev=>!prev);
         setApprovalVisible(false);
       } catch (error) {
+        setSubmitting(false);
         console.error('Error occurred:', error);
         // Optionally handle errors
       }
@@ -390,46 +404,49 @@ const TaskAssignTable = () => {
             },
           ]
         : []),
-      ...(role === 'ROLE_MANAGER'
+        ...(role === 'ROLE_MANAGER'
         ? [
             {
               title: 'Review',
               dataIndex: 'reviewActions',
               key: 'reviewActions',
-              render: (_: any, record: any) => (
-                <div onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    onClick={() => handleRejectTask(record?.timeSheetId)}
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: '#eb362cdb',
-                      color: 'white',
-                      fontSize: '16px',
-                      marginRight:'3px',
-                      width: '100px',
-                      height: '41px',
-                    }}
-                  >
-                    {/* <CloseOutlined style={{color: 'white'}}/> */}
-                  Reject</Button>
-                  <Button
-                    onClick={() => handleApproveTask(record?.timeSheetId)}
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: '#8ed27d',
-                      color: 'white',
-                      fontSize: '16px',
-                      width: '100px',
-                      height: '41px',
-                    }}
-                  >
-                    {/* <CheckOutlined style={{color:'white'}}/> */}
-                    Approve</Button>
-                </div>
-              ),
+              render: (_: any, record: any) => {
+                console.log("record-review", record);
+                return (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      onClick={() => handleRejectTask(record?.taskId)}
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: '#eb362cdb',
+                        color: 'white',
+                        fontSize: '16px',
+                        marginRight: '3px',
+                        width: '100px',
+                        height: '41px',
+                      }}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => handleApproveTask(record?.taskId)}
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: '#8ed27d',
+                        color: 'white',
+                        fontSize: '16px',
+                        width: '100px',
+                        height: '41px',
+                      }}
+                    >
+                      Approve
+                    </Button>
+                  </div>
+                );
+              },
             },
           ]
-        : []),
+        : []),    
     ];
     
 
@@ -543,13 +560,94 @@ const TaskAssignTable = () => {
                 visible={commentVisible}
                 onCancel={handleCancel}
                 footer={[
-                    <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
+                    <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
                     Submit
                     </Button>,
                 ]}
                 >
                 <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
               </Modal>
+              <Modal
+            title="Request"
+            className='modalTitle'
+            visible={approvalVisible}
+            onCancel={()=>setApprovalVisible(false)}
+            footer={false}
+            >
+            <Formik
+              initialValues={{
+                approvalGrade: '',
+              }}
+              validationSchema={yup.object({
+                approvalGrade: yup.string().required('Grade is required'),
+              })}              
+              onSubmit={handleApproveSubmit}
+              enableReinitialize={true}
+            >
+            {({
+              values,
+              handleChange,
+              setFieldValue,
+              setFieldTouched,
+              handleBlur,
+              handleSubmit,
+              errors,
+              isSubmitting,
+              resetForm
+            }) => (
+              <Form name='basic' autoComplete='off' onFinish={handleSubmit}>
+                <Form.Item
+                  label="Grade"
+                  className="label-strong"
+                  name="approvalGrade"
+                  required
+                  style={{ padding: "10px" }}
+                >
+                   <Select
+                      style={{
+                        height: "50px",
+                        width: "470px",
+                        borderRadius: "4px",
+                        margin: "0px",
+                      }}
+                      value={values.approvalGrade}
+                      onChange={(value, option) => {
+                        setFieldValue("approvalGrade", value); // Update "workLocation" field value
+                      }}
+                      onBlur={() => {
+                        setFieldTouched("approvalGrade", true); // Mark "workLocation" field as touched
+                      }}
+                    >
+                      <Select.Option value="" disabled>
+                        Select the Grade
+                      </Select.Option>
+                      {grade.map((option, index) => (  // Use 'index' as the key
+                        <Option key={index} value={option}>
+                          {option}
+                        </Option>
+                      ))}
+                    </Select>
+                    <div>
+                      <Typography.Text
+                        type="danger"
+                        style={{ wordBreak: "break-word", textAlign: "left" }}
+                      >
+                        <ErrorMessage name="approvalGrade" /> {/* Display error message if any */}
+                      </Typography.Text>
+                    </div>
+                </Form.Item>
+                <Button
+                type="primary"
+                htmlType="submit"
+                // id='cancel-new'
+                style={{width:'10%', height:'100%'}}
+                >Submit
+                </Button>
+              </Form>
+              
+              )}
+            </Formik>
+            </Modal>
       </div>
     </ConfigProvider>
   )
