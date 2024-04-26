@@ -227,6 +227,15 @@ const TaskAssignTable = () => {
       } catch (error) {
         console.error('Error occurred:', error);
         // Optionally handle errors
+        notification.error({
+          message:'error',
+          description:'The Task is not Completed Yet/ The task is already Approved/Rejected'
+        })
+      } finally{
+        setStatuses(prev => !prev);
+        setCommentVisible(false);
+        setComments('');
+        setSelectedRows([]);
       }
     };
     
@@ -252,7 +261,15 @@ const TaskAssignTable = () => {
       } catch (error) {
         setSubmitting(false);
         console.error('Error occurred:', error);
+        notification.error({
+          message:'error',
+          description:'The Task is not Completed Yet/ The task is already Approved/Rejected'
+        })
         // Optionally handle errors
+      } finally{
+         // Reset the modal state
+         setStatuses(prev=>!prev);
+         setApprovalVisible(false);
       }
     } //need to work
 
@@ -278,6 +295,11 @@ const TaskAssignTable = () => {
     
     const handleClick=()=>{
       navigate('/manager/taskassign');
+    }
+
+    const handleModalVisible=()=>{
+    setModalVisible(false);
+    setTaskData(null);
     }
 
     const columns: ColumnsType<any> = [
@@ -415,9 +437,13 @@ const TaskAssignTable = () => {
                 return (
                   <div onClick={(e) => e.stopPropagation()}>
                     <Button
-                      onClick={() => handleRejectTask(record?.taskId)}
+                      onClick={() => {
+                        if (record.endDate !== null) {
+                          handleRejectTask(record?.taskId);
+                        }
+                      }}
                       style={{
-                        cursor: 'pointer',
+                        cursor:record.endDate===null?'not-allowed':'pointer',
                         backgroundColor: '#eb362cdb',
                         color: 'white',
                         fontSize: '16px',
@@ -425,19 +451,27 @@ const TaskAssignTable = () => {
                         width: '100px',
                         height: '41px',
                       }}
+                      disabled={record.endDate===null}
+                      title={record.endDate===null?'The task is not completed yet':''}
                     >
                       Reject
                     </Button>
                     <Button
-                      onClick={() => handleApproveTask(record?.taskId)}
+                      onClick={() => {
+                        if (record.endDate !== null) {
+                          handleApproveTask(record?.taskId);
+                        }
+                      }}
                       style={{
-                        cursor: 'pointer',
+                        cursor:record.endDate===null?'not-allowed':'pointer',
                         backgroundColor: '#8ed27d',
                         color: 'white',
                         fontSize: '16px',
                         width: '100px',
                         height: '41px',
                       }}
+                      disabled={record.endDate===null}
+                      title={record.endDate===null?'The task is not completed yet':''}
                     >
                       Approve
                     </Button>
@@ -525,7 +559,7 @@ const TaskAssignTable = () => {
             <Modal
                   title={taskName}
                   visible={modalVisible}
-                  onCancel={() => setModalVisible(false)}
+                  onCancel={handleModalVisible}
                   footer={null}
               >
                 <div style={{display:'flex',flexDirection:'column', alignItems:'left' }}> 
