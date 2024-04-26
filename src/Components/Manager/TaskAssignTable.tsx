@@ -282,45 +282,45 @@ const TaskAssignTable = () => {
 
     const columns: ColumnsType<any> = [
       {
-        title: 'Sl. No',
+        title: <div style={{ textAlign: 'center' }}>Sl. No</div>,
         dataIndex: 'slNo',
         key: 'slNo',
         fixed: 'left',
         render: (text, record, index) => index + 1,
       },
       {
-        title: 'Project',
+        title: <div style={{ textAlign: 'center' }}>Project</div>,
         dataIndex: 'projectName',
         key: 'projectName',
         fixed: 'left',
       },
       {
-        title: 'Task Name',
+        title: <div style={{ textAlign: 'center' }}>Task Name</div>,
         dataIndex: 'taskName',
         key: 'taskName',
         fixed: 'left',
       },
       {
-        title: 'Start Date',
+        title: <div style={{ textAlign: 'center' }}>Start Date</div>,
         dataIndex: 'startDate',
         key: 'startDate',
         fixed: 'left',
       },
       {
-        title: 'Estimated End Date',
+        title: <div style={{ textAlign: 'center' }}>Estimated End Date</div>,
         dataIndex: 'estimatedEndDate',
         key: 'estimatedEndDate',
         fixed: 'left',
       },
       {
-        title: 'End Date',
+        title: <div style={{ textAlign: 'center' }}>End Date</div>,
         dataIndex: 'endDate',
         key: 'endDate',
         fixed: 'left',
         render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
       },
       {
-        title: 'Employees',
+        title: <div style={{ textAlign: 'center' }}>Employees</div>,
         dataIndex: 'employees',
         key: 'employees',
         fixed: 'left',
@@ -337,13 +337,13 @@ const TaskAssignTable = () => {
         ),
       },
       {
-        title: 'Description',
+        title: <div style={{ textAlign: 'center' }}>Description</div>,
         dataIndex: 'taskDescription',
         key: 'taskDescription',
         fixed: 'left',
       },
       {
-        title: 'Status',
+        title: <div style={{ textAlign: 'center' }}>Status</div>,
         dataIndex: 'taskStatus',
         key: 'taskStatus',
         fixed: 'left',
@@ -351,7 +351,7 @@ const TaskAssignTable = () => {
       ...(role === 'ROLE_MANAGER'
         ? [
             {
-              title: 'Actions',
+              title: <div style={{ textAlign: 'center' }}>Actions</div>,
               dataIndex: 'managerActions',
               key: 'managerActions',
               render: (_: any, record: any) => (
@@ -380,7 +380,7 @@ const TaskAssignTable = () => {
         : role === 'ROLE_EMPLOYEE'
         ? [
             {
-              title: 'Actions',
+              title: <div style={{ textAlign: 'center' }}>Actions</div>,
               dataIndex: 'employeeActions',
               key: 'employeeActions',
               render: (_: any, record: any) => (
@@ -407,7 +407,7 @@ const TaskAssignTable = () => {
         ...(role === 'ROLE_MANAGER'
         ? [
             {
-              title: 'Review',
+              title: <div style={{ textAlign: 'center' }}>Review</div>,
               dataIndex: 'reviewActions',
               key: 'reviewActions',
               render: (_: any, record: any) => {
@@ -640,7 +640,7 @@ const TaskAssignTable = () => {
                 type="primary"
                 htmlType="submit"
                 // id='cancel-new'
-                style={{width:'10%', height:'100%'}}
+                style={{width:'20%', height:'100%'}}
                 >Submit
                 </Button>
               </Form>
