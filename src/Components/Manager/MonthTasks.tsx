@@ -12,7 +12,7 @@ import { Pie } from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
 import { useParams, useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
-import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu} from 'antd';
+import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu, notification} from 'antd';
 import { Tooltip as AntdTooltip } from 'antd';
 import DashboardLayout from '../Dashboard/Layout'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid,Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Cell} from 'recharts';
@@ -474,6 +474,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           setSelectedRows([]);
         } catch (error) {
           console.error('Error occurred:', error);
+          notification.error({
+            message:'error',
+            description:'The task is already Approved/Rejected'
+          })
           // Optionally handle errors
         }
       };
@@ -500,6 +504,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                 console.log("handleApprove",response?.data); // Optionally handle the response data
             }
         } catch (error) {
+            notification.error({
+                message:'error',
+                description:'The task is already Approved/Rejected'
+              })
           console.error('Error occurred:', error);
           // Optionally handle errors
         }
