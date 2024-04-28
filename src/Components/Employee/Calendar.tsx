@@ -25,7 +25,7 @@ const Calendar = () => {
   const location = useLocation();
   const {confirm}= Modal;
   const [events, setEvents] = useState<Event[]>([]);
-  const { month, year, clickedDate } = location.state;
+  const { month, year, clickedDate, status } = location.state;
   const [uniqueRequestId, setUniqueRequestId]= useState('');
   console.log("uniqueRequestId",uniqueRequestId);
   const [formattedDate, setFormattedDate] = useState<string>('');
@@ -393,6 +393,65 @@ const Calendar = () => {
       }
     ]
 
+    const eventContent = (arg: { event: any, timeText: string }) => {
+      const { event, timeText } = arg;
+      const backgroundColor = event.backgroundColor; // Use the backgroundColor set in the event object
+  
+      // You can customize the rendering of the event content here
+      return (
+        <div style={{ backgroundColor, padding: '5px', borderRadius: '5px' }}>
+          <div>{timeText}</div>
+          <div>{event.title}</div>
+        </div>
+      );
+    };
+
+    const renderDayCell = (arg: any) => {
+      const dayStatus = events.find((event) => dayjs(event.start).isSame(arg.date, "day"));
+      let backgroundColor = "#ffffff"; // Default background color for today
+      
+      // Check if there's a task status for the date
+      if (dayStatus) {
+        // Set background color based on task status
+        switch (dayStatus.title) {
+          case "Pending":
+            backgroundColor = "orange";
+            break;
+          case "Approved":
+            backgroundColor = "green";
+            break;
+          case "Rejected":
+            backgroundColor = "red";
+            break;
+          default:
+            break;
+        }
+      }
+      
+      // Style object for the cell
+      const cellStyle = {
+        backgroundColor,
+        color: "#000000", // Default text color
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "50%", // Round the corners for a circular appearance
+      };
+      
+      // Return a div with background color based on the task status color
+      return (
+        <div style={cellStyle}>
+          {arg.date.getDate()} {/* Include the date text */}
+        </div>
+      );
+    };
+    
+    
+    
+    
+
     const handleEventClick = (arg: EventClickArg) => {
       const clickedEvent = arg.event; // Extract the event from the click event
       console.log("clickedEvent", clickedEvent.start)
@@ -497,6 +556,8 @@ const Calendar = () => {
           end: "prev,next",
         }}
         height={"80vh"}
+        // dayCellContent={renderDayCell}
+        // eventContent={eventContent}
         eventClick={handleEventClick}
         dateClick={handleDateClick}
         events={events}

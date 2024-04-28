@@ -312,7 +312,7 @@ const EmployeeTaskStatus = () => {
         setSelectedYear(year);
         setSelectedMonth(month);
         
-        navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`, {state:{month, year, clickedDate}});
+        navigate(`/employee/calendar?month=${month}&year=${year}&status=${status}`, {state:{month, year, clickedDate, status}});
     };
 
         
