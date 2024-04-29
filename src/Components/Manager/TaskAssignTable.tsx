@@ -629,7 +629,7 @@ const TaskAssignTable = () => {
               //   selectedRowKeys: selectedRows,
               //   onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
               // }}
-              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266' }}
+              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266', cursor:'pointer' }}
               className='addtask-table'
               // onRow={(record: any) => ({
               //   onClick: (event: React.MouseEvent<HTMLElement>) => {
@@ -640,6 +640,7 @@ const TaskAssignTable = () => {
               onRow={(record: any) => ({
                 onClick: (event: React.MouseEvent<HTMLElement>) => handleRowClick(record),
               })}
+              
               columns={columns}
               dataSource={taskTable}
               pagination={false}
@@ -668,8 +669,8 @@ const TaskAssignTable = () => {
                   <div>
                     {taskData && (
                       <Table
-                          columns={innerColumns} // Pass appropriate columns for taskData
-                          dataSource={filteredDataSource} // Assuming taskData is an array
+                          columns={innerColumns} 
+                          dataSource={filteredDataSource} 
                         // pagination={true}
                       />
                     )}
@@ -692,7 +693,7 @@ const TaskAssignTable = () => {
                 >
                   <div>
 
-                  {specificTaskTable && ( // Conditionally render details only if taskData is available
+                  {specificTaskTable && ( 
                           <div style={{display:'flex', flexDirection:'column'}}>
                             <div><b>Task Name:</b> {specificTaskTable.taskName}</div>
                             <div><b>Start Date:</b> {specificTaskTable.startDate}</div>
@@ -716,7 +717,7 @@ const TaskAssignTable = () => {
               >
                
                   <div>
-                  {specificTaskTable && ( // Conditionally render details only if taskData is available
+                  {specificTaskTable && ( 
                           <div style={{display:'flex', flexDirection:'column'}}>
                             <div><b>Task Name:</b> {specificTaskTable.taskName}</div>
                             <div><b>Start Date:</b> {specificTaskTable.startDate}</div>
