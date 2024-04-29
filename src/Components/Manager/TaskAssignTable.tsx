@@ -250,6 +250,10 @@ const TaskAssignTable = () => {
     
         // Send the payload to the API
         const response = await api.put('/api/v1/task/review-task-completion', payload);
+        notification.success({
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
     
         console.log(response?.data); // Optionally handle the response data
     
@@ -286,7 +290,10 @@ const TaskAssignTable = () => {
         // Send the payload to the API
         const response = await api.put('/api/v1/task/review-task-completion', payload);
         console.log("handleApproveSubmit-response",response?.data); // Optionally handle the response data
-  
+        notification.success({
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
         // Reset the modal state
         setStatuses(prev=>!prev);
         setApprovalVisible(false);
@@ -315,6 +322,10 @@ const TaskAssignTable = () => {
             isCompleted: true,
           }
         });
+        notification.success({
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
         console.log("handleComplete-response", response);
       } catch (error:any) {
         notification.error({
