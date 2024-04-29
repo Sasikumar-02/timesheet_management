@@ -278,14 +278,7 @@ const TaskAssign = () => {
             navigate('/manager/taskassigntable')
             setSubmitting(true);
             resetForm();
-          } else {
-            // Handle other response statuses
-            console.error('Failed to assign the task', response.status);
-            notification.error({
-              message: 'Failure',
-              description: 'Something went wrongx',
-            });
-          }
+          } 
         } else{
           const responses = await api.post('/api/v1/task/create-task', payload);
           console.log("payload-1responses", responses);
@@ -298,25 +291,18 @@ const TaskAssign = () => {
             navigate('/manager/taskassigntable')
             setSubmitting(true);
             resetForm();
-          } else {
-            // Handle other response statuses
-            console.error('Failed to assign the task', response.status);
-            notification.error({
-              message: 'Failure',
-              description: 'Something went wrongx',
-            });
-          }
+          } 
         }
       }
-      catch (error) {
+      catch (error:any) {
         // Handle errors
         setSubmitting(false);
         console.error('Error adding/editing task:', error);
         // Display error notification
         notification.error({
-          message: 'Error',
-          description: 'Failed to assign the task. Please try again later.',
-      });
+          message:error?.response?.data?.response?.action,
+          description: error?.response?.data?.message
+        })
       }
     }
       

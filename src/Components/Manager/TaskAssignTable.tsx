@@ -150,11 +150,11 @@ const TaskAssignTable = () => {
                 });
                 
                 setTaskData(response.data.response.data);
-            } catch (error) {
-                notification.error({
-                    message: 'Error',
-                    description: 'There is no data in the taskName'
-                });
+            } catch (error:any) {
+              notification.error({
+                message:error?.response?.data?.response?.action,
+                description: error?.response?.data?.message
+              })
             }
         };
 
@@ -258,12 +258,10 @@ const TaskAssignTable = () => {
         setCommentVisible(false);
         setComments('');
         setSelectedRows([]);
-      } catch (error) {
-        console.error('Error occurred:', error);
-        // Optionally handle errors
+      } catch (error:any) {
         notification.error({
-          message:'error',
-          description:'The Task is not Completed Yet/ The task is already Approved/Rejected'
+          message:error?.response?.data?.action,
+          description: error?.response?.data?.message
         })
       } finally{
         setStatuses(prev => !prev);
@@ -292,12 +290,12 @@ const TaskAssignTable = () => {
         // Reset the modal state
         setStatuses(prev=>!prev);
         setApprovalVisible(false);
-      } catch (error) {
+      } catch (error:any) {
         setSubmitting(false);
         console.error('Error occurred:', error);
         notification.error({
-          message:'error',
-          description:'The Task is not Completed Yet/ The task is already Approved/Rejected'
+          message:error?.response?.data?.response?.action,
+          description: error?.response?.data?.message
         })
         // Optionally handle errors
       } finally{
@@ -318,10 +316,10 @@ const TaskAssignTable = () => {
           }
         });
         console.log("handleComplete-response", response);
-      } catch (err) {
+      } catch (error:any) {
         notification.error({
-          message:'error',
-          description:'You have already Completed the task / No task for this taskName'
+          message:error?.response?.data?.response?.action,
+          description: error?.response?.data?.message
         })
       }
     }

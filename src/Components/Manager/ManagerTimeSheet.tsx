@@ -731,13 +731,13 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
         });
         console.log('Task overall submitted successfully:', response.data);
       }
-    } catch (error) {
+    } catch (error:any) {
       console.log("Error occurred during overall submit:", error);
       // You can also display an error notification if needed
       notification.error({
-        message: 'Error',
-        description: 'Task already submitted / No task for this date',
-      });
+        message:error?.response?.data?.response?.action,
+        description: error?.response?.data?.message
+      })
     }
   };
   

@@ -472,11 +472,11 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           setCommentVisible(false);
           setComments('');
           setSelectedRows([]);
-        } catch (error) {
+        } catch (error:any) {
           console.error('Error occurred:', error);
           notification.error({
-            message:'error',
-            description:'The task is already Approved/Rejected'
+            message:error?.response?.data?.response?.action,
+            description: error?.response?.data?.message
           })
           // Optionally handle errors
         }
@@ -503,10 +503,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                 setSelectedRows([]);
                 console.log("handleApprove",response?.data); // Optionally handle the response data
             }
-        } catch (error) {
+        } catch (error:any) {
             notification.error({
-                message:'error',
-                description:'The task is already Approved/Rejected'
+                message:error?.response?.data?.response?.action,
+                description: error?.response?.data?.message
               })
           console.error('Error occurred:', error);
           // Optionally handle errors

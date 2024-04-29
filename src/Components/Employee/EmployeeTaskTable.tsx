@@ -116,11 +116,11 @@ const EmployeeTaskTable = () => {
                     params: { taskId }
                 });
                 setTaskData(response.data.response.data);
-            } catch (error) {
-                notification.error({
-                    message: 'Error',
-                    description: 'There is no data in the taskName'
-                });
+            } catch (error:any) {
+              notification.error({
+                message:error?.response?.data?.response?.action,
+                description: error?.response?.data?.message
+              })
             }
         };
 

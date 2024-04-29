@@ -976,13 +976,13 @@ useEffect(() => {
         });
         console.log('Task overall submitted successfully:', response.data);
       }
-    } catch (error) {
+    } catch (error:any) {
       console.log("Error occurred during overall submit:", error);
       // You can also display an error notification if needed
       notification.error({
-        message: 'Error',
-        description: 'Task already submitted / No task for this date',
-      });
+        message:error?.response?.data?.response?.action,
+        description: error?.response?.data?.message
+      })
     }
   };
 
@@ -1010,16 +1010,15 @@ useEffect(() => {
         // Reset form after successful submission
         resetForm();
         setModalVisible(false);
-    } catch (error) {
+    } catch (error:any) {
         // Handle errors if submission fails
         console.error('Submission error:', error);
 
-        // Show notification for error
         notification.error({
-            message: 'Failed to submit request',
-            description:  'An error occurred while submitting the request.',
-            duration: 3, // Duration in seconds
-        });
+          message:error?.response?.data?.response?.action,
+          description: error?.response?.data?.message,
+          duration:3
+        })
     } finally {
         setSubmitting(false);
     }
