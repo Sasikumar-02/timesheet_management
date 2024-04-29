@@ -236,7 +236,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     }  
 }
     useEffect(() => {
-        // Check if uniqueRequestId is defined and is an array
         console.log("uniqueRequestId", uniqueRequestId);
         if (uniqueRequestId && Array.isArray(uniqueRequestId)) {
           const fetchData = async () => {      

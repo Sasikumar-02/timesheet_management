@@ -23,7 +23,6 @@ import { ColumnsType } from "antd/es/table";
 import ApprovalRequest from '../Manager/ApprovalRequest';
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
 import Dashboard from './Dashboard';
-// import { RecentRejected, SelectedKeys, RejectedKeys } from '../Manager/MonthTasks';
 import asset from '../../assets/images/asset.svg';
 import type { ThemeConfig } from "antd";
 import TextArea from 'antd/es/input/TextArea';
@@ -32,7 +31,6 @@ import moment from 'moment';
 import { DecodedToken } from './EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
 import { initInputToken } from 'antd/es/input/style';
-// Declare setFieldValue outside of Formik
 let setFieldValue: Function;
 export interface DateTask{
   key: string;
@@ -41,11 +39,11 @@ export interface DateTask{
 }
 
 export interface RequestedOn {
-  [key: string]: string[]; // Each key represents a month (e.g., "February 2024") with an array of dates
+  [key: string]: string[]; 
 }
 
 export interface TaskRequestedOn {
-  [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
+  [userId: string]: RequestedOn; 
 }
 
 type FieldType = {
@@ -110,7 +108,7 @@ const AddTask: React.FC = () => {
   const decoded = jwtDecode(token || "") as DecodedToken;
   const userId = decoded.UserId;
   const location = useLocation();
-  const { record } = location.state || {}; // Default to an empty object if location.state is null
+  const { record } = location.state || {};  
   console.log("record", record);
   const [reportingTo, setReportingTo] = useState<UserManager[]>([]);
   const [reportingToID, setReportingToID] = useState('1234');
@@ -118,12 +116,10 @@ const AddTask: React.FC = () => {
   const [endTime, setEndTime] = useState('');
   const [totalHours, setTotalHours]=useState('');
   const [editTaskId, setEditTaskId]= useState<any>();
-  const { Option } = Select; // Destructure the Option component from Select
+  const { Option } = Select;
   const navigate = useNavigate();
   const {confirm}= Modal;
-  // Define a state variable to hold the currently edited task
-  //const [editedTask, setEditedTask] = useState<Task | null>(null);
-  const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
+  const { formattedDate } = location.state || { formattedDate: dayjs() };
   const [formWidth, setFormWidth] = useState(800);
   const [currentDate, setCurrentDate] = useState(dayjs(record?.date || formattedDate));
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
@@ -133,7 +129,6 @@ const AddTask: React.FC = () => {
   const [allowDate, setAllowDate]= useState(dayjs().format('YYYY-MM-DD'));
   console.log("allowDate", allowDate);
   const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
-  //const [reportingOptions, setReportingOptions]= useState<any>('');
   const taskOptions = ['Manager Assigned Task','Project','Learning','Training','Meeting', 'Interview'];
   const [filterOption, setFilterOption] = useState('Date');
   const [isEdited, setIsEdited]= useState<boolean>(false);
@@ -164,7 +159,7 @@ const AddTask: React.FC = () => {
             endTime: record?.endTime,
             totalHours: record?.totalHours,
             description: record?.description,
-            reportingTo: record?.reportingTo || '', // Set default value to an empty string if reportingTo is undefined
+            reportingTo: record?.reportingTo || '', 
         };
     } else {
         return {
@@ -199,26 +194,6 @@ useEffect(() => {
       try {
           const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
           console.log("fetchTaskManager", response.data.response.data);
-          // Map over tasks and call handleEmployees for each task
-          // const updatedTaskTablePromises = response.data.response.data.map(async (task: any) => {
-          //     const filteredEmployees = await handleEmployees(task.employees);
-          //     return {
-          //         taskId: task.taskId,
-          //         projectName: task.projectName,
-          //         taskName: task.taskName,
-          //         startDate: task.startDate,
-          //         estimatedEndDate: task.estimatedEndDate,
-          //         taskStatus: task.taskStatus,
-          //         taskDescription: task.taskDescription,
-          //         employees: filteredEmployees
-          //     };
-          // });
-
-          // // Wait for all handleEmployees calls to complete
-          // const updatedTaskTable = await Promise.all(updatedTaskTablePromises);
-
-          // Update the task table state with the new data
-          //setTaskTable(updatedTaskTable);
       } catch (error) {
           throw error;
       }
@@ -257,7 +232,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (record) { // Check if record is defined and has a length property
+  if (record) {
     setIsEdited(true); 
     setCancelButton(true);
     setIsFormEnabled(true);
@@ -276,26 +251,14 @@ useEffect(() => {
           });
           setAllowDate(selectedDate.format('YYYY-MM-DD'));
           handleApprovedRequest(selectedDate.format('YYYY-MM'));
-          // if (selectedDate.isBefore(todayDate, 'month')) {
-          //   setSubmissionEnable(false);
-          // } else {
-          //     setSubmissionEnable(true);
-          // }
-          // Check if selected date is in the past
-          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')//dayjs().startOf('month') // First day of the current month
+          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')
           const previousMonth = dayjs(firstDayOfCurrentMonth).subtract(1, 'month').startOf('month');
           console.log("todayDate-firstDayOfCurrentMonth-previousMonth-selectedDate",todayDate,firstDayOfCurrentMonth,previousMonth, selectedDate)
           if ((selectedDate.isSame(firstDayOfCurrentMonth, 'day')|| selectedDate.isAfter(firstDayOfCurrentMonth,'day')) && selectedDate.isSame(firstDayOfCurrentMonth, 'month')) {
-            // If the selected date is the first day of the current month
-            // Enable submission for the previous month
             setSubmissionEnable(true);
         } else if ( (todayDate===firstDayOfCurrentMonth) && dayjs(selectedDate).format('YYYY-MM') === previousMonth.format('YYYY-MM')) {
-          // If the selected date is in the previous month compared to firstDayOfCurrentMonth
-          // Enable submission
           setSubmissionEnable(true);
       } else {
-          // If the selected date is after the first day of the current month
-          // Disable submission
           setSubmissionEnable(false);
       }
 
@@ -308,21 +271,14 @@ useEffect(() => {
           });
           setAllowDate(selectedWeek.format('YYYY-MM-DD'));
           handleApprovedRequest(selectedWeek.format('YYYY-MM'));
-          // Check if selected date is in the past
-          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')//dayjs().startOf('month') // First day of the current month
+          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')
           const previousMonth = dayjs(firstDayOfCurrentMonth).subtract(1, 'month').startOf('month');
           console.log("todayDate-firstDayOfCurrentMonth-previousMonth-selectedWeek",todayDate,firstDayOfCurrentMonth,previousMonth, selectedWeek)
           if ((selectedWeek.isSame(firstDayOfCurrentMonth, 'day')|| selectedWeek.isAfter(firstDayOfCurrentMonth,'day')) && selectedWeek.isSame(firstDayOfCurrentMonth, 'month')) {
-            // If the selected date is the first day of the current month
-            // Enable submission for the previous month
             setSubmissionEnable(true);
           } else if ( (todayDate===firstDayOfCurrentMonth) && dayjs(selectedWeek).format('YYYY-MM') === previousMonth.format('YYYY-MM')) {
-            // If the selected date is in the previous month compared to firstDayOfCurrentMonth
-            // Enable submission
             setSubmissionEnable(true);
           } else {
-              // If the selected date is after the first day of the current month
-              // Disable submission
               setSubmissionEnable(false);
           }
       } else if (filterOption === 'Month') {
@@ -334,21 +290,14 @@ useEffect(() => {
           });
           setAllowDate(selectedMonth.format('YYYY-MM-DD'));
           handleApprovedRequest(selectedMonth.format('YYYY-MM'));
-          // Check if selected date is in the past
-          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')//dayjs().startOf('month') // First day of the current month
+          const firstDayOfCurrentMonth = dayjs().startOf('month').format('YYYY-MM-DD')
           const previousMonth = dayjs(firstDayOfCurrentMonth).subtract(1, 'month').startOf('month');
           console.log("todayDate-firstDayOfCurrentMonth-previousMonth-selectedMonth",todayDate,firstDayOfCurrentMonth,previousMonth, selectedMonth)
           if ((selectedMonth.isSame(firstDayOfCurrentMonth, 'day')|| selectedMonth.isAfter(firstDayOfCurrentMonth,'day')) && selectedMonth.isSame(firstDayOfCurrentMonth, 'month')) {
-            // If the selected date is the first day of the current month
-            // Enable submission for the previous month
             setSubmissionEnable(true);
           } else if ( (todayDate===firstDayOfCurrentMonth) && dayjs(selectedMonth).format('YYYY-MM') === previousMonth.format('YYYY-MM')) {
-            // If the selected date is in the previous month compared to firstDayOfCurrentMonth
-            // Enable submission
             setSubmissionEnable(true);
           } else {
-              // If the selected date is after the first day of the current month
-              // Disable submission
               setSubmissionEnable(false);
           }
       }
@@ -1948,7 +1897,7 @@ useEffect(() => {
             <Button
               id='cancel-new'
               onClick={handleToggleForm}
-              disabled={isFormEnabled} // Disable the button when the form is enabled
+              disabled={isFormEnabled} 
             >
               Add Task
             </Button>
@@ -1958,7 +1907,7 @@ useEffect(() => {
                     style={{color:'white', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', marginTop:'10px', height:'95%', width:'120px' }} 
                     onChange={(value) => handleFilterChange(value)} 
                     value={filterOption}
-                    dropdownStyle={{ textAlign: 'center' }} // Style the dropdown menu
+                    dropdownStyle={{ textAlign: 'center' }} 
                 >
                     <Option value='Date'>Date</Option>
                     <Option value='Week'>Week</Option>
@@ -1980,7 +1929,7 @@ useEffect(() => {
           <Button
             id='submit-overall'
             onClick={handleOverallSubmit}
-            disabled={selectedKeysToHide.includes(allowDate)} // Disable if currentDate is in selectedKeysToHide
+            disabled={selectedKeysToHide.includes(allowDate)} 
             style={{ cursor: selectedKeysToHide.includes(allowDate) ? 'not-allowed' : 'pointer' }}
             title={selectedKeysToHide.includes(allowDate) ? 'Approved date should not have the access to submit the task' : ''}
           >

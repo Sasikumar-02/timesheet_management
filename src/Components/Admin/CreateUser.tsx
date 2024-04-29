@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ConfigProvider, Input, notification, Select } from 'antd';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import api from '../../Api/Api-Service';
-// import { User } from './CreateUser';
 import DashboardLayout from '../Dashboard/Layout';
 import { ThemeConfig } from 'antd/lib';
 
@@ -25,17 +24,12 @@ const config: ThemeConfig = {
     }
 const CreateUser: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { Option } = Select; // Destructure the Option component from Select
+  const { Option } = Select; 
   const { state: editUserData } = useLocation();
   const isEdit = Boolean(editUserData);
   const navigate = useNavigate();
- // const nameOptions = ['Sasi Kumar M', 'Gokul R', 'Ashif', 'Vetrivel'];
  const [employees, setEmployees] = useState<any[]>([]);
  const [managers, setManagers] = useState<any[]>([]);
-//  const reportingOptions = employees
-//  .filter(employee => employee.reportingManager)
-//  .map(employee => `${employee.firstName} ${employee.lastName}`);
-
 const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager.lastName}`)
 
  const nameOptions = employees
@@ -52,15 +46,14 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
         }
         const data = response?.data?.response?.data;
         console.log('Fetched data:', data);
-        setEmployees(data); // Set fetched data to state
+        setEmployees(data); 
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
-    fetchData(); // Call the fetchData function
-  }, []); // Empty dependency array to run effect only once on mount
-  
+    fetchData();
+  }, []); 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -70,13 +63,13 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
         }
         const data =response?.data?.response?.data;
         console.log('Fetched data:', data);
-        setManagers(data); // Set fetched data to state
+        setManagers(data); 
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
-    fetchData(); // Call the fetchData function
+    fetchData(); 
   }, []);
 
   
@@ -108,36 +101,23 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
   };
 
   const handleSave = () => {
-    // Implement logic to save updated user data
     console.log('User data saved:', user);
-
-    // Update the user data in localStorage
     updateLocalStorage(user);
-    
-    // Show success notification
     notification.success({
       message: 'Success',
       description: 'User data saved successfully!',
     });
-
-    // Redirect back to user details
     navigate('/hr/userdetails');
   };
 
   const handleSubmit = () => {
-    const newSlNo = getUniqueSlNo(); // Get the unique slNo
+    const newSlNo = getUniqueSlNo();
     const newUser = { ...user, slNo: newSlNo };
-
-    // Store user data in localStorage
     addOrUpdateLocalStorage(newUser);
-
-    // Show success notification
     notification.success({
       message: 'Success',
       description: 'User added successfully!',
     });
-
-    // Clear the form
     setUser({
       name: '',
       userId: '',
@@ -151,15 +131,11 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
   const addOrUpdateLocalStorage = (userData: User) => {
     const storedUsersJSON = localStorage.getItem('users');
     const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
-
-    // Check if the user already exists in localStorage
     const existingUserIndex = storedUsers.findIndex((u: User) => u.userId === userData.userId);
 
     if (existingUserIndex !== -1) {
-      // If user exists, update the user
       storedUsers[existingUserIndex] = userData;
     } else {
-      // If user is new, add it to the list
       storedUsers.push(userData);
     }
 
@@ -169,18 +145,14 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
   const getUniqueSlNo = () => {
     const storedUsersJSON = localStorage.getItem('users');
     const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
-
-    // If there are existing users, return the next slNo
     if (storedUsers.length > 0) {
       return storedUsers[storedUsers.length - 1].slNo + 1;
     } else {
-      // If there are no existing users, return 1 for the first row
       return 1;
     }
   };
 
   const handleCancel = () => {
-    // Clear the form
     setUser({
       name: '',
       userId: '',
@@ -199,12 +171,6 @@ const reportingOptions = managers.map((manager)=>`${manager.firstName} ${manager
     );
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
-
-  // const getUniqueSlNo = () => {
-  //   const storedUsersJSON = localStorage.getItem('users');
-  //   const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
-  //   return storedUsers.length + 1;
-  // };
 
 console.log("employees data", employees);
   return (

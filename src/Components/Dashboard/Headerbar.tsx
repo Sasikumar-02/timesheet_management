@@ -65,12 +65,6 @@ const Headerbar: React.FC = () => {
     window.location.reload();
   };
  
-  // const handleMenuClick = (e: any) => {
-  //   if (e.key === "profile") {
-  //   } else if (e.key === "logout") {
-  //   }
-  // };
- 
   useEffect(() => {
     const fetchManagerInfo = async () => {
       try {
@@ -85,13 +79,7 @@ const Headerbar: React.FC = () => {
           role: manager?.role,
         });
       } catch (error: any) {
-      //   if (error.response && error.response.status === 403) {
-      //     localStorage.removeItem("authToken");
-      //     localStorage.removeItem("role");
-      //     navigate("/");
-      //     window.location.reload();
-      //   message.error(error)
-      //   }
+        throw error;
        }
     };
  
@@ -111,18 +99,12 @@ const Headerbar: React.FC = () => {
         role: manager?.role,
       });
     } catch (error: any) {
-    //   if (error.response.status === 403) {
-    //     localStorage.removeItem("authToken");
-    //     localStorage.removeItem("role");
-    //     navigate("/");
-    //     window.location.reload();
-    //   }
+        throw error
      }
   };
  
   const menu = (
     <Menu
-    // onClick={handleMenuClick}
      onMouseEnter={handleMenuMouseEnter} style={{marginTop:'-25px',marginRight:'6px'}}>
       <Menu.Item key="name">
         {managerDetails?.firstName} {managerDetails?.lastName}

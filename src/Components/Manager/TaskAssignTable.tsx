@@ -498,7 +498,7 @@ const TaskAssignTable = () => {
                         }
                       }}
                       style={{
-                        cursor:record.endDate===null?'not-allowed':'pointer',
+                        cursor: record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected' ? 'not-allowed' : 'pointer',
                         backgroundColor: '#eb362cdb',
                         color: 'white',
                         fontSize: '16px',
@@ -506,30 +506,47 @@ const TaskAssignTable = () => {
                         width: '100px',
                         height: '41px',
                       }}
-                      disabled={record.endDate===null}
-                      title={record.endDate===null?'The task is not completed yet':''}
+                      disabled={record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected'}
+                      title={
+                          record.endDate === null
+                              ? 'The task is not completed yet'
+                              : record.taskStatus === 'Approved'
+                              ? 'The task is already approved'
+                              : record.taskStatus === 'Rejected'
+                              ? 'The task is already rejected'
+                              : ''
+                      }
                     >
                       Reject
                     </Button>
                     <Button
-                      onClick={() => {
-                        if (record.endDate !== null) {
-                          handleApproveTask(record, record?.taskId);
+                        onClick={() => {
+                            if (record.endDate !== null) {
+                                handleApproveTask(record, record?.taskId);
+                            }
+                        }}
+                        style={{
+                            cursor: record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected' ? 'not-allowed' : 'pointer',
+                            backgroundColor: '#8ed27d',
+                            color: 'white',
+                            fontSize: '16px',
+                            width: '100px',
+                            height: '41px',
+                        }}
+                        disabled={record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected'}
+                        title={
+                            record.endDate === null
+                                ? 'The task is not completed yet'
+                                : record.taskStatus === 'Approved'
+                                ? 'The task is already approved'
+                                : record.taskStatus === 'Rejected'
+                                ? 'The task is already rejected'
+                                : ''
                         }
-                      }}
-                      style={{
-                        cursor:record.endDate===null?'not-allowed':'pointer',
-                        backgroundColor: '#8ed27d',
-                        color: 'white',
-                        fontSize: '16px',
-                        width: '100px',
-                        height: '41px',
-                      }}
-                      disabled={record.endDate===null}
-                      title={record.endDate===null?'The task is not completed yet':''}
                     >
-                      Approve
+                        Approve
                     </Button>
+
                   </div>
                 );
               },

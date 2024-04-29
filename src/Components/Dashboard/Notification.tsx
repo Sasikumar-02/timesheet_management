@@ -3,19 +3,17 @@ import { Badge, Dropdown, Menu } from "antd";
 import { CheckOutlined } from '@ant-design/icons';
 
 interface RequestedOn {
-  [key: string]: string[]; // Each key represents a month (e.g., "February 2024") with an array of dates
+  [key: string]: string[]; 
 }
 
 interface TaskRequestedOn {
-  [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
+  [userId: string]: RequestedOn; 
 }
 
 const Notification: React.FC = () => {
   const [taskRequestedOn, setTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [userRole, setUserRole]= useState<String|null>('');
-
-  // Fetch data from localStorage when component mounts
   useEffect(() => {
     const dataFromLocalStorage = localStorage.getItem('taskRequestedOn');
     if (dataFromLocalStorage) {
@@ -28,10 +26,7 @@ const Notification: React.FC = () => {
     const role =localStorage.getItem('role');
     setUserRole(role);
   })
-
-  // Function to handle approval of task request
   const handleApprove = (userId: string, month: string, date: string) => {
-    // Update taskRequestedOn
     const updatedTaskRequestedOn = { ...taskRequestedOn };
     if (!updatedTaskRequestedOn[userId]) {
         updatedTaskRequestedOn[userId] = {};
@@ -40,20 +35,14 @@ const Notification: React.FC = () => {
         updatedTaskRequestedOn[userId][month] = [];
     }
     updatedTaskRequestedOn[userId][month] = updatedTaskRequestedOn[userId][month].filter(d => d !== date);
-
-    // Delete month if it becomes empty
     if (updatedTaskRequestedOn[userId][month].length === 0) {
         delete updatedTaskRequestedOn[userId][month];
     }
-
-    // Delete userId if it becomes empty
     if (Object.keys(updatedTaskRequestedOn[userId]).length === 0) {
         delete updatedTaskRequestedOn[userId];
     }
 
     setTaskRequestedOn(updatedTaskRequestedOn);
-
-    // Update approveTaskRequestedOn
     const updatedApproveTaskRequestedOn = { ...approveTaskRequestedOn };
     if (!updatedApproveTaskRequestedOn[userId]) {
         updatedApproveTaskRequestedOn[userId] = {};
@@ -63,8 +52,6 @@ const Notification: React.FC = () => {
     }
     updatedApproveTaskRequestedOn[userId][month] = [...updatedApproveTaskRequestedOn[userId][month], date];
     setApproveTaskRequestedOn(updatedApproveTaskRequestedOn);
-
-    // Store updated data in localStorage
     localStorage.setItem('taskRequestedOn', JSON.stringify(updatedTaskRequestedOn));
     localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApproveTaskRequestedOn));
 };

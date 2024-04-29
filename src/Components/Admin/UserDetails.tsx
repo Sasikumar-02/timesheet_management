@@ -109,10 +109,8 @@
     }, [filters, users]);
 
     useEffect(() => {
-      // Retrieve user data from localStorage
       const storedUsersJSON = localStorage.getItem('users');
       const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
-      // Set unique slNo for each user
       const usersWithSlNo = storedUsers.map((user:any, index:any) => ({
         ...user,
         slNo: index + 1,
@@ -121,7 +119,6 @@
     }, []);
 
     useEffect(() => {
-      // Filter users based on search text
       if (searchText.trim() !== "") {
         const filteredUsers = users.filter((user) =>
           user.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -131,7 +128,6 @@
         setSearchResults(filteredUsers);
         console.log("useeffect search", filteredUsers);
       } else {
-        // If search text is empty, show all users
         setSearchResults([]);
         console.log("useeffect search", users);
       }
@@ -141,13 +137,12 @@
     
 
     useEffect(() => {
-      // Fetch data based on the updated filters, search text, and the current page
       console.log("useEffect");
       fetchData(currentPage, pageSize);
     }, [currentPage, pageSize, filters, searchText]);
 
     const handleSearchInputChange = (value: string) => {
-      console.log("useeffect Search input value:", value); // Add this line
+      console.log("useeffect Search input value:", value); 
       setSearchText(value);
     };
     
@@ -166,10 +161,7 @@
       try {
         const storedUsersJSON = localStorage.getItem('users');
         const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
-        // Create a copy of the storedUsers array
         let filteredUsers = [...storedUsers];
-    
-        // Apply filters
         if (filters.role) {
           filteredUsers = filteredUsers.filter((user: any) => user.role === filters.role);
         }
@@ -183,11 +175,9 @@
     
         const totalCount = filteredUsers.length;
         console.log("pagenumber", pageNumber  )
-        // Calculate start and end index for pagination based on the filtered data
         const startIndex = (pageNumber - 1) * (size === 'All' ? totalCount : size);
         const endIndex = size === 'All' ? totalCount : startIndex + size;
         console.log("start, end", startIndex, endIndex)
-              // Slice the filtered data based on pagination
         const data = filteredUsers.slice(startIndex, endIndex);
         console.log("Data after pagination:", data);
     
@@ -237,12 +227,8 @@
       console.log("filteredEmployees outside", filteredEmployees);
 
       const totalCount = filteredEmployees.length;
-    
-      // Calculate start and end index for pagination based on the filtered data
       const startIndex = (pageNumber - 1) * (size === 'All' ? totalCount : size);
       const endIndex = size === 'All' ? totalCount : startIndex + size;
-    
-      // Slice the filtered data based on pagination
       const data = filteredEmployees.slice(startIndex, endIndex);
     
       console.log("Filtered Data after pagination:", data);
@@ -277,20 +263,12 @@
           return filter !== null && filter !== '' && filter !== undefined;
         })
       );
-    
-      // Update the state with the new filters
       setFilters(updatedFilters);
-    
-      // Reset the current page to 1 and fetch data with the updated filters and page size
       setCurrentPage(1);
-      setPageSize(defaultPageSize); // Assuming you have a defaultPageSize constant or variable
-      
-      // If filtering by role, set the selectedRole state
+      setPageSize(defaultPageSize);
       if (filterType === 'role') {
         setSelectedRole(value as string | null);
       }
-      
-      // Fetch data based on the updated filters and page size
       fetchData(1, defaultPageSize);
     };
     
@@ -312,7 +290,6 @@
           let dataToExport = selectedEmployeeDataForExport.length > 0 ? selectedEmployeeDataForExport : filteredData;
           
           if (selectedRows.length > 0) {
-              // If there are selected rows, filter the data based on selected row keys
               dataToExport = dataToExport.filter((row) => selectedRows.includes(row.userId));
           }
   
@@ -341,12 +318,11 @@
 
     const handleExportOption = (key: string) => {
       if (key === 'all' || selectedEmployeeDataForExport.length === 0) {
-        // Notify if no rows are selected
+      
         if (selectedRows.length === 0) {
           message.warning('Please select rows to export.');
           return;
         }
-        // Proceed with export
         exportToExcel();
       } else {
         exportToExcel();
@@ -365,7 +341,6 @@
     };
 
     const handleImportOption = () => {
-      // Trigger file input click
       if (fileInputRef.current) {
         fileInputRef.current.click();
       }
@@ -377,26 +352,16 @@
 
     if (files && files.length > 0) {
       const file = files[0];
-
-      // Check if the file is of the expected type (Excel)
       if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
         try {
           const arrayBuffer = await readFileAsync(file);
           const data = new Uint8Array(arrayBuffer);
-
-          // Assuming XLSX format for simplicity
           const workbook = XLSX.read(data, { type: 'array' });
-
-          // Assuming the first sheet is the relevant data
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
-
-          // Convert sheet data to JSON
           const importedData: any[] = XLSX.utils.sheet_to_json(sheet, {
             header: 1,
           });
-
-          // Convert the imported data to an object
           const objectData: { [key: string]: any } = {};
           const headers = importedData[0];
 
@@ -405,25 +370,16 @@
             const rowData: { [key: string]: any } = {};
 
             for (let j = 0; j < headers.length; j++) {
-              // Check if the value is not undefined before adding it to the object
               if (row[j] !== undefined) {
                 rowData[headers[j]] = row[j];
               }
             }
-
-            // Check if the row has any defined values before adding it to the object
             if (Object.values(rowData).some((value) => value !== undefined)) {
               objectData[`row${i}`] = rowData;
             }
           }
-
-          // Store the object data in an array
           const dataArray = Object.values(objectData);
-
-          // Merge the imported data with the existing users
           const mergedData = [...users, ...dataArray];
-
-          // Update the local storage or state with the merged data
           localStorage.setItem('users', JSON.stringify(mergedData));
           setUsers(mergedData);
           message.success('Data imported successfully!');
@@ -431,7 +387,6 @@
           console.error('Error reading file:', error);
           message.error('Error reading file. Please try again.');
         } finally {
-          // Clear the file input value
           fileInput.value = '';
         }
       } else {
@@ -463,21 +418,17 @@
     };
 
     const handleEditClick = (userId: string) => {
-      // Find the user data based on the userId
       const userData = users.find((user) => user.userId === userId);
-      // Navigate to the CreateUser page with the user data as state
       navigate(`/hr/createuser/${userId}`, { state: { userData } });
     };
   
     const handleDeleteClick = (userId: string) => {
-      // Assuming you have a function to delete the user by ID
       const storedUsersJSON = localStorage.getItem('users');
       const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
       const updatedUsers = storedUsers.filter((user: any) => user.userId !== userId);
       setUsers(updatedUsers);
-      //setFilteredData(updatedUsers);
+     
       localStorage.setItem('users', JSON.stringify(updatedUsers));
-      // Display a success message
       message.success('User deleted successfully');
   };
   
@@ -611,20 +562,15 @@
     const handleRowClick = (record: User) => {
       if (!viewModalVisible) {
         const userPath = `/hr/userprofile/${record.userId}`;
-      // Navigate to the user profile page
       navigate(userPath);
       }
     };
 
     
     const handleCreateUserClick = () => {
-      // Navigate to the "/createuser" route
       navigate('/hr/createuser');
     };
-
-    // Remove the existing paginationOptions object
-
-    const handlePaginationChange = (page: number, pageSize?: number) => {
+   const handlePaginationChange = (page: number, pageSize?: number) => {
       console.log("pagination change", page, pageSize);
       setCurrentPage(page);
       setPageSize(pageSize || 50);
@@ -646,7 +592,7 @@
     const paginationOptions: any = {
       total: totalItemCount,
       current: currentPage,
-      pageSize: pageSize || defaultPageSize, // Use defaultPageSize if pageSize is not set
+      pageSize: pageSize || defaultPageSize,
       showSizeChanger: true,
       pageSizeOptions: ["5", "10", "20", "50"],
       onChange: handlePageSizeChange,
@@ -659,11 +605,10 @@
       {
           title: 'Sl.no',
           sorter: (a: User, b: User) => {
-            // Check if a.slNo and b.slNo are defined before comparison
+          
             if (a.slNo !== undefined && b.slNo !== undefined) {
               return a.slNo - b.slNo;
             }
-            // Handle the case where slNo is undefined for one or both users
             return 0;
           },
           dataIndex: 'slNo',
@@ -753,7 +698,7 @@
     ];
 
     useEffect(() => {
-    console.log("useEffect search 1", filteredData); // Add this line
+    console.log("useEffect search 1", filteredData); 
   }, [filteredData]);
 
     

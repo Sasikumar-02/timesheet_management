@@ -19,7 +19,6 @@ const UserProfile: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
-    // Fetch user data based on userId (Assuming you have stored user data in local storage)
     const storedUsersJSON = localStorage.getItem('users');
     const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
     const user = storedUsers.find((user: any) => user.userId === userId);
@@ -28,22 +27,16 @@ const UserProfile: React.FC = () => {
   }, [userId]);
 
   const handleEditClick = () => {
-    // Navigate to the /createuser/:userId route with the user data as a parameter
     navigate(`/hr/createuser/${userId}`, { state: { userData } });
   };
 
   const handleDeleteClick = () => {
-    // Assuming you have a function to delete the user by ID
     const storedUsersJSON = localStorage.getItem('users');
     const storedUsers = storedUsersJSON ? JSON.parse(storedUsersJSON) : [];
     const updatedUsers = storedUsers.filter((user: any) => user.userId !== userId);
 
     localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    // Display a success message
     message.success('User deleted successfully');
-
-    // Navigate back to /userdetails
     navigate('/hr/userdetails');
   };
 
@@ -52,21 +45,14 @@ const UserProfile: React.FC = () => {
   }
 
   const handleDateClick = (arg: DateClickArg) => {
-    // arg.date is the clicked date
     const clickedDate = dayjs(arg.date);
-  
-    // Check if the clicked date is in the future
     if (clickedDate.isAfter(dayjs(), 'day')) {
-      // Display a notification if the date is in the future
       notification.warning({
         message: 'Date Restriction',
         description: 'Restricted to open future dates.',
       });
     } else {
-      // Format the date to the desired format (you may need to adjust the format)
       const formattedDate = clickedDate.format('YYYY-MM-DD');
-  
-      // Navigate to the /addtask route with the date as a query parameter
       navigate(`/employee/addtask?date=${formattedDate}`);
     }
   };

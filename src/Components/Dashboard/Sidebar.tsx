@@ -13,7 +13,6 @@ const Sidebar: React.FC = () => {
     const Location = useLocation();
 
     useEffect(() => {
-        // Extract active key from the URL pathname
         console.log("location.pathName", Location.pathname)
         const pathSegments = Location.pathname.split("/");
         setActiveKey(pathSegments[pathSegments.length - 1]);
@@ -46,14 +45,6 @@ const Sidebar: React.FC = () => {
                         >
                             <Link to="/employee/addtask">TimeSheet</Link>
                         </Menu.Item>
-                        {/* <Menu.Item
-                            id="menu"
-                            key="monthRequest"
-                            icon={<ScheduleOutlined />}
-                            className={activeKey === "monthRequest" ? "active" : ""}
-                        >
-                            <Link to="/employee/monthRequest">Month Request</Link>
-                        </Menu.Item> */}
                         <Menu.Item
                             id="menu"
                             key="taskassigntable"
@@ -120,22 +111,6 @@ const Sidebar: React.FC = () => {
                         >
                             <Link to="/manager/timesheet">Timesheet</Link>
                         </Menu.Item>
-                        {/* <Menu.Item
-                            id="menu"
-                            key="monthRequest"
-                            icon={<ScheduleOutlined />}
-                            className={activeKey === "monthRequest" ? "active" : ""}
-                        >
-                            <Link to="/manager/monthRequest">Employee Request</Link>
-                        </Menu.Item> */}
-                        {/* <Menu.Item
-                            id="menu"
-                            key="taskassign"
-                            icon={<ScheduleOutlined />}
-                            className={activeKey === "taskassign" ? "active" : ""}
-                        >
-                            <Link to="/manager/taskassign">Assign Task</Link>
-                        </Menu.Item> */}
                         <Menu.Item
                             id="menu"
                             key="taskassigntable"
