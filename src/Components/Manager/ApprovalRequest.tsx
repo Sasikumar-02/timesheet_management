@@ -559,8 +559,6 @@ const exportToExcel = async () => {
             width: '20%',
             fixed: 'left',
             render: (_, record: DateTask) => {
-                // Get the specific month key
-
                 const date = record.tasks.length > 0 ? record.tasks[0].date : '';
                 return date;
             },
@@ -706,7 +704,7 @@ const exportToExcel = async () => {
     
     const columns: ColumnsType<GroupedTasks> = [
       {
-        title: 'Sl.No',
+        title: 'S.No',
         className: 'ant-table-column-title',
         dataIndex: 'slNo',
         key: 'slNo',

@@ -689,6 +689,10 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
         // Handle successful response
         setRefetch((prevState: any) =>  !prevState);
         console.log('Task added/edited successfully:', response.data);
+        notification.success({
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
         // Handle any other necessary operations after successful submission
         // For example, resetting form fields, updating state, etc.
         setIsEdited(false);
@@ -710,11 +714,16 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       } else {
         // Handle other response statuses
         console.error('Failed to add/edit task. Status:', response.status);
+
       }
-    } catch (error) {
+    } catch (error:any) {
       // Handle errors
       setSubmitting(false);
       console.error('Error adding/editing task:', error);
+      notification.error({
+        message:error?.response?.data?.action,
+        description: error?.response?.data?.message
+      })
       // You can also show a notification or perform other error handling here
     }
   };
@@ -726,9 +735,9 @@ const calculateTotalHours = (startTime: any, endTime: any) => {
       if (response.status === 200) {
         // Display a notification when the task is submitted successfully
         notification.success({
-          message: 'Success',
-          description: 'Task Submitted Successfully',
-        });
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
         console.log('Task overall submitted successfully:', response.data);
       }
     } catch (error:any) {

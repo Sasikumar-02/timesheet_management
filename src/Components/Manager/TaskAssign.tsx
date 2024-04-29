@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import { ColumnsType } from 'antd/es/table'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import TextArea from 'antd/es/input/TextArea';
 import { Input, TimePicker, Select, notification, DatePicker, Button, Modal, Col,
@@ -16,6 +16,7 @@ import api from '../../Api/Api-Service';
 import { DecodedToken } from '../Employee/EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
 import { CatchingPokemonSharp } from '@mui/icons-material';
+import {ArrowLeftOutlined } from "@ant-design/icons";
 import '../Styles/CreateUser.css';
 import '../Styles/AddTask.css';
 import { useLocation } from 'react-router-dom';
@@ -272,9 +273,9 @@ const TaskAssign = () => {
           if (responses.status === 200) {
             // Display a notification when the task is submitted successfully
             notification.success({
-              message: 'Success',
-              description: 'Task Edited Successfully',
-            });
+              message:response?.data?.response?.action,
+              description:response?.data?.message,
+            })
             navigate('/manager/taskassigntable')
             setSubmitting(true);
             resetForm();
@@ -285,9 +286,9 @@ const TaskAssign = () => {
           if (responses.status === 200) {
             // Display a notification when the task is submitted successfully
             notification.success({
-              message: 'Success',
-              description: 'Task Assigned Successfully',
-            });
+              message:response?.data?.response?.action,
+              description:response?.data?.message,
+            })
             navigate('/manager/taskassigntable')
             setSubmitting(true);
             resetForm();
@@ -332,7 +333,10 @@ const TaskAssign = () => {
       <div className='createuser-main' style={{overflow:'hidden'}}>
         <div className='header' style={{display:'flex', flexDirection:'column'}}>
           <div>
-            <h1>Task Assign</h1>
+          {/* <Link to="/manager/taskassigntable"> */}
+            
+          {/* </Link> */}
+            <h1><ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/taskassigntable')}} />Task Assign</h1>
           </div>
           <div>
             <Formik

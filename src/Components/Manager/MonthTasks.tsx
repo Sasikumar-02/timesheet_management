@@ -6,11 +6,13 @@ import {
     UserOutlined,
     DownOutlined,
     UpOutlined,
+    ArrowLeftOutlined
 } from "@ant-design/icons";
 import { Doughnut } from 'react-chartjs-2';
 import { Pie } from 'react-chartjs-2';
 import html2canvas from 'html2canvas';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu, notification} from 'antd';
 import { Tooltip as AntdTooltip } from 'antd';
@@ -23,6 +25,7 @@ import { Task } from '../Employee/AddTask'
 import ApprovalRequest from './ApprovalRequest';
 import '../Styles/ApprovalRequest.css';
 import '../Styles/AddTask.css';
+import '../Styles/CreateUser.css'
 import type { ThemeConfig } from "antd";
 import Chart from 'react-apexcharts';
 //import { Chart } from 'chart.js/auto';
@@ -78,6 +81,7 @@ const config: ThemeConfig = {
     
 const MonthTasks: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [statuses, setStatuses]= useState<boolean>(false);
     const {Option}= Select
     const { uniqueRequestId, employeeId, formattedMonth, employeeName } = location.state;
@@ -254,8 +258,12 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
               console.log('response-new', response?.data?.response?.data);
               setMonthTasks(response?.data?.response?.data);
               // Process response data here
-            } catch (error) {
+            } catch (error:any) {
               console.error("Error fetching data:", error);
+              notification.error({
+                message:error?.response?.data?.action,
+                description: error?.response?.data?.message
+              })
               // Handle error here, such as displaying an error message to the user
             }
           };
@@ -465,7 +473,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
           
           console.log(response?.data); // Optionally handle the response data
-    
+          notification.success({
+            message:response?.data?.response?.action,
+            description:response?.data?.message,
+          })
           // Reset the modal state
           setStatuses(prev=>!prev);
           setCommentVisible(false);
@@ -498,6 +509,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                 };
                 
                 const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
+                notification.success({
+                    message:response?.data?.response?.action,
+                    description:response?.data?.message,
+                  })
                 setStatuses(prev=>!prev);
                 setSelectedRows([]);
                 console.log("handleApprove",response?.data); // Optionally handle the response data
@@ -901,7 +916,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
 
     const innerColumn: ColumnsType<any> = [
         {
-          title: 'Sl. No',
+          title: 'S.No',
         //   width: '132px',
           dataIndex: 'slNo',
           key: 'slNo',
@@ -1020,7 +1035,12 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
 
     return (
         <div id="dashboardLayout" className='flex gap-5'>
-            <>
+            <div className='createuser-main'>
+                <div className='header'>
+                    <div>
+                      <h1> <ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/taskassigntable')}} />Monthly Task Details</h1>
+                    </div>
+                </div>
                     <div style={{display:'flex', justifyContent:'space-between'}}>
                         <div style={{display:'flex', alignItems:'flex-start', margin:'10px 0px 10px 20px'}}>
                             <div>
@@ -1053,7 +1073,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                     
                     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task Percentage</h2>
+                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task By Category</h2>
                            <div style={{ height: '300px' }} id='pie-chart-container'>
                             <Pie data={pieData} options={chartOptions} />
                            </div>
@@ -1080,7 +1100,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                             
                         </div>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location Percentage</h2>
+                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location</h2>
                             <div style={{ height: '300px' }} id='line-chart-container'>
                                 <Doughnut data={data} options={chartOptions} />
                             </div>
@@ -1181,7 +1201,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                         </Modal>
                     </div> 
                 
-            </>
+            </div>
         </div>
 
     )

@@ -14,6 +14,8 @@ import { notification } from "antd";
 import { ColumnsType } from "antd/es/table";
 import {Modal} from "antd";
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { Day } from "react-big-calendar";
+import { LegendToggle } from "@mui/icons-material";
 interface Event {
   title: string;
   start: string;
@@ -25,7 +27,12 @@ const Calendar = () => {
   const location = useLocation();
   const {confirm}= Modal;
   const [events, setEvents] = useState<Event[]>([]);
-  const { month, year, clickedDate, status } = location.state;
+  let { month, year, clickedDate, status } = location.state ||{};
+  if(month === undefined){
+    month = dayjs().format('MMMM');
+    year = dayjs().format('YYYY');
+  }
+  console.log("monhth", month, year);
   const [uniqueRequestId, setUniqueRequestId]= useState('');
   console.log("uniqueRequestId",uniqueRequestId);
   const [formattedDate, setFormattedDate] = useState<string>('');
@@ -36,8 +43,8 @@ const Calendar = () => {
   console.log("uniqueRequestId",uniqueRequestId);
   console.log("formattedDate",formattedDate);
   console.log("clickedDate", clickedDate);
-  const [newMonth, setNewMonth]= useState(month);
-  const [newYear, setNewYear]= useState(year);
+  const [newMonth, setNewMonth]= useState(month || dayjs().format('MMMM'));
+  const [newYear, setNewYear]= useState(year || dayjs().format('YYYY'));
 
   const handleDateClick = (arg: DateClickArg) => {
     const clickedDate = dayjs(arg.date);
@@ -168,7 +175,7 @@ const Calendar = () => {
 
   const currentDate = clickedDate
     ? clickedDate
-    : dayjs().startOf("year").format("YYYY-MM-DD");
+    : dayjs().format("YYYY-MM-DD");
     console.log("clickedDateFromLocalStorage -1",currentDate);
     useEffect(()=>{
       fetchDataByUniqueId(uniqueRequestId);

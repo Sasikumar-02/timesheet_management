@@ -943,7 +943,7 @@ const fetchDoughReport=async(month:any, year:any)=>{
     </div>
     <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
                       <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Task Percentage</h2>
+                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Task By Category</h2>
                            <div style={{ height: '300px' }} id='pie-chart-container'>
                             <Pie data={pieData} options={chartOptions} />
                            </div>
@@ -970,7 +970,7 @@ const fetchDoughReport=async(month:any, year:any)=>{
                             
                         </div>
                         <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }} id='line-chart-container'>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location Percentage</h2>
+                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Overall Work Location </h2>
                             <div style={{ height: '300px' }}>
                                 <Doughnut data={data} options={chartOptions} />
                             </div>

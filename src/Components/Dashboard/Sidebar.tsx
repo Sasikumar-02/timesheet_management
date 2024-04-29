@@ -33,9 +33,17 @@ const Sidebar: React.FC = () => {
                             id="menu"
                             key="dashboard"
                             icon={<HomeFilled />}
-                            className={isEmployeeRequestActive ? "active" : ""}
+                            className={activeKey === 'dashboard' ? "active" : ""}
                         >
                             <Link to="/employee/dashboard">Dashboard</Link>
+                        </Menu.Item>
+                        <Menu.Item
+                            id="menu"
+                            key="calendar"
+                            icon={<ScheduleOutlined />}
+                            className={activeKey === "calendar" ? "active" : ""}
+                        >
+                            <Link to="/employee/calendar">Calendar</Link>
                         </Menu.Item>
                         <Menu.Item
                             id="menu"
@@ -43,7 +51,7 @@ const Sidebar: React.FC = () => {
                             icon={<ScheduleOutlined />}
                             className={activeKey === "addtask" ? "active" : ""}
                         >
-                            <Link to="/employee/addtask">TimeSheet</Link>
+                            <Link to="/employee/addtask">Timesheet</Link>
                         </Menu.Item>
                         <Menu.Item
                             id="menu"

@@ -12,6 +12,7 @@ import {
     CheckOutlined,
     CloseOutlined
   } from "@ant-design/icons";
+import '../Styles/CreateUser.css';
 import { Table } from 'antd/lib';
 import * as yup from "yup";
 import api from '../../Api/Api-Service';
@@ -347,7 +348,7 @@ const TaskAssignTable = () => {
 
     const columns: ColumnsType<any> = [
       {
-        title: <div style={{ textAlign: 'center' }}>Sl. No</div>,
+        title: <div style={{ textAlign: 'center' }}>S.No</div>,
         dataIndex: 'slNo',
         key: 'slNo',
         width: 'max-content', // Set the column width to adjust to fit widest content
@@ -614,9 +615,9 @@ const TaskAssignTable = () => {
 
   return (
     <ConfigProvider theme={config}>
-      <div>
-        <div style={{display:'flex', justifyContent:'space-between', margin:'10px 20px'}}>
-            <div style={{ color: '#0B4266', margin: '10px 20px' }}>
+      <div className='createuser-main'>
+        <div style={{display:'flex', justifyContent:'space-between'}}>
+            <div style={{ color: '#0B4266' }}>
                 <h1>Assigned Task Details</h1>
             </div>
           {role==='ROLE_MANAGER'&&(

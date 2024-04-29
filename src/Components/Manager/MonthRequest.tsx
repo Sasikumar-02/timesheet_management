@@ -1,6 +1,6 @@
 import React,{useEffect, useState} from 'react'
 import { ColumnsType } from 'antd/es/table';
-import { Space, Avatar, Button, Modal, Input, ConfigProvider, Select } from 'antd';
+import { Space, Avatar, Button, Modal, Input, ConfigProvider, Select, notification } from 'antd';
 import dayjs from 'dayjs';
 import Table from 'antd/es/table';
 import {
@@ -71,6 +71,10 @@ const MonthRequest = () => {
     
           // Send the payload to the API
           const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
+          notification.success({
+            message:response?.data?.response?.action,
+            description:response?.data?.message,
+          })
           
           console.log(response?.data); // Optionally handle the response data
     
@@ -79,8 +83,12 @@ const MonthRequest = () => {
           setCommentVisible(false);
           setComments('');
           setSelectedRows([]);
-        } catch (error) {
+        } catch (error:any) {
           console.error('Error occurred:', error);
+          notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
           // Optionally handle errors
         }
       };
@@ -95,12 +103,20 @@ const MonthRequest = () => {
                 };
                 
                 const response = await api.put('/api/v1/timeSheet/review-month-block-requests', payload);
+                notification.success({
+                  message:response?.data?.response?.action,
+                  description:response?.data?.message,
+                })
                 setStatuses(prev=>!prev);
                 setSelectedRows([]);
                 console.log("handleApprove",response?.data); // Optionally handle the response data
             }
-        } catch (error) {
+        } catch (error:any) {
           console.error('Error occurred:', error);
+          notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
           // Optionally handle errors
         }
       };

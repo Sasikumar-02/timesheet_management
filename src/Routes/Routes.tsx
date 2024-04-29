@@ -13,13 +13,10 @@ import EmployeeTaskStatus from "../Components/Employee/EmployeeTaskStatus";
 import ApprovalRequest from "../Components/Manager/ApprovalRequest";
 import ManagerDashboard from "../Components/Manager/ManagerDashboard";
 import ManagerTimeSheet from "../Components/Manager/ManagerTimeSheet";
-import ManagerUserDetails from "../Components/Manager/ManagerUserDetails";
 import MonthTasks from "../Components/Manager/MonthTasks";
 
 import { Task } from "../Components/Employee/AddTask";
 import Calendar from "../Components/Employee/Calendar";
-import UserMonthlyTask from "../Components/Employee/UserMonthlyTask";
-import UserEveryDateTask from "../Components/Employee/UserEveryDateTask";
 import MonthRequest from "../Components/Manager/MonthRequest";
 import TaskAssign from "../Components/Manager/TaskAssign";
 import TaskAssignTable from "../Components/Manager/TaskAssignTable";
@@ -103,11 +100,6 @@ export const ManagerRoutes: ProtectedRoutes[] = [
     roles: Roles.ROLE_MANAGER,
   },
   {
-    path:'/manager/projectuser',
-    element:<ManagerUserDetails/>,
-    roles:Roles.ROLE_MANAGER,
-  },
-  {
     path:"/manager/calendar", 
     element:<Calendar />,
     roles: Roles.ROLE_MANAGER
@@ -146,19 +138,9 @@ export const UserRoutes: ProtectedRoutes[] = [
       roles: Roles.ROLE_EMPLOYEE,
     },
     {
-      path: "/employee/monthlytask",
-      element: <UserMonthlyTask/>,
-      roles: Roles.ROLE_EMPLOYEE,
-    },
-    {
       path:"/employee/calendar", 
       element:<Calendar />,
       roles: Roles.ROLE_EMPLOYEE
-    },
-    {
-      path:"/employee/monthtasks",
-      element:<UserEveryDateTask/>,
-      roles:Roles.ROLE_EMPLOYEE
     },
     {
       path:"/employee/monthrequest", 

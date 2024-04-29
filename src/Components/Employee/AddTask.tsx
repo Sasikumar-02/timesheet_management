@@ -884,6 +884,10 @@ useEffect(() => {
         // Handle successful response
         setRefetch((prevState: any) =>  !prevState);
         console.log('Task added/edited successfully:', response.data);
+        notification.success({
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
         // Handle any other necessary operations after successful submission
         // For example, resetting form fields, updating state, etc.
         setIsEdited(false);
@@ -905,10 +909,14 @@ useEffect(() => {
         // Handle other response statuses
         console.error('Failed to add/edit task. Status:', response.status);
       }
-    } catch (error) {
+    } catch (error:any) {
       // Handle errors
       setSubmitting(false);
       console.error('Error adding/editing task:', error);
+      notification.error({
+        message:error?.response?.data?.action,
+        description: error?.response?.data?.message
+      })
       // You can also show a notification or perform other error handling here
     }
   };
@@ -920,9 +928,9 @@ useEffect(() => {
       if (response.status === 200) {
         // Display a notification when the task is submitted successfully
         notification.success({
-          message: 'Success',
-          description: 'Task Submitted Successfully',
-        });
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+        })
         console.log('Task overall submitted successfully:', response.data);
       }
     } catch (error:any) {
@@ -952,9 +960,10 @@ useEffect(() => {
 
         // Show notification if submission is successful
         notification.success({
-            message: 'Request Submitted Successfully',
-            duration: 3, // Duration in seconds
-        });
+          message:response?.data?.response?.action,
+          description:response?.data?.message,
+          duration:3
+        })
 
         // Reset form after successful submission
         resetForm();
@@ -1015,7 +1024,7 @@ useEffect(() => {
 
   const columns: ColumnsType<any> = [
     {
-      title: 'Sl. No',
+      title: 'S.No',
       dataIndex: 'slNo',
       key: 'slNo',
       fixed: 'left',
@@ -1219,7 +1228,7 @@ useEffect(() => {
       <div className='createuser-main' style={{overflow:'hidden'}}>
         <div className='header'>
           <div>
-            <h1>{isFormEnabled ? 'Add Task': 'TimeSheet'}</h1>
+            <h1 style={{marginLeft:'20px'}}>{isFormEnabled ? 'Add Task': 'TimeSheet'}</h1>
           </div>
           { filterOption === 'Month' ? (
             <div style={{display:'flex', justifyContent:'flex-end'}}>
