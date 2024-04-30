@@ -553,7 +553,7 @@ const exportToExcel = async () => {
     
     const column: ColumnsType<DateTask> = [
         {
-            title: 'Select All',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Select All</div>,
             dataIndex: 'date',
             key: 'date',
             width: '20%',
@@ -704,7 +704,7 @@ const exportToExcel = async () => {
     
     const columns: ColumnsType<GroupedTasks> = [
       {
-        title: 'S.No',
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
         className: 'ant-table-column-title',
         dataIndex: 'slNo',
         key: 'slNo',
@@ -712,7 +712,7 @@ const exportToExcel = async () => {
         render: (_, __, index) => <span>{index + 1}</span>,
       },    
       {
-        title: "Employee",
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employee</div>,
         className: ' ant-table-column-title',
         dataIndex: "employeeId",
         render: (employeeId, record) => (
@@ -728,21 +728,21 @@ const exportToExcel = async () => {
         ),
       },          
       {
-        title: 'Month',
+        title:<div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Month</div>,
         className: 'ant-table-column-title',
         dataIndex: 'month',
         key: 'month',
         fixed: 'left',
       },
       {
-        title: 'Requested Days',
+        title:<div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Requested Days</div>,
         className: 'ant-table-column-title',
         dataIndex: 'daysRequested', // Assuming 'requestedOn' is the property in userTasks containing requestedOn data
         key: 'daysRequested',
         fixed: 'left',
       },     
       {
-        title: 'Days Approved',
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Days Approved</div>,
         className: 'ant-table-column-title',
         dataIndex: 'daysFilled',
         key: 'daysFilled',

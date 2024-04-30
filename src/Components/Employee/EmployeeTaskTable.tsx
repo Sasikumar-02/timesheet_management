@@ -155,7 +155,7 @@ const EmployeeTaskTable = () => {
 
     const columns: ColumnsType<any> = [
         {
-          title: 'Sl. No',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
           width: '132px',
           dataIndex: 'slNo',
           key: 'slNo',
@@ -163,35 +163,35 @@ const EmployeeTaskTable = () => {
           render: (text, record, index) => index + 1,
         },
         {
-          title: 'Project',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
           // sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
           dataIndex: 'projectName',
           key: 'projectName',
           fixed: 'left',
         },
         {
-          title: 'Task Name',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Task</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'taskName',
           key: 'taskName',
           fixed: 'left',
         },
         {
-          title: 'Start Date',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Start Date</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'startDate',
           key: 'startDate',
           fixed: 'left',
         },
         {
-          title: 'Estimated End Date',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Estimated End Time</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'estimatedEndDate',
           key: 'estimatedEndDate',
           fixed: 'left',
         },
         {
-            title: 'Employees',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employees</div>,
             dataIndex: 'employees',
             key: 'employees',
             fixed: 'left',
@@ -228,14 +228,14 @@ const EmployeeTaskTable = () => {
           fixed: 'left',
         }, 
         {
-            title: 'Status',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
             //sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
             dataIndex: 'taskStatus',
             key: 'taskStatus',
             fixed: 'left',
         }, 
         {
-          title: 'Actions',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Actions</div>,
           dataIndex: 'actions',
           key: 'actions',
           render: (_, record, index) => {
@@ -269,12 +269,12 @@ const EmployeeTaskTable = () => {
 
       const innerColumns = [
         {
-            title: 'Date',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Date</div>,
             dataIndex: 'date',
             key: 'date',
         },
         {
-            title: 'Employee',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employee</div>,
             className: 'ant-table-column-title',
             dataIndex: 'employeeId',
             render: (employeeId: any, record: any) => (
@@ -290,7 +290,7 @@ const EmployeeTaskTable = () => {
             ),
         },
         {
-            title: 'Total Hours',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Total Hours</div>,
             dataIndex: 'totalHours',
             key: 'totalHours',
         },

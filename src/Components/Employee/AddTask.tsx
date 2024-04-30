@@ -1036,13 +1036,15 @@ useEffect(() => {
       dataIndex: 'date',
       key: 'date',
       fixed: 'left',
-    },
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
+    },    
     {
       title: 'Work Location',
       //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'workLocation',
       key: 'workLocation',
       fixed: 'left',
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
     },
     {
       title: 'Task',
@@ -1050,86 +1052,91 @@ useEffect(() => {
       dataIndex: 'task',
       key: 'task',
       fixed: 'left',
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
     },
     {
-      title: 'Project',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
       //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'project',
       key: 'project',
       fixed: 'left',
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
     },
     {
-      title: 'Manager Assigned Task',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Manager Assigned Task</div>,
       dataIndex: 'managerTaskName',
       key: 'managerTaskName',
       fixed: 'left',
-      render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text? text: '➖'}</div>,
     },  
     {
-      title: 'Start Time',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Start Time</div>,
       //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
       dataIndex: 'startTime',
       key: 'startTime',
       fixed: 'left',
       render: (_, record) => {
         return (
-          <div>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {hoursTimeToHoursMinutes(record?.startTime)}
           </div>
         );
     }
     },
     {
-      title: 'End Time',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>End Time</div>,
       //sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
       dataIndex: 'endTime',
       key: 'endTime',
       fixed: 'left',
       render: (_, record) => {
         return (
-          <div>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {hoursTimeToHoursMinutes(record?.endTime)}
           </div>
         );
     }
     },
     {
-      title: 'Total Hours',
+      title:<div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Total Hours</div>,
       //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
       dataIndex: 'totalHours',
       key: 'totalHours',
       fixed: 'left',
       render: (_, record) => {
         return (
-          <div>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {hoursDecimalToHoursMinutes(record?.totalHours)}
           </div>
         );
     }
     },
     {
-      title: 'Description',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Description</div>,
       //sorter: (a: Task, b: Task) => a.description.localeCompare(b.description),
       dataIndex: 'description',
       key: 'description',
       fixed: 'left',
+      // render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
     },
     {
-      title: 'Reporting To',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Reporting To</div>,
       //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
       dataIndex: 'reportingToName',
       key: 'reportingToName',
       fixed: 'left',
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
     }, 
     {
-      title: 'Status',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
       //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
       dataIndex: 'taskStatus',
       key: 'taskStatus',
       fixed: 'left',
+      render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
     }, 
     {
-      title: 'Actions',
+      title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Actions</div>,
       dataIndex: 'actions',
       key: 'actions',
       render: (_, record, index) => {

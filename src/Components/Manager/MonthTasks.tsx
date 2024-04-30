@@ -765,7 +765,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
   
     const column: ColumnsType<any> = [
         {
-            title: 'Date',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Date</div>,
             dataIndex: 'date',
             key: 'date',
             fixed: 'left',
@@ -794,7 +794,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             )
         },  
         {
-            title: 'Manager Assigned Task',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Manager Assigned Task</div>,
             dataIndex: 'managerAssignedTotalHours',
             key: 'managerAssignedTotalHours',
             // width: '15%',
@@ -809,7 +809,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },      
         {
-            title: 'Project',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
             dataIndex: 'projectTotalHours',
             key: 'projectTotalHours',
             // width: '15%',
@@ -823,7 +823,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },
         {
-            title: 'Meeting',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Meeting</div>,
             dataIndex: 'meetingTotalHours',
             key: 'meetingTotalHours',
             // width: '15%',
@@ -837,7 +837,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },            
         {
-            title: 'Training',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Training</div>,
             dataIndex: 'trainingTotalHours',
             key: 'trainingTotalHours',
             // width: '15%',
@@ -851,7 +851,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },
         {
-            title: 'Learning',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Learning</div>,
             dataIndex: 'learningTotalHours',
             key: 'learningTotalHours',
             // width: '15%',
@@ -865,7 +865,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },  
         {
-            title: 'Interview',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Interview</div>,
             dataIndex: 'interviewTotalHours',
             key: 'interviewTotalHours',
             // width: '15%',
@@ -879,7 +879,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },            
         {
-            title: 'Total Hours',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Total Hours</div>,
             dataIndex: 'overallTotalHours',
             key: 'overallTotalHours',
             // width: '15%',
@@ -893,7 +893,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }        
         },
         {
-            title: 'Extra Hours',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Extra Hours</div>,
             dataIndex: 'extraHours',
             key: 'extraHours',
             // width: '15%',
@@ -907,7 +907,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             }
         },
         {
-            title: 'Status',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
             dataIndex: 'taskStatus',
             key: 'taskStatus',
             // width: '10%',
@@ -916,7 +916,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
 
     const innerColumn: ColumnsType<any> = [
         {
-          title: 'S.No',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
         //   width: '132px',
           dataIndex: 'slNo',
           key: 'slNo',
@@ -924,42 +924,42 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           render: (text, record, index) => index + 1,
         },
         {
-          title: 'Work Location',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Work Location</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'workLocation',
           key: 'workLocation',
           fixed: 'left',
         },
         {
-          title: 'Task',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Task</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'task',
           key: 'task',
           fixed: 'left',
         },
         {
-          title: 'Project',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'project',
           key: 'project',
           fixed: 'left',
         },
         {
-            title: 'Manager Assigned Task',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Manager Assigned Task</div>,
             dataIndex: 'managerTaskName',
             key: 'managerTaskName',
             fixed: 'left',
             render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
         },  
         {
-          title: 'Date',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Date</div>,
         //   sorter: (a: Task, b: Task) => a.date.localeCompare(b.date),
           dataIndex: 'date',
           key: 'date',
           fixed: 'left',
         },
         {
-          title: 'Start Time',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Start Time</div>,
           //sorter: (a: Task, b: Task) => a.startTime.localeCompare(b.startTime),
           dataIndex: 'startTime',
           key: 'startTime',
@@ -973,7 +973,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         }
         },
         {
-          title: 'End Time',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>End Time</div>,
           //sorter: (a: Task, b: Task) => a.endTime.localeCompare(b.endTime),
           dataIndex: 'endTime',
           key: 'endTime',
@@ -987,7 +987,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         }
         },
         {
-          title: 'Total Hours',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Total</div>,
           //sorter: (a: Task, b: Task) => a.task.localeCompare(b.task),
           dataIndex: 'totalHours',
           key: 'totalHours',
@@ -1148,6 +1148,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                             visible={modalVisible}
                             onCancel={() => setModalVisible(false)}
                             footer={null}
+                            style={{width:'1300px'}}
                         >
                             {modalContent}
                         </Modal>

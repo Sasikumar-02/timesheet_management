@@ -134,7 +134,7 @@ const MonthRequest = () => {
 
     const columns: ColumnsType<any> = [
         {
-          title: 'Sl.No',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
           className: 'ant-table-column-title',
           dataIndex: 'slNo',
           key: 'slNo',
@@ -142,7 +142,7 @@ const MonthRequest = () => {
           render: (_, __, index) => <span>{index + 1}</span>,
         },    
         {
-          title: "Employee",
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employee</div>,
           className: ' ant-table-column-title',
           dataIndex: "employeeId",
           render: (employeeId, record) => (
@@ -158,7 +158,7 @@ const MonthRequest = () => {
           ),
         },          
         {
-            title: 'Month',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Month</div>,
             className: 'ant-table-column-title',
             dataIndex: 'requestedMonth',
             key: 'requestedMonth',
@@ -176,7 +176,7 @@ const MonthRequest = () => {
           fixed: 'left',
         },     
         {
-          title: 'Status',
+          title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
           className: 'ant-table-column-title',
           dataIndex: 'approvalStatus',
           key: 'approvalStatus',

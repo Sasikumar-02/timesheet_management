@@ -67,12 +67,12 @@ const EmployeeTaskAssignDetails = () => {
 
     const columns = [
         {
-            title: 'Date',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Date</div>,
             dataIndex: 'date',
             key: 'date',
         },
         {
-            title: 'Employee',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employee</div>,
             className: 'ant-table-column-title',
             dataIndex: 'employeeId',
             render: (employeeId: any, record: any) => (
@@ -88,7 +88,7 @@ const EmployeeTaskAssignDetails = () => {
             ),
         },
         {
-            title: 'Total Hours',
+            title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Total Hours</div>,
             dataIndex: 'totalHours',
             key: 'totalHours',
         },

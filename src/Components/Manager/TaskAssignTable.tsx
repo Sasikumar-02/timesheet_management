@@ -348,7 +348,7 @@ const TaskAssignTable = () => {
 
     const columns: ColumnsType<any> = [
       {
-        title: <div style={{ textAlign: 'center' }}>S.No</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
         dataIndex: 'slNo',
         key: 'slNo',
         width: 'max-content', // Set the column width to adjust to fit widest content
@@ -356,43 +356,47 @@ const TaskAssignTable = () => {
         render: (text, record, index) => index + 1,
       },
       {
-        title: <div style={{ textAlign: 'center' }}>Project</div>,
-        dataIndex: 'projectName',
-        width: 'max-content', // Set the column width to adjust to fit widest content
-        key: 'projectName',
-        fixed: 'left',
-      },
-      {
-        title: <div style={{ textAlign: 'center' }}>Task Name</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Task Name</div>,
         dataIndex: 'taskName',
         width: 'max-content', // Set the column width to adjust to fit widest content
         key: 'taskName',
         fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
       },
       {
-        title: <div style={{ textAlign: 'center' }}>Start Date</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
+        dataIndex: 'projectName',
+        width: 'max-content', // Set the column width to adjust to fit widest content
+        key: 'projectName',
+        fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
+      },
+      {
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Start Date</div>,
         width: 'max-content', // Set the column width to adjust to fit widest content
         dataIndex: 'startDate',
         key: 'startDate',
         fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
       },
       {
-        title: <div style={{ textAlign: 'center' }}>Estimated End Date</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Estimated End Date</div>,
         width: 'max-content', // Set the column width to adjust to fit widest content
         dataIndex: 'estimatedEndDate',
         key: 'estimatedEndDate',
         fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
       },
       {
-        title: <div style={{ textAlign: 'center' }}>End Date</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>End Date</div>,
         width: 'max-content', // Set the column width to adjust to fit widest content
         dataIndex: 'endDate',
         key: 'endDate',
         fixed: 'left',
-        render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text?text:'➖'}</div>,
       },
       {
-        title: <div style={{ textAlign: 'center' }}>Employees</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employees</div>,
         width: 'max-content', // Set the column width to adjust to fit widest content
         dataIndex: 'employees',
         key: 'employees',
@@ -401,7 +405,7 @@ const TaskAssignTable = () => {
           <>
             {employees.map((employee, index) => (
               <div key={index} style={{ display: 'flex' }}>
-                <div>
+                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   <strong>{employee.employeeName}</strong>
                 </div>
               </div>
@@ -410,28 +414,30 @@ const TaskAssignTable = () => {
         ),
       },
       {
-        title: <div style={{ textAlign: 'center' }}>Description</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Description</div>,
         width: 'max-content', // Set the column width to adjust to fit widest content
         dataIndex: 'taskDescription',
         key: 'taskDescription',
         fixed: 'left',
+        // render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
       },
       {
-        title: <div style={{ textAlign: 'center' }}>Status</div>,
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
         width: 'max-content', // Set the column width to adjust to fit widest content
         dataIndex: 'taskStatus',
         key: 'taskStatus',
         fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
       },
       ...(role === 'ROLE_MANAGER'
         ? [
             {
-              title: <div style={{ textAlign: 'center' }}>Actions</div>,
+              title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Actions</div>,
               width: 'max-content', // Set the column width to adjust to fit widest content
               dataIndex: 'managerActions',
               key: 'managerActions',
               render: (_: any, record: any) => (
-                <div onClick={(e) => e.stopPropagation()}>
+                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} onClick={(e) => e.stopPropagation()}>
                   <EditOutlined
                     onClick={() => handleEditTask(record)}
                     style={{
@@ -456,12 +462,12 @@ const TaskAssignTable = () => {
         : role === 'ROLE_EMPLOYEE'
         ? [
             {
-              title: <div style={{ textAlign: 'center' }}>Actions</div>,
+              title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Actions</div>,
               width: 'max-content', // Set the column width to adjust to fit widest content
               dataIndex: 'employeeActions',
               key: 'employeeActions',
               render: (_: any, record: any) => (
-                <div onClick={(e) => e.stopPropagation()}>
+                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} onClick={(e) => e.stopPropagation()}>
                   <Button
                     style={{
                       width: '80%',
@@ -484,14 +490,14 @@ const TaskAssignTable = () => {
         ...(role === 'ROLE_MANAGER'
         ? [
             {
-              title: <div style={{ textAlign: 'center' }}>Review</div>,
+              title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Review</div>,
               width: 'max-content', // Set the column width to adjust to fit widest content
               dataIndex: 'reviewActions',
               key: 'reviewActions',
               render: (_: any, record: any) => {
                 console.log("record-review", record);
                 return (
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} onClick={(e) => e.stopPropagation()}>
                     <Button
                       onClick={() => {
                         if (record.endDate !== null) {
