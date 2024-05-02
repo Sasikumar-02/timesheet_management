@@ -191,12 +191,9 @@ const Calendar = () => {
   };
 
   const hoursTimeToHoursMinutes = (decimalHours: string) => {
-    // Parse the decimal hours string
     const [hoursStr, minutesStr] = decimalHours.split(':');
     const hours = parseInt(hoursStr);
     const minutes = parseInt(minutesStr);
-
-    // Return the formatted string
     if (hours === 0 && minutes === 0) {
         return '➖';
     }
@@ -208,7 +205,6 @@ const Calendar = () => {
   };
 
   const handleDeleteTask = useCallback((task_id:any) => {
-    // Display confirmation modal before deleting the task
     confirm({
       title: 'Delete Task',
       content: 'Are you sure you want to delete the task?',
@@ -225,21 +221,14 @@ const Calendar = () => {
         },
       },
       async onOk() {
-        // Logic to delete the task if user confirms
         try {
-          // Make DELETE request to delete the task
           await api.delete(`/api/v1/timeSheet/delete-task/${task_id}`);
           setRefetch((refetch)=>!refetch);
-          // Optionally, perform any additional actions after deletion
-          // For example, refetch the tasks or update the UI
         } catch (error) {
-          // Handle errors
           console.error('Error deleting task:', error);
-          // You can also show a notification or perform other error handling here
         }
       },
       onCancel() {
-        // Logic if user cancels deletion
       },
     });
   }, []);
@@ -349,35 +338,27 @@ const Calendar = () => {
         dataIndex: 'actions',
         key: 'actions',
         render: (_, record, index) => {
-          // const isExistingTask = taskList.some(task => task.task_id === record.task_id);
           const isDateSelected = selectedKeysToHide.includes(record.date);
-          
-          // Filter tasks by userId
-          //const userTasks = taskList.filter(task => task.userId === record.userId);
-          
-          // Check if the user has tasks for the selected date
-          //const hasUserTasksForDate = userTasks.some(task => task.date === record.date);
-      
           return (
             <div>
               <EditOutlined
                 onClick={() => handleEditTask(record)}
                 style={{
                   marginRight: '8px',
-                  cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', //|| !hasUserTasksForDate
-                  color: (isDateSelected ) ? 'grey' : 'blue', //|| !hasUserTasksForDate
+                  cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', 
+                  color: (isDateSelected ) ? 'grey' : 'blue', 
                   fontSize: '20px',
                 }}
-                disabled={isDateSelected } //|| !hasUserTasksForDate
+                disabled={isDateSelected } 
               />
               <DeleteOutlined
                 onClick={() => handleDeleteTask(record?.timeSheetId)}
                 style={{
-                  cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', //|| !hasUserTasksForDate
-                  color: (isDateSelected ) ? 'grey' : 'red', //|| !hasUserTasksForDate
+                  cursor: (isDateSelected ) ? 'not-allowed' : 'pointer', 
+                  color: (isDateSelected ) ? 'grey' : 'red', 
                   fontSize: '20px',
                 }}
-                disabled={isDateSelected } //|| !hasUserTasksForDate
+                disabled={isDateSelected } 
               />
             </div>
           );
@@ -387,9 +368,7 @@ const Calendar = () => {
 
     const eventContent = (arg: { event: any, timeText: string }) => {
       const { event, timeText } = arg;
-      const backgroundColor = event.backgroundColor; // Use the backgroundColor set in the event object
-  
-      // You can customize the rendering of the event content here
+      const backgroundColor = event.backgroundColor; 
       return (
         <div style={{ backgroundColor, padding: '5px', borderRadius: '5px' }}>
           <div>{timeText}</div>
@@ -400,11 +379,8 @@ const Calendar = () => {
 
     const renderDayCell = (arg: any) => {
       const dayStatus = events.find((event) => dayjs(event.start).isSame(arg.date, "day"));
-      let backgroundColor = "#ffffff"; // Default background color for today
-      
-      // Check if there's a task status for the date
+      let backgroundColor = "#ffffff"; 
       if (dayStatus) {
-        // Set background color based on task status
         switch (dayStatus.title) {
           case "Pending":
             backgroundColor = "orange";
@@ -419,37 +395,26 @@ const Calendar = () => {
             break;
         }
       }
-      
-      // Style object for the cell
       const cellStyle = {
         backgroundColor,
-        color: "#000000", // Default text color
+        color: "#000000", 
         width: "100%",
         height: "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: "50%", // Round the corners for a circular appearance
+        borderRadius: "50%", 
       };
-      
-      // Return a div with background color based on the task status color
       return (
         <div style={cellStyle}>
-          {arg.date.getDate()} {/* Include the date text */}
+          {arg.date.getDate()} 
         </div>
       );
     };
-    
-    
-    
-    
-
     const handleEventClick = (arg: EventClickArg) => {
-      const clickedEvent = arg.event; // Extract the event from the click event
+      const clickedEvent = arg.event; 
       console.log("clickedEvent", clickedEvent.start)
-      const clickedDate = dayjs(clickedEvent.start); // Assuming the event has a start date
-      
-      // Similar logic to handleDateClick
+      const clickedDate = dayjs(clickedEvent.start); 
       if (clickedDate.isAfter(dayjs(), "month")) {
           notification.warning({
               message: "Month Restriction",
@@ -487,47 +452,6 @@ const Calendar = () => {
   );
 
   return (
-    // <div>
-    //    <div style={{display:'flex', flexDirection:'row', margin:'10px 20px'}}>
-    //     <div style={{width:'100%', marginLeft:'20px', marginTop:'20px'}}>
-    //     <FullCalendar
-    //         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-    //         initialView={"dayGridMonth"}
-    //         initialDate={currentDate}
-    //         headerToolbar={{
-    //           start: "title",
-    //           end: "prev,next",
-    //         }}
-    //         height={"80vh"}
-            
-    //         dateClick={handleDateClick}
-    //         events={events}
-    //         datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
-    //         eventClassNames="calendar"
-    //       />
-    //     </div>
-    //     {/* <div style={{ width: '50%', border: '1px solid #E6E6E6', margin: '0px 20px', maxHeight: '400px', overflow: 'auto' }}>
-    //       <h1 className='userprofile-main'>History</h1>
-    //       <Table
-    //           className='addtask-table'
-    //           columns={columns as ColumnsType<any>}
-    //           dataSource={clickedRecord}
-    //           pagination={false}
-    //       />
-    //     </div> */}
-    //     <div style={{width:'50%',border: '1px solid #E6E6E6', margin:'20px 20px 0px 20px'}}>
-    //       <h1>Task Details</h1>
-    //       <h2 style={{textAlign:'left', marginLeft:'20px'}}>Date:{formattedDate}</h2>
-    //       <Table
-    //         className='addtask-table'
-    //         columns={columns as ColumnsType<any>}
-    //         dataSource={clickedRecord}
-    //         pagination={false}
-    //       />
-    //     </div>
-
-    //   </div>
-    // </div>
     <>
     <div
       id="calendar-main"
@@ -553,7 +477,7 @@ const Calendar = () => {
         eventClick={handleEventClick}
         dateClick={handleDateClick}
         events={events}
-        datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
+        datesSet={handlePrevNextClick} 
         eventClassNames="calendar"
       />
       <Modal
@@ -573,32 +497,3 @@ const Calendar = () => {
 };
 
 export default Calendar;
-
-{/* <>
-<div
-  id="calendar-main"
-  style={{
-    width: "97%",
-    margin: "30px 20px 20px 20px",
-    fontFamily: "poppins",
-    fontSize: "14px",
-    cursor: "pointer",
-  }}
->
-  <FullCalendar
-    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-    initialView={"dayGridMonth"}
-    initialDate={currentDate}
-    headerToolbar={{
-      start: "title",
-      end: "prev,next",
-    }}
-    height={"80vh"}
-    dateClick={handleDateClick}
-    events={events}
-    datesSet={handlePrevNextClick} // Assign handlePrevNextClick to datesSet
-    eventClassNames="calendar"
-  />
-
-</div>
-</>  */}
