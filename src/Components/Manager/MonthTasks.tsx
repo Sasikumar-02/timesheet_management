@@ -1026,7 +1026,8 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     // JSX for modal content
     const modalContent = clickedRecord && (
         <Table
-            className='addtask-table'
+            // className='addtask-table'
+            // style={{width:'1300px'}}
             columns={innerColumn as ColumnsType<any>}
             dataSource={clickedRecord}
             pagination={false}
@@ -1142,16 +1143,21 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                             dataSource={monthTasks.filter(task => selectedStatus ? task.taskStatus === selectedStatus : true)}
                             pagination={false}
                             rowKey="uniqueRequestId" // Set the rowKey prop to 'uniqueRequestId'
-                        />   
+                        />
                         <Modal
-                           title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
+                            title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
                             visible={modalVisible}
                             onCancel={() => setModalVisible(false)}
+                            className='monthTasks'
                             footer={null}
-                            style={{width:'1300px'}}
-                        >
+                            // width={1300}
+                            // bodyStyle={{ width: '1530px', marginLeft: '-250px' }} // Apply styles directly to the bod
+                            >
                             {modalContent}
                         </Modal>
+
+
+                       
 
                     </ConfigProvider>
                     <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}> 

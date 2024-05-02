@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined } from '@mui/icons-material';
 import '../Styles/AddTask.css';
 import '../Styles/TaskAssignTable.css';
+import '../Styles/ApprovalRequest.css';
 import {
     UserOutlined,
     DownOutlined,
@@ -38,6 +39,15 @@ interface TaskTable{
     taskStatus?:string;
 }
 
+interface EmployeeGrades {
+  [employeeId: string]: string; // Key-value pairs where the key is a string (employeeId) and the value is also a string (grade)
+}
+interface approveTask{
+  taskId:string;
+  approvalStatus:string;
+  employeeGrades:EmployeeGrades;
+}
+
 type TaskData = {
   [key: string]: {
       date: string;
@@ -65,8 +75,12 @@ const TaskAssignTable = () => {
     const token = localStorage.getItem("authToken");
     const decoded = jwtDecode(token || "") as DecodedToken;
     const role = decoded.Role
+    const [selectedData, setSelectedData] = useState<EmployeeGrades>({});
+    console.log("selectedData", selectedData);
+    const [employee, setEmployee]= useState<EmployeeDetails[]>([])
     const [taskTable,setTaskTable]= useState<TaskTable[]>([]);
     const [specificTaskTable, setSpecificTaskTable]= useState<TaskTable>();
+    const [employeeEndDate, setEmployeeEndDate]= useState(null);
     const [taskData, setTaskData] = useState<TaskData | null>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -77,6 +91,7 @@ const TaskAssignTable = () => {
     const [commentVisible, setCommentVisible] = useState(false);
     const [approvalVisible, setApprovalVisible]=useState(false);
     const [statuses, setStatuses]= useState<boolean>(false);
+    const [error, setError] = useState('');
     const grade: any[]=["Excellent", "Good", "Needs Improvement", "Poor"];
     console.log("taskTable,employee", taskTable);
 
@@ -111,6 +126,14 @@ const TaskAssignTable = () => {
                     // Map over tasks and call handleEmployees for each task
                     const updatedTaskTablePromises = response?.data?.response?.data?.map(async (task: any) => {
                         // const filteredEmployees = await handleEmployees(task.employees);
+                        let employeeNames:any[]=[];
+                        task.employees.map((emp:any)=>{
+                          employeeNames.push({
+                            employeeName: emp.employeeName,
+                            employeeId: emp.employeeId,
+                          })
+                        })
+                        setEmployee(employeeNames);
                         return {
                             taskId: task.taskId,
                             projectName: task.projectName,
@@ -133,9 +156,29 @@ const TaskAssignTable = () => {
                     throw error;
                 }
             };
+
         
             fetchData();
         }, [statuses]);
+
+        const handleEmployeeEndDate = async (value: any) => {
+          console.log("handleEmployeeEndDate-value", value);
+          try {
+            const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
+            console.log("handleEmployeeEndDate-response",response);
+            response.data.response.data.map((emp:any)=>{
+              emp.employees.map((empId:any)=>{
+                if(empId.employeeId === value){
+                  setEmployeeEndDate(empId.completedDate)
+                }
+              })
+            })
+          } catch (error) {
+            console.error('Error occurred while fetching data:', error);
+            // Handle error if needed
+          }
+        };
+        
 
         // useEffect hook to handle data display after state update
         useEffect(() => {
@@ -172,6 +215,15 @@ const TaskAssignTable = () => {
             setModalVisible(true);
           }
         },[taskData])
+
+        const handleAddMore = (values: any, { setSubmitting, resetForm }: FormikHelpers<any>) => {
+          console.log("handleAddMore-values", values);
+          const { members, approvalGrade } = values;
+          setSelectedData({ ...selectedData, [members]: approvalGrade });
+          setEmployeeEndDate(null);
+          resetForm();
+        };
+        
 
         const hoursDecimalToHoursMinutes = (decimalHours:any) => {
           // Split the decimal value into hours and minutes
@@ -239,9 +291,14 @@ const TaskAssignTable = () => {
   
     const handleInputChange = (e:any) => {
       setComments(e.target.value);
+      setError('');
     };
   
     const handleSubmit = async () => {
+      if (!comments.trim()) {
+        setError('Comments field is required.');
+        return;
+      }
       try {
         const payload = {
           taskId: taskId,
@@ -255,14 +312,6 @@ const TaskAssignTable = () => {
           message:response?.data?.response?.action,
           description:response?.data?.message,
         })
-    
-        console.log(response?.data); // Optionally handle the response data
-    
-        // Reset the modal state
-        setStatuses(prev => !prev);
-        setCommentVisible(false);
-        setComments('');
-        setSelectedRows([]);
       } catch (error:any) {
         notification.error({
           message:error?.response?.data?.action,
@@ -277,14 +326,12 @@ const TaskAssignTable = () => {
     };
     
 
-    const handleApproveSubmit=async(values: any, { setSubmitting, resetForm }: FormikHelpers<any>)=>{
-      console.log("handleApproveSubmit-values", values, taskId);
+    const handleApproveSubmit=async(taskId: any, selectedData:any)=>{
       try {
-        setSubmitting(true);
         const payload = {
           taskId: taskId,
           approvalStatus: "Approved",
-          approvalGrade: values.approvalGrade,
+          employeeGrades: selectedData,
         };
         console.log("handleApproveSubmit-payload", payload);
   
@@ -295,24 +342,18 @@ const TaskAssignTable = () => {
           message:response?.data?.response?.action,
           description:response?.data?.message,
         })
-        // Reset the modal state
-        setStatuses(prev=>!prev);
-        setApprovalVisible(false);
+        setSelectedData({});
       } catch (error:any) {
-        setSubmitting(false);
         console.error('Error occurred:', error);
         notification.error({
           message:error?.response?.data?.response?.action,
           description: error?.response?.data?.message
         })
-        // Optionally handle errors
       } finally{
-         // Reset the modal state
          setStatuses(prev=>!prev);
          setApprovalVisible(false);
       }
-    } //need to work
-
+    } 
     
     const handleComplete = async (taskId: any) => {
       try {
@@ -327,6 +368,7 @@ const TaskAssignTable = () => {
           message:response?.data?.response?.action,
           description:response?.data?.message,
         })
+        setStatuses(prev=>!prev);
         console.log("handleComplete-response", response);
       } catch (error:any) {
         notification.error({
@@ -562,6 +604,33 @@ const TaskAssignTable = () => {
         : []),    
     ];
 
+    const approveColumns: ColumnsType<any> = [
+      {
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
+        dataIndex: 'slNo',
+        key: 'slNo',
+        width: 'max-content', // Set the column width to adjust to fit widest content
+        fixed: 'left',
+        render: (text, record, index) => index + 1,
+      },
+      {
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employee</div>,
+        dataIndex: 'employeeName',
+        width: 'max-content', // Set the column width to adjust to fit widest content
+        key: 'employeeName',
+        fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
+      },
+      {
+        title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Grade</div>,
+        dataIndex: 'grade',
+        width: 'max-content', // Set the column width to adjust to fit widest content
+        key: 'grade',
+        fixed: 'left',
+        render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
+      },   
+    ];
+
     const modalColumns = [
       { title: 'Task Name', dataIndex: 'taskName' },
       { title: 'Project Name', dataIndex: 'projectName' },
@@ -655,6 +724,7 @@ const TaskAssignTable = () => {
             />
             <Modal
                   title={taskName}
+                  className='monthTasks'
                   visible={modalVisible}
                   onCancel={handleModalVisible}
                   footer={null}
@@ -687,8 +757,9 @@ const TaskAssignTable = () => {
               </Modal>
               <Modal
                 title={<div style={{textAlign:'center'}}>Rejection Comment</div>}
-                className="ant-modal-body"
+                className='modalTitle'
                 visible={commentVisible}
+
                 onCancel={handleCancel}
                 footer={[
                     <Button style={{ width: '100px', backgroundColor: '#0B4266', color: 'white', cursor: 'pointer', height:'100%' }} key="submit" type="primary" onClick={handleSubmit}>
@@ -701,15 +772,31 @@ const TaskAssignTable = () => {
                   <div>
 
                   {specificTaskTable && ( 
-                          <div style={{display:'flex', flexDirection:'column'}}>
-                            <div><b>Task Name:</b> {specificTaskTable.taskName}</div>
-                            <div><b>Start Date:</b> {specificTaskTable.startDate}</div>
-                            <div><b>Estimated End Date:</b> {specificTaskTable.estimatedEndDate}</div>
-                            <div><b>End Date:</b> {specificTaskTable.endDate}</div>
-                          </div>    
+                       <div style={{ display: 'flex', marginBottom:'10px' }}>
+                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                         <div style={{color:'#0B4266'}}><b>Task Name:</b> {specificTaskTable.taskName}</div>
+                         <div style={{color:'#0B4266'}}><b>Due Date:</b> {specificTaskTable.estimatedEndDate}</div>
+                       </div>
+                       <div style={{ borderLeft: '1px solid #0B4266', margin: '0 10px' }}></div>
+                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                         <div style={{ marginLeft: '55px',color:'#0B4266' }}><b>Start Date:</b> {specificTaskTable.startDate}</div>
+                         <div style={{ marginLeft: '55px',color:'#0B4266' }}><b>End Date:</b> {specificTaskTable.endDate}</div>
+                       </div>
+                     </div>    
                         )}
-                      <div style={{ textAlign: 'left' }}>
-                      <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
+                      <div>
+                        <div style={{ textAlign: 'left', color:'#0B4266', fontWeight:'bold' }}>
+                          <p>
+                            <span style={{ color: 'red' }}>*</span> Comments
+                          </p>
+                          <Input.TextArea 
+                            placeholder='Write here...' 
+                            rows={4} 
+                            value={comments} 
+                            onChange={handleInputChange} 
+                          />
+                          {error && <div style={{ color: 'red', fontWeight:'normal' }}>{error}</div>}
+                        </div>
                       </div>
                   </div>
                         
@@ -725,23 +812,30 @@ const TaskAssignTable = () => {
                
                   <div>
                   {specificTaskTable && ( 
-                          <div style={{display:'flex', flexDirection:'column'}}>
-                            <div><b>Task Name:</b> {specificTaskTable.taskName}</div>
-                            <div><b>Start Date:</b> {specificTaskTable.startDate}</div>
-                            <div><b>Estimated End Date:</b> {specificTaskTable.estimatedEndDate}</div>
-                            <div><b>End Date:</b> {specificTaskTable.endDate}</div>
-                          </div>    
+                       <div style={{ display: 'flex', marginBottom:'10px' }}>
+                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                         <div style={{color:'#0B4266'}}><b>Task Name:</b> {specificTaskTable.taskName}</div>
+                         <div style={{color:'#0B4266'}}><b>Due Date:</b> {specificTaskTable.estimatedEndDate}</div>
+                       </div>
+                       <div style={{ borderLeft: '1px solid #0B4266', margin: '0 10px' }}></div>
+                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                         <div style={{ marginLeft: '55px',color:'#0B4266' }}><b>Start Date:</b> {specificTaskTable.startDate}</div>
+                         <div style={{ marginLeft: '55px',color:'#0B4266' }}><b>End Date:</b> {employeeEndDate===null?'NA':employeeEndDate}</div>
+                       </div>
+                     </div>    
                         )}
                   </div>
                   <div>
                     <Formik
                       initialValues={{
+                        members: '',
                         approvalGrade: '',
                       }}
                       validationSchema={yup.object({
+                        members: yup.string().required("Employee is required"),
                         approvalGrade: yup.string().required('Grade is required'),
                       })}              
-                      onSubmit={handleApproveSubmit}
+                      onSubmit={handleAddMore}
                       enableReinitialize={true}
                     >
                     {({
@@ -755,58 +849,118 @@ const TaskAssignTable = () => {
                       isSubmitting,
                       resetForm
                     }) => (
-                      <Form name='basic' autoComplete='off' onFinish={handleSubmit}>
+                      <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
                         <div style={{display:'flex', flexDirection:'column'}}>
                           <div>
-                            <Form.Item
-                              label="Grade"
-                              className="label-strong"
-                              name="approvalGrade"
-                              required
-                              style={{ padding: "10px" }}
-                            >
-                              <Select
-                                  style={{
-                                    height: "50px",
-                                    width: "470px",
-                                    borderRadius: "4px",
-                                    margin: "0px",
-                                  }}
-                                  value={values.approvalGrade}
-                                  onChange={(value, option) => {
-                                    setFieldValue("approvalGrade", value); // Update "workLocation" field value
-                                  }}
-                                  onBlur={() => {
-                                    setFieldTouched("approvalGrade", true); // Mark "workLocation" field as touched
-                                  }}
+                            <div style={{display:'flex', justifyContent:'space-between '}}>
+                              <Form.Item
+                                label='Employee'
+                                className="label-strong"
+                                name="members"
+                                required
+                                style={{ padding: "10px"}}
+                              >
+                                <Select
+                                    style={{
+                                        height: "30px",
+                                        width: "250px",
+                                        borderRadius: "4px",
+                                        margin: "0px",
+                                    }}
+                                    value={values.members} // Control the value based on Formik values
+                                    onChange={(value, option) => {
+                                        setFieldValue("members", value);
+                                        console.log("members-v", value);
+                                        handleEmployeeEndDate(value);
+                                    }}
+                                    onBlur={() => {
+                                        setFieldTouched("members", true);
+                                    }}
                                 >
-                                  <Select.Option value="" disabled>
-                                    Select the Grade
-                                  </Select.Option>
-                                  {grade.map((option, index) => (  // Use 'index' as the key
-                                    <Option key={index} value={option}>
-                                      {option}
-                                    </Option>
-                                  ))}
+                                    <Select.Option value="" disabled>
+                                        Select the Employee
+                                    </Select.Option>
+                                    {employee.map((option, index) => (
+                                            <Select.Option key={index} value={option.employeeId}>
+                                                {option.employeeName}
+                                            </Select.Option>
+                                        ))
+                                    }
                                 </Select>
                                 <div>
                                   <Typography.Text
-                                    type="danger"
-                                    style={{ wordBreak: "break-word", textAlign: "left" }}
+                                      type="danger"
+                                      style={{ wordBreak: "break-word", textAlign: "left" }}
                                   >
-                                    <ErrorMessage name="approvalGrade" /> {/* Display error message if any */}
+                                      <ErrorMessage name="members" />
                                   </Typography.Text>
                                 </div>
-                            </Form.Item>
+                              </Form.Item>
+                              <Form.Item
+                                label="Grade"
+                                className="label-strong"
+                                name="approvalGrade"
+                                required
+                                style={{ padding: "10px" }}
+                              >
+                                <Select
+                                    style={{
+                                      height: "30px",
+                                      width: "250px",
+                                      borderRadius: "4px",
+                                      margin: "0px",
+                                    }}
+                                    value={values.approvalGrade}
+                                    onChange={(value, option) => {
+                                      setFieldValue("approvalGrade", value); // Update "workLocation" field value
+                                    }}
+                                    onBlur={() => {
+                                      setFieldTouched("approvalGrade", true); // Mark "workLocation" field as touched
+                                    }}
+                                  >
+                                    <Select.Option value="" disabled>
+                                      Select the Grade
+                                    </Select.Option>
+                                    {grade.map((option, index) => (  // Use 'index' as the key
+                                      <Option key={index} value={option}>
+                                        {option}
+                                      </Option>
+                                    ))}
+                                  </Select>
+                                  <div>
+                                    <Typography.Text
+                                      type="danger"
+                                      style={{ wordBreak: "break-word", textAlign: "left" }}
+                                    >
+                                      <ErrorMessage name="approvalGrade" /> {/* Display error message if any */}
+                                    </Typography.Text>
+                                  </div>
+                              </Form.Item>
                           </div>
-                          <div>
-                            <Button
-                              type="primary"
-                              htmlType="submit"
-                              // id='cancel-new'
-                              style={{width:'20%', height:'100%'}}
-                              >Submit
-                            </Button>
+                          <div style={{display:'flex', justifyContent:'flex-end', marginRight:'20px'}}>
+                            <Button htmlType="submit" style={{background:'#E7ECF0',color:'#0B4266', width:'100px', height:'100%',alignSelf: 'flex-end', cursor:'pointer' }}>Add More</Button>    
+                          </div>
+                        
+                        </div>
+
+                          <Table
+                            columns={approveColumns}
+                            dataSource={Object.entries(selectedData).map(([employeeId, grade], index) => ({
+                              slNo: index + 1,
+                              employeeName: employeeId, // Assuming employeeId serves as employeeName
+                              grade: grade
+                            }))}
+                            pagination={false}
+                          />
+
+                          <div style={{display:'flex', justifyContent:'flex-end', marginRight:'20px'}}>
+                          <Button
+                            type="primary"
+                            style={{ width: '20%', height: '100%' }}
+                            onClick={()=>handleApproveSubmit(taskId, selectedData)}
+                          >
+                            Submit
+                          </Button>
                           </div>
                         </div>
                         

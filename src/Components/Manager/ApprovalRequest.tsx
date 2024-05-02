@@ -98,6 +98,7 @@ const ApprovalRequest:React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<JSX.Element | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | undefined>(undefined);
+  const [exportMonthName, setExportMonthName]= useState<string|undefined>(undefined);
   const [comments, setComments] = useState('');
   const [commentVisible, setCommentVisible] = useState(false);
   const [approvalRequests, setApprovalRequests] = useState<DateTask[]>([]);
@@ -170,20 +171,17 @@ const ApprovalRequest:React.FC = () => {
   const fetchTaskByUniqueId = async (uniqueRequestIds: any[]) => {
     console.log('exportToExcel - 1', uniqueRequestIds);
     try {
-        // Flatten the 2D array to 1D
-        const flattenedIds = uniqueRequestIds.flat();
-        console.log('exportToExcel - 2', flattenedIds);
-
         // Map each uniqueRequestId to a promise that fetches its corresponding tasks
-        const tasksPromises = flattenedIds.map(async (uniqueRequestId) => {
-            const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
+            const response = await api.post(`/api/v1/timeSheet/fetch-tasks-by-uniqueIds`,{
+              uniqueRequestIds:uniqueRequestIds
+            });
             return response?.data?.response?.data;
-        });
+
 
         // Wait for all promises to resolve
-        const tasks = await Promise.all(tasksPromises);
-        console.log("exportToExcel - tasks", tasks);
-        return tasks;
+        // const tasks = await Promise.all(tasksPromises);
+        // console.log("exportToExcel - tasks", tasks);
+        // return tasks;
     } catch (error) {
         console.error('Error fetching data by unique IDs:', error);
         throw error; // Rethrow the error for handling in the caller function
@@ -191,53 +189,43 @@ const ApprovalRequest:React.FC = () => {
 };
 const exportToExcel = async () => {
   try {
-      let imgId1: number;
-      let imgId2: number;
-      console.log("exportToExcel - selectedRows", selectedRows);
-      
-      let dataToExport: any[] = [];
-      if (selectedRows?.length > 0) {
-          console.log("sleectedRows", selectedRows);
-          let ids = userTasks
-          .filter(row => row.uniqueRequestId.some(id => selectedRows.includes(id)))
-          .map(row => row.uniqueRequestId);
+    console.log("exportToExcel - selectedRows", selectedRows);
+    let imgId1: number;
+    let imgId2: number;
+    let workbook = new ExcelJS.Workbook();
 
-          const fetchedData = await fetchTaskByUniqueId(ids);
-      
-          // Flatten the fetchedData array of arrays
-          dataToExport = fetchedData.flat();
-      } 
-      // else {
-      //     // If no rows are selected, export all monthTasks data
-      //     console.log("sleectedRows -1", overallData)
-      //     dataToExport = overallData.flat();
-      // }
-      // Map over dataToExport to extract values for Excel
-      const data = dataToExport.map((rowData: any) => {
-          return [
-              rowData.date || '',          // Date
-              rowData.workLocation || '',  // Work Location
-              rowData.task || '',          // Task
-              rowData.project || '',       // Title
-              rowData.startTime || '',     // Start Time
-              rowData.endTime || '',       // End Time
-              rowData.totalHours || '',    // Shift Hours
-              rowData.description || '',   // Description
-              rowData.reportingTo || ''   // Reporting To
-          ];
+    if (selectedRows?.length > 0) {
+      console.log("selectedRows", selectedRows);
+      let finalIds: any[] = [];
+      selectedRows.forEach((ids: any) => {
+        ids.forEach((id: any) => {
+          finalIds.push(id);
+        });
       });
-      console.log("exportToExcel - dataToExport", dataToExport);
-          
-      const header = ['Date', 'Work Location', 'Task', 'Project', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];         
+      console.log("exportToExcel - selectedRows-ids", finalIds);
+      const fetchedData = await fetchTaskByUniqueId(finalIds);
+      console.log("exportToExcel-fetchedData", fetchedData);
 
-      // Flatten the array
-      console.log("exportToExcel- data", data);
+      Object.entries(fetchedData).forEach(([employeeId, employeeData]) => {
+        let employeeName = fetchedData[employeeId].employeeName;
+        let tasks = fetchedData[employeeId].tasks; // Access tasks array for the employee
+
+        const worksheet = workbook.addWorksheet(`${employeeName}-${employeeId}`);
+        worksheet.views = [{ showGridLines: false }];
       
-      // Create a workbook and add a worksheet
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Sheet1');
+        const header = [
+          'Date',
+          'Work Location',
+          'Task',
+          'Project',
+          'Start Time',
+          'End Time',
+          'Shift Hours',
+          'Description',
+          'Reporting To',
+        ];
 
-      worksheet.views = [{
+        worksheet.views = [{
           showGridLines: false
       }];
 
@@ -254,117 +242,77 @@ const exportToExcel = async () => {
       const nameRow = worksheet.addRow([]);
       nameRow.getCell(1).value = 'Name:';
       nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
-      nameRow.getCell(2).value = "employeeName";
+      nameRow.getCell(2).value = employeeName;
       const userIdRow = worksheet.addRow([]);
       userIdRow.getCell(1).value = 'UserID:';
       userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
-      userIdRow.getCell(2).value = "employeeId";
+      userIdRow.getCell(2).value = employeeId;
 
       const monthRow = worksheet.addRow([]);
       monthRow.getCell(1).value = 'Month:';
       monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
-      monthRow.getCell(2).value = "formattedMonth"; // Dynamically convert date to "Month Year" format
+      monthRow.getCell(2).value = selectedMonth+' '+selectedYear; // Dynamically convert date to "Month Year" format
           
       // Add empty rows
       for (let i = 0; i < 1; i++) {
           worksheet.addRow([]);
       }
 
-      // Call exportCharts to get the images
-     // const { pieChartImage, lineChartImage } = await exportCharts();
-
-      // Calculate the current row number
-      const currentRow = worksheet.rowCount + 2;
-
-      // Add the images to the worksheet
-      // const pieChartImageId = workbook.addImage({
-      //     base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
-      //     extension: 'png',
-      // });
-
-      // const lineChartImageId = workbook.addImage({
-      //     base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
-      //     extension: 'png',
-      // });
-
-      //Add both images to the same row
-      // worksheet.addImage(pieChartImageId, {
-      //     tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-      //     br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
-      // });
-
-      // worksheet.addImage(lineChartImageId, {
-      //     tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-      //     br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
-      // });
+        
       
-      // Add a row with horizontal gridline (6th row)
-      const gridlineRow = worksheet.addRow(Array(header.length).fill('')); // Add empty content for each column
-      gridlineRow.eachCell(cell => {
-          cell.border = {
-              bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
-          };
-      });
-
-      // Add header row with styles starting from 8th row
-      const headerRow = worksheet.addRow(header);
-      headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
-
-      // Set background color for header cells
-      headerRow.eachCell(cell => {
-          cell.fill = {
-              type: 'pattern',
-              pattern: 'solid',
-              fgColor: { argb: '0B4266' } // Blue color
-          };
-      });
-
-      console.log("exportToExcel - Data to export:", data);
-
-      // Add data rows
-      data?.forEach(rowData => {
-          console.log("exportToExcel - rowData", rowData);
-          const row = worksheet.addRow(rowData);
-          // Set border and text alignment for data rows
-          row.eachCell(cell => {
-              cell.border = {
-                  top: { style: 'thin' },
-                  left: { style: 'thin' },
-                  bottom: { style: 'thin' },
-                  right: { style: 'thin' }
-              };
-              cell.alignment = { horizontal: 'left' }; // Align text to the left
+        // Add header row with styles
+        const headerRow = worksheet.addRow(header);
+        headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
+        headerRow.eachCell((cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0B4266' } };
+        });
+      
+        // Add data rows
+        tasks.forEach((rowData: any) => {
+          const dataRow = worksheet.addRow([
+            rowData.date || '',
+            rowData.workLocation || '',
+            rowData.task || '',
+            rowData.project || '',
+            rowData.startTime || '',
+            rowData.endTime || '',
+            rowData.totalHours || '',
+            rowData.description || '',
+            rowData.reportingTo || '',
+          ]);
+          dataRow.eachCell((cell) => {
+            cell.border = {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' },
+            };
+            cell.alignment = { horizontal: 'left' };
           });
-      });
-
-
-      // Set column widths based on header length
-      worksheet.columns?.forEach((column, index) => {
+        });
+      
+        // Set column widths based on header length
+        worksheet.columns?.forEach((column, index) => {
           if (index < header.length) {
-              column.width = 23; // Adjust width as needed
+            column.width = 23;
           } else {
-              column.hidden = true; // Hide columns beyond the header length
+            column.hidden = true;
           }
+        });
       });
+      
+    }
 
-      // Add a row with horizontal gridline (6th row)
-      const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns?.length).fill('')); // Add empty content for each column
-      gridlineRowEnd.eachCell(cell => {
-          cell.border = {
-              bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
-          };
-      });
-
-      // Generate Excel file
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-      saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
-      setSelectedRows([]);
-
+    // Generate Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
+    setSelectedRows([]);
   } catch (error) {
-      console.error('Error exporting to Excel:', error);
+    console.error('Error exporting to Excel:', error);
   }
 };
+
 
   const handleReject = () => {
     setCommentVisible(true);
@@ -942,7 +890,8 @@ const exportToExcel = async () => {
   return (
     <ConfigProvider theme={config}>
       <div>
-          <div style={{display:'flex', justifyContent:'flex-start'}}>
+        <div style={{display:'flex', justifyContent:'space-between'}}>
+        <div style={{display:'flex', justifyContent:'flex-start'}}>
             <Select
               style={{ width: 120, height:40, marginLeft:'20px' }}
               className='regenerateactive'
@@ -979,8 +928,6 @@ const exportToExcel = async () => {
               Clear Filter
               </Button>
           </div>
-
-          {/* <button onClick={()=>fetchTaskByUniqueId(selectedRows)}>Click</button>
           <div style={{marginRight:'20px', marginTop:'25px'}}>
               <Dropdown overlay={exportMenu} placement="bottomLeft">
                 <Button
@@ -990,7 +937,9 @@ const exportToExcel = async () => {
                   Export
                 </Button>
               </Dropdown>
-          </div> */}
+          </div>
+        </div>
+         
           <Table
             rowSelection={{
                 type: 'checkbox',
@@ -1000,6 +949,7 @@ const exportToExcel = async () => {
             onRow={(record: GroupedTasks) => ({
               onClick: (event: React.MouseEvent<HTMLElement>) => {
                 const { uniqueRequestId, employeeId, month, employeeName } = record;
+                setExportMonthName(month);
                 setSelectedUserId(userId); // Set the userId in state
                 const [monthName, year] = month.split(/\s+/);
                 const monthNumber = moment().month(monthName).format('MMMM');

@@ -18,10 +18,10 @@
   /* font-weight: bold; */
 }
 
-.ant-modal .ant-modal-content {
+/* .monthTasks .ant-modal .ant-modal-body {
   margin-left: -250px;
   width:1400px;
-}
+} */
 
 .table-striped-rows tr:nth-child(2n) td {
   background-color: #fbfbfb;
@@ -29,11 +29,13 @@
 .table-striped-rows thead {
   background-color: #f1f1f1;
 }
-
-.ant-modal-content {
-  width: 1000px;
+.modalTitle .ant-modal-content {
+  width: 700px;
+}
+.monthTasks .ant-modal-content {
+  width: 1500px;
   /* max-width: 3000px; Set a maximum width if desired */
-  margin: auto; /* Center the modal horizontally */
+  margin-left: -420px; /* Center the modal horizontally */
 }
 
 /* .ant-modal-body {

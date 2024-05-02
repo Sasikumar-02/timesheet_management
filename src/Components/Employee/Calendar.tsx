@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { DateClickArg} from "@fullcalendar/interaction";
 import { EventClickArg } from '@fullcalendar/core';
 import { useLocation, useNavigate } from "react-router-dom";
+import '../Styles/ApprovalRequest.css'
 import { useCallback } from "react";
 import api from "../../Api/Api-Service";
 import { Table } from "antd/lib";
@@ -573,6 +574,7 @@ const Calendar = () => {
       />
       <Modal
           title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
+          className='monthTasks'
           visible={modalVisible}
           onCancel={handleModalVisible}
           footer={null}
