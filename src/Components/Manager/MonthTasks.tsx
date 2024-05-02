@@ -16,7 +16,6 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {Button, Modal, Progress, Input, Space, Avatar, Select, ConfigProvider , message, Menu, notification} from 'antd';
 import { Tooltip as AntdTooltip } from 'antd';
-import DashboardLayout from '../Dashboard/Layout'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid,Tooltip, Legend, ResponsiveContainer, ReferenceLine , Label, PieChart, Cell} from 'recharts';
 import { ColumnsType } from 'antd/es/table'
 import { Table, Dropdown } from 'antd'

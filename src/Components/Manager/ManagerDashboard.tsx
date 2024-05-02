@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import DashboardLayout from '../Dashboard/Layout'
 import { Link } from 'react-router-dom';
 import {
     UserOutlined,
@@ -12,20 +11,18 @@ import {
 import dayjs from 'dayjs';
 import { Doughnut } from 'react-chartjs-2';
 import Chart from 'react-apexcharts';
-import Calendar from '../Employee/Calendar'; // Import your Calendar component
+import Calendar from '../Employee/Calendar'; 
 import { useNavigate } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
 import { Pie } from 'react-chartjs-2';
 import { PieChart, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import '../Styles/EmployeeTaskStatus.css';
 import '../Styles/CreateUser.css';
-import { notification, Card , ConfigProvider, Button} from 'antd';
+import { notification, Card , ConfigProvider, Button,Select, Input} from 'antd';
 import { Task } from '../Employee/AddTask';
 import { GroupedTasks, SetGroupedTasks, UserGroupedTask } from './ApprovalRequest';
-import { set } from 'lodash';
 import { CatchingPokemonSharp } from '@mui/icons-material';
 import asset from '../../assets/images/asset.svg'
-import { Select, Input } from 'antd'; // Import the Select component from Ant Design
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
 import { TaskRequestedOn } from '../Employee/AddTask';
@@ -33,14 +30,8 @@ import api from '../../Api/Api-Service';
 import { DecodedToken } from '../Employee/EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
 import MonthRequest from './MonthRequest';
-interface PerformanceDatum {
-    taskName: string;
-    totalHours: number;
-}
 const config: ThemeConfig = {
     token: {
-      // colorPrimary: "#0b4266",
-   
       colorPrimaryBg: "rgba(155, 178, 192, 0.2)",
    
       colorFillAlter: "rgba(231, 236, 240, 0.3)",
@@ -64,7 +55,6 @@ const config: ThemeConfig = {
     [title: string]: number;
 }
 
-// Function to calculate and update the counts
 const calculateTitleCounts = (tasks: Task[]) => {
     const titleCounts: TitleCount = {};
     tasks?.forEach(task => {
@@ -76,16 +66,8 @@ const calculateTitleCounts = (tasks: Task[]) => {
     });
     return titleCounts;
 };
-
-interface EmployeeTaskStatusProps{
-    setSelectedMonth: React.Dispatch<React.SetStateAction<string>>;
-    setSelectedYear: React.Dispatch<React.SetStateAction<string>>;
-    pendingTask: string[];
-}
-
 const ManagerDashboard = () => {
-    // const userId = ['123','1234']; // Assuming you have a function to get the current user's ID
-    const { Option } = Select; // Destructure the Option component from Select
+    const { Option } = Select; 
     const navigate = useNavigate();
     const [filterOption, setFilterOption] = useState('Month');
     const [currentDate, setCurrentDate] = useState(dayjs());
@@ -101,9 +83,6 @@ const ManagerDashboard = () => {
         userId: "Filter by userId",
       });
     const [searchText, setSearchText] = useState("");
-    // Define state for groupedTasks
-  const [groupedTasks, setGroupedTasks] = useState<UserGroupedTask>({});
-  const [titleCounts, setTitleCounts] = useState<TitleCount>({});
   const [taskRequestedOn, setTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [workFromHomeCount, setWorkFromHomeCount] = useState(0);
@@ -155,20 +134,20 @@ const chartOptions = {
   responsive: true,
   plugins: {
     legend: {
-      position: 'right' as 'right', // Display the legend at the right side
-      align: 'center' as 'center', // Align the legend to the start of the position (right side)
+      position: 'right' as 'right', 
+      align: 'center' as 'center', 
     },
     tooltip: { 
       enabled: true, 
       backgroundColor: "white",
       titleColor: "#042a0b", 
       bodyColor: "#042a0b", 
-      titleFont: { weight: 'bold' as 'bold' }, // Set weight to 'bold' explicitly 
+      titleFont: { weight: 'bold' as 'bold' }, 
       padding: 10, 
       cornerRadius: 10, 
       borderColor: "#042a0b", 
       borderWidth: 2, 
-      xAlign: "left" as "left", // Set xAlign to "left"
+      xAlign: "left" as "left", 
   },
   },
   width: 200,
@@ -330,10 +309,6 @@ const fetchDoughReport=async(month:any, year:any)=>{
         })
     );
   
-    // Update the state with the new filters
-    //setFilters(updatedFilters);
-
-    // Convert single value or array of values to display in Select
     const selectedValues = Array.isArray(value) ? value : [value];
       setSelectedUserId(selectedValues?.length === 1 ? selectedValues[0] : null);
     };
@@ -348,17 +323,6 @@ const fetchDoughReport=async(month:any, year:any)=>{
       setSelectedUserId(null);
     };
 
-    // useEffect to retrieve groupedTasks from localStorage
-    useEffect(() => {
-      // Retrieve groupedTasks from localStorage
-      const storedGroupedTasks = localStorage.getItem('groupedTasks');
-      if (storedGroupedTasks) {
-        // Parse JSON string to object
-        const parsedGroupedTasks: UserGroupedTask = JSON.parse(storedGroupedTasks);
-        // Set groupedTasks state
-        setGroupedTasks(parsedGroupedTasks);
-      }
-    }, []); // Empty dependency array to run only once on component mount
 
     const handleSearchInputChange = (value: string) => {
       setSearchText(value);

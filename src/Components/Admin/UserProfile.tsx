@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../Dashboard/Layout';
 import { Button, Space, message } from 'antd';
 import {Avatar, notification} from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';

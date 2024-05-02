@@ -10,7 +10,6 @@ import LoginPage from "../Components/Login/Login";
 import NewPassword from "../Components/Login/NewPassword";
 import { ReactNode } from "react";
 import { Roles } from "../Utils/Roles";
-import DashboardLayout from "../Components/Dashboard/Layout";
 import ResetPassword from "../Components/Login/ResetPassword";
 export function GlobalRouter() {
   const navigate = useNavigate();

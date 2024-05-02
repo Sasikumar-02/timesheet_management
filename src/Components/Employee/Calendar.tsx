@@ -9,7 +9,6 @@ import '../Styles/ApprovalRequest.css'
 import { useCallback } from "react";
 import api from "../../Api/Api-Service";
 import { Table } from "antd/lib";
-import DashboardLayout from "../Dashboard/Layout";
 import dayjs from "dayjs";
 import { notification } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -82,8 +81,6 @@ const Calendar = () => {
 
             const calendarData = response?.data?.response?.data;
             console.log("calendarData", calendarData);
-
-            // Iterate through calendarData to find a match for formattedDate
             calendarData.forEach((task: any) => {
                 const taskDate = dayjs(task.date).format("YYYY-MM-DD");
                 if (formattedDate === taskDate) {
@@ -112,7 +109,7 @@ const Calendar = () => {
       
               return {
                 title,
-                start: task.date, // Convert date string to Date object
+                start: task.date, 
                 color,
               };
             });
@@ -146,31 +143,22 @@ const Calendar = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        // Fetch tasks from the API
         const response = await api.get('/api/v1/timeSheet/fetch-tasks-by-employee');
         console.log("response-fulldata", response?.data?.response?.data);
-  
-        // Find the first task with status "Approved" for each date
         const approvedDates = response.data.response.data.reduce((acc: string[], task: any) => {
           if (task.taskStatus === "Approved" && !acc.includes(task.date)) {
             acc.push(task.date);
           }
           return acc;
         }, []);
-  
-        // Update the state with the filtered tasks
         console.log("approvedDates", approvedDates);
-        // Update selectedKeysToHide state with approved dates
         setSelectedKeysToHide(approvedDates);
       } catch (error) {
-        // Handle errors
         console.error('Error fetching tasks:', error);
-        // You can also show a notification or perform other error handling here
       }
     };
-    // Call the fetchTasks function
     fetchTasks();
-  }, [refetch]); // Empty dependency array to fetch tasks only once when the component mounts
+  }, [refetch]); 
   
   
 
@@ -187,19 +175,15 @@ const Calendar = () => {
           const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
           console.log('Response data:', response.data.response.data);
           setClickedRecord(response?.data?.response?.data);
-          // Process response data if needed
       } catch (error) {
           console.error('Error fetching data by unique ID:', error);
-          // Handle error here
       }
   };
 
   const hoursDecimalToHoursMinutes = (decimalHours:any) => {
-    // Split the decimal value into hours and minutes
     const hours = Math.floor(decimalHours);
     const minutes = Math.round((decimalHours - hours) * 100);
     console.log("hours minutes",hours, minutes);
-    // Return the formatted string
     if(hours===0 && minutes===0){
         return '➖';
     }

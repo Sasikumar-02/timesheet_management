@@ -15,7 +15,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import '../Styles/CreateUser.css';
 import axios from 'axios';
-import DashboardLayout from '../Dashboard/Layout';
 import Chart from 'react-apexcharts';
 import '../Styles/AddTask.css';
 import {Table} from 'antd';

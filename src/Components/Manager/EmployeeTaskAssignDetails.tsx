@@ -11,8 +11,6 @@ import {
 } from "@ant-design/icons";
 
 const { Option } = Select;
-
-// Define the type of your task data
 type TaskData = {
     [key: string]: {
         date: string;

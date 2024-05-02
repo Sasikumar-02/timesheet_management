@@ -40,12 +40,10 @@ import { TableRowSelection } from 'antd/lib/table/interface';
 import { RequestedOn } from '../Employee/AddTask';
 import type { ThemeConfig } from "antd";
 import { theme } from "antd";
-//import { SelectedKeys, RejectedKeys, RecentRejected } from './MonthTasks';
 import api from '../../Api/Api-Service';
 import { DatePicker } from 'antd';
 import moment, { Moment } from 'moment';
 import { saveAs } from 'file-saver';
-//import 'antd/dist/antd.css';
 const {Option}= Select;
 const config: ThemeConfig = {
   token: {
@@ -76,28 +74,19 @@ export interface GroupedTasks {
 }
 
 const ApprovalRequest:React.FC = () => { 
-  //const userId = '1234'; // Replace 'YOUR_USER_ID' with the actual user id you want to check
-  const userId ='1234';
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
     
     const year = queryParams.get('year');
     const month = queryParams.get('month');
   console.log("month-year 1", month, year);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
-  //const [rejectedKeys, setRejectedKeys] = useState<RecentRejected[]>([]);
   const navigate = useNavigate();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedInnerRows, setSelectedInnerRows] = useState<string[]>([]);
-  //const[daysInMonth, getDaysInMonth]=useState<string[]>([]);
-  const [groupedTasks, setGroupedTasks] = useState<UserGroupedTask>({});
-  // State declaration with two keys
-  //const [groupedTasks, setGroupedTasks] = useState<{ [month: string]: { [date: string]: GroupedTasks } }>({});
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [expandedInnerRow, setExpandedInnerRow] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<JSX.Element | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | undefined>(undefined);
   const [exportMonthName, setExportMonthName]= useState<string|undefined>(undefined);
   const [comments, setComments] = useState('');
   const [commentVisible, setCommentVisible] = useState(false);
@@ -122,8 +111,8 @@ const ApprovalRequest:React.FC = () => {
   };
 
   const getYears = () => {
-    const startYear = parseInt(currentYear as string, 10) - 50; // Convert currentYear to number using parseInt
-    const endYear = parseInt(currentYear as string, 10) + 50; // Convert currentYear to number using parseInt
+    const startYear = parseInt(currentYear as string, 10) - 50; 
+    const endYear = parseInt(currentYear as string, 10) + 50; 
     return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 };
 
@@ -133,12 +122,10 @@ const ApprovalRequest:React.FC = () => {
 
   const handleMonthChange = (value:any) => {
     setSelectedMonth(value);
-    // Update selected date here
   };
 
   const handleYearChange = (value:any) => {
     setSelectedYear(value);
-    // Update selected date here
   };
 
   useEffect(() => {
@@ -153,10 +140,8 @@ const ApprovalRequest:React.FC = () => {
         console.log("response-my", selectedMonth, selectedYear);
         console.log("response-data", response?.data?.response?.data);
         setUserTasks(response?.data?.response?.data);
-        // Process response data here
       } catch (error) {
         console.error("Error fetching data:", error);
-        // Handle error here, such as displaying an error message to the user
       }
     };
   
@@ -171,27 +156,17 @@ const ApprovalRequest:React.FC = () => {
   const fetchTaskByUniqueId = async (uniqueRequestIds: any[]) => {
     console.log('exportToExcel - 1', uniqueRequestIds);
     try {
-        // Map each uniqueRequestId to a promise that fetches its corresponding tasks
             const response = await api.post(`/api/v1/timeSheet/fetch-tasks-by-uniqueIds`,{
               uniqueRequestIds:uniqueRequestIds
             });
             return response?.data?.response?.data;
-
-
-        // Wait for all promises to resolve
-        // const tasks = await Promise.all(tasksPromises);
-        // console.log("exportToExcel - tasks", tasks);
-        // return tasks;
     } catch (error) {
         console.error('Error fetching data by unique IDs:', error);
-        throw error; // Rethrow the error for handling in the caller function
+        throw error; 
     }
 };
 const exportToExcel = async () => {
   try {
-    console.log("exportToExcel - selectedRows", selectedRows);
-    let imgId1: number;
-    let imgId2: number;
     let workbook = new ExcelJS.Workbook();
 
     if (selectedRows?.length > 0) {
@@ -206,9 +181,9 @@ const exportToExcel = async () => {
       const fetchedData = await fetchTaskByUniqueId(finalIds);
       console.log("exportToExcel-fetchedData", fetchedData);
 
-      Object.entries(fetchedData).forEach(([employeeId, employeeData]) => {
+      Object.entries(fetchedData).forEach(([employeeId]) => {
         let employeeName = fetchedData[employeeId].employeeName;
-        let tasks = fetchedData[employeeId].tasks; // Access tasks array for the employee
+        let tasks = fetchedData[employeeId].tasks; 
 
         const worksheet = workbook.addWorksheet(`${employeeName}-${employeeId}`);
         worksheet.views = [{ showGridLines: false }];
@@ -228,46 +203,34 @@ const exportToExcel = async () => {
         worksheet.views = [{
           showGridLines: false
       }];
-
-      // Add Timesheet row with background color, bold, and 24px font size
       const timesheetRow = worksheet.addRow(['TimeSheet']);
       timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
       timesheetRow.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: '0B4266' } // Blue color
+          fgColor: { argb: '0B4266' }
       };
-
-      // Add Name and Month rows with specified values
       const nameRow = worksheet.addRow([]);
       nameRow.getCell(1).value = 'Name:';
-      nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+      nameRow.getCell(1).font = { bold: true }; 
       nameRow.getCell(2).value = employeeName;
       const userIdRow = worksheet.addRow([]);
       userIdRow.getCell(1).value = 'UserID:';
-      userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+      userIdRow.getCell(1).font = { bold: true }; 
       userIdRow.getCell(2).value = employeeId;
 
       const monthRow = worksheet.addRow([]);
       monthRow.getCell(1).value = 'Month:';
-      monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
-      monthRow.getCell(2).value = selectedMonth+' '+selectedYear; // Dynamically convert date to "Month Year" format
-          
-      // Add empty rows
+      monthRow.getCell(1).font = { bold: true }; 
+      monthRow.getCell(2).value = selectedMonth+' '+selectedYear; 
       for (let i = 0; i < 1; i++) {
           worksheet.addRow([]);
       }
-
-        
-      
-        // Add header row with styles
         const headerRow = worksheet.addRow(header);
         headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
         headerRow.eachCell((cell) => {
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0B4266' } };
         });
-      
-        // Add data rows
         tasks.forEach((rowData: any) => {
           const dataRow = worksheet.addRow([
             rowData.date || '',
@@ -290,8 +253,6 @@ const exportToExcel = async () => {
             cell.alignment = { horizontal: 'left' };
           });
         });
-      
-        // Set column widths based on header length
         worksheet.columns?.forEach((column, index) => {
           if (index < header.length) {
             column.width = 23;
@@ -302,8 +263,6 @@ const exportToExcel = async () => {
       });
       
     }
-
-    // Generate Excel file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
     saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
@@ -327,88 +286,18 @@ const exportToExcel = async () => {
   };
 
   const handleSubmit = () => {
-    // Handle submission logic here
     console.log('Comments:', comments);
     setCommentVisible(false);
   };
   
   function getDaysInMonth(month: number, year: number) {
-    // month is 0-based in JavaScript
     return new Date(year, month + 1, 0).getDate();
   }
-  
-  // const handleGroupedTasks = (requestData: DateTask[]) => {
-  //   //Group tasks by month
-  //   console.log("handleGroupedtasks- requestData", requestData);
-  //   const grouped = groupBy(requestData, (task: DateTask) => dayjs(task.key).format("YYYY-MM"));
-  //   console.log("handleGroupedTasks-grouped", grouped);
-  //   // Retrieve existing data from local storage
-  //   const existingDataJSON = localStorage.getItem('groupedTasks');
-  //   const existingData: UserGroupedTask = existingDataJSON ? JSON.parse(existingDataJSON) : {};
-  
-  //   // Process each month's tasks
-  //   for (const monthKey in grouped) {
-  //     console.log("monthKey", monthKey);
-  //     const tasksArray = grouped[monthKey] as DateTask[];
-  //     console.log("tasksArray", tasksArray);
-  //     const firstTaskDate = dayjs(tasksArray[0].key, 'YYYY-MM-DD');
-  //     const formattedMonth = firstTaskDate.format("MMMM YYYY");
-  //     const totalDaysInMonth = getDaysInMonth(firstTaskDate.month(), firstTaskDate.year());
-  
-  //     let daysFilled = 0;
-  //     const tasks: TaskObject = {};
-  //     tasksArray.forEach(taskObj => {
-  //       console.log("taskObj", taskObj);
-  //       const dateKey = dayjs(taskObj.key, 'YYYY-MM-DD').format('YYYY-MM-DD');
-  //       if (existingData[userId]?.hasOwnProperty(monthKey)) {
-  //         if (!existingData[userId][monthKey]?.tasks.hasOwnProperty(dateKey)) {
-  //           // Create a new date key entry with all tasks from the tasksArray
-  //           existingData[userId][monthKey].tasks[dateKey] = { key: uuidv4(), tasks: taskObj.tasks, status: 'Pending' };
-  //           daysFilled++;
-  //         } else {
-  //           if (existingData[userId][monthKey]?.tasks[dateKey].tasks.length === 0) {
-  //             console.log("sasi", dateKey);
-  //             return;
-  //           }
-  //           existingData[userId][monthKey].tasks[dateKey].tasks = [...taskObj.tasks];
-  //         }
-  //       } else {
-  //         const dateUUID = uuidv4(); // Generate unique key for the date
-  //         tasks[dateKey] = { key: dateUUID, tasks: taskObj.tasks, status:'Pending' };
-  //         daysFilled++;
-  //       }
-  //     });
-  
-  //     if (!existingData[userId]?.hasOwnProperty(monthKey)) {
-  //       const monthUUID = uuidv4(); // Generate unique key for the month
-  //       existingData[userId] = existingData[userId] || {};
-  //       existingData[userId][monthKey] = {
-  //         key: monthUUID,
-  //         month: formattedMonth,
-  //         daysFilled,
-  //         totalDaysInMonth,
-  //         tasks
-  //       };
-  //     } else {
-  //       existingData[userId][monthKey].daysFilled = daysFilled; // Update daysFilled
-  //     }
-  //   }
-  
-  //   // Set the updated data to local storage
-  //   localStorage.setItem('groupedTasks', JSON.stringify(existingData));
-  
-  //   // Update the state with the combined data
-  //   // You'll need to manage the state accordingly as per your application's structure
-  //   setGroupedTasks(existingData);
-  //   setApprovalRequests([]);
-  // };
-  
+
   const handleRowSelection = (selectedRowKeys:any, selectedRows:any) => {
-    // Extracting uniqueRequestId array from selectedRows
     console.log("handleRowSelection", selectedRows, selectedRowKeys);
     const uniqueRequestIds = selectedRows.map((row:any) => row.uniqueRequestId);
     console.log("handleRowSelection-1", uniqueRequestIds);
-    // Update selectedRows state with the array of uniqueRequestId
     setSelectedRows(uniqueRequestIds);
   };
 
@@ -420,35 +309,28 @@ const exportToExcel = async () => {
       console.log(selectedInnerRows);
     },
     getCheckboxProps: (record: TaskObject) => ({
-      disabled: false, // Column configuration not to be checked
+      disabled: false, 
       key: record.key,
     }),
-  }; //not in use
+  }; 
 
   useEffect(() => {
     console.log("selectedInnerRows", selectedInnerRows);
   }, [selectedInnerRows]);
 
     const handleToggleRowExpand = (record: GroupedTasks, event: React.MouseEvent<HTMLElement>) => {
-      // Update the expandedRow state using the functional form of setState
       setExpandedRow(prevExpandedRow => prevExpandedRow === record.month ? null : record.month);
-      // Prevent event propagation
       event.stopPropagation();
     };//not in use
 
     const handleToggleInnerRowExpand = (record: TaskObject) => {
       const taskKeys = Object.keys(record?.tasks);
       if (taskKeys.length > 0) {
-        // Get the first key from the tasks object
         const firstTaskKey = taskKeys[0];
-        // Update the state with the first task key
         setExpandedInnerRow(prevExpandedInnerRow => {
-          // Check if the current expanded row is the same as the first task key
           if (prevExpandedInnerRow === firstTaskKey) {
-            // If it is, collapse the row by setting expandedInnerRow to null
             return null;
           } else {
-            // Otherwise, expand the row by setting expandedInnerRow to the first task key
             return firstTaskKey;
           }
         });
@@ -463,18 +345,18 @@ const exportToExcel = async () => {
     const monthTaskDatas: TaskObject[] = Object.values(monthTasks).map(dateData => {
       console.log("monthTaskData-monthtasks", monthTasks)
       console.log("dateData", dateData);
-      if (!dateData) return {}; // Check if dateData is undefined or null
+      if (!dateData) return {}; 
       return dateData ;
     });
 
     const monthTasksData: DateTask[] = monthTaskDatas.map(taskObject => {
-      const date = Object.keys(taskObject)[0]; // Assuming there's only one key in TaskObject
+      const date = Object.keys(taskObject)[0]; 
       const { key, tasks } = taskObject[date];
-      return { key, tasks, status: "Pending" }; // Include 'tasks' and set status as "Pending"
+      return { key, tasks, status: "Pending" }; 
   });
   
     const handleInnerRowSelection = (selectedRowKeys: React.Key[]) => {
-      console.log("handleInnerRowSelection selectedRowKeys", selectedRowKeys); // Output selectedRowKeys to console
+      console.log("handleInnerRowSelection selectedRowKeys", selectedRowKeys); 
       setSelectedInnerRows(selectedRowKeys as string[]);
     };
 
@@ -517,23 +399,17 @@ const exportToExcel = async () => {
             key: 'tasks',
             width: '60%',
             render: (_, record: DateTask) => {
-                // Initialize variables to store task hours and total hours
                 let totalHours = 0;
                 const taskHours: { [key: string]: number } = {};
-                // Iterate over each task in the record
                 record.tasks.forEach(task => {
                     const totalHoursForTask = parseFloat(task.totalHours || '0');
-                    totalHours += totalHoursForTask; // Accumulate total hours
-                    taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask; // Add task hours
+                    totalHours += totalHoursForTask;
+                    taskHours[task?.task] = (taskHours[task?.task] || 0) + totalHoursForTask;
                 });
-
-                // Calculate extra hours if total hours exceed 9
                 const extraHours = totalHours > 9 ? totalHours - 9 : 0;
-
                 return (
                     <div>
                         <ul style={{ display: 'flex', flexDirection: 'row', listStyle: 'none', padding: 0 }}>
-                            {/* Render task hours for each task */}
                             {Object.entries(taskHours).map(([taskName, taskTotalHours], index) => (
                                 <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
                                     <div style={{ paddingRight: '20px' }}>
@@ -547,13 +423,12 @@ const exportToExcel = async () => {
                                     <div>
                                         <Progress
                                             type="circle"
-                                            percent={Math.round((taskTotalHours / 9) * 100)} // Ensure it's an integer
+                                            percent={Math.round((taskTotalHours / 9) * 100)} 
                                             width={60}
                                         />
                                     </div>
                                 </li>
                             ))}
-                            {/* Render extra hours and total hours */}
                             <li style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid black', borderRadius: '20px', padding: '10px 20px', backgroundColor: 'white', margin: '5px' }}>
                                 <div style={{ color: '#0B4266', paddingRight: '20px' }}>
                                     Extra Hours
@@ -685,7 +560,7 @@ const exportToExcel = async () => {
       {
         title:<div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Requested Days</div>,
         className: 'ant-table-column-title',
-        dataIndex: 'daysRequested', // Assuming 'requestedOn' is the property in userTasks containing requestedOn data
+        dataIndex: 'daysRequested', 
         key: 'daysRequested',
         fixed: 'left',
       },     
@@ -880,10 +755,7 @@ const exportToExcel = async () => {
             />
         </div>
       );
-      // Set the modal content and make the modal visible
       setModalVisible(true);
-    
-      // Prevent event propagation
       event.stopPropagation();
     };//not in use
      
@@ -950,13 +822,9 @@ const exportToExcel = async () => {
               onClick: (event: React.MouseEvent<HTMLElement>) => {
                 const { uniqueRequestId, employeeId, month, employeeName } = record;
                 setExportMonthName(month);
-                setSelectedUserId(userId); // Set the userId in state
                 const [monthName, year] = month.split(/\s+/);
                 const monthNumber = moment().month(monthName).format('MMMM');
                 const formattedMonth = `${monthNumber}-${year}`;
-                // Pass TaskObject and formattedMonth to handleRowClick
-                //handleRowClick(tasksObject, formattedMonth, event);
-                //navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`);
                 navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
                   uniqueRequestId,
                   formattedMonth: month, 
@@ -972,7 +840,7 @@ const exportToExcel = async () => {
             columns={columns}
            dataSource={userTasks}
             pagination={false}
-            rowKey="uniqueRequestId" // Set the rowKey prop to 'uniqueRequestId'
+            rowKey="uniqueRequestId" 
 
           />
         
