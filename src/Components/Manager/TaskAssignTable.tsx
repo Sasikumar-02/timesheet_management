@@ -487,16 +487,16 @@ const TaskAssignTable = () => {
                     onClick={() => handleEditTask(record)}
                     style={{
                       marginRight: '8px',
-                      cursor: 'pointer',
-                      color: 'blue',
+                      cursor: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? 'not-allowed' :'pointer',
+                      color: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : 'blue',
                       fontSize: '20px',
                     }}
                   />
                   <DeleteOutlined
                     onClick={() => handleDeleteTask(record?.timeSheetId)}
                     style={{
-                      cursor: 'pointer',
-                      color: 'red',
+                      cursor: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? 'not-allowed' :'pointer',
+                      color: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : 'red',
                       fontSize: '20px',
                     }}
                   />
@@ -516,13 +516,14 @@ const TaskAssignTable = () => {
                   <Button
                     style={{
                       width: '80%',
-                      backgroundColor: '#0B4266',
+                      backgroundColor: (record.taskStatus==='Approved' || record.taskStatus==='Completed') ? '#ccc' : '#0B4266',
                       color: 'white',
-                      cursor: 'pointer',
+                      cursor: record.taskStatus==='Approved' || record.taskStatus==='Completed'?'not-allowed':'pointer',
                       height: '100%',
                     }}
                     key="submit"
                     type="primary"
+                    disabled={record.taskStatus==='Approved' || record.taskStatus==='Completed'}
                     onClick={() => handleComplete(record.taskId)}
                   >
                     Complete
@@ -551,7 +552,7 @@ const TaskAssignTable = () => {
                       }}
                       style={{
                         cursor: record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected' ? 'not-allowed' : 'pointer',
-                        backgroundColor: '#eb362cdb',
+                        backgroundColor: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : '#eb362cdb',
                         color: 'white',
                         fontSize: '16px',
                         marginRight: '3px',
@@ -579,7 +580,7 @@ const TaskAssignTable = () => {
                         }}
                         style={{
                             cursor: record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected' ? 'not-allowed' : 'pointer',
-                            backgroundColor: '#8ed27d',
+                            backgroundColor: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : '#8ed27d',
                             color: 'white',
                             fontSize: '16px',
                             width: '100px',
