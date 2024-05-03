@@ -1038,7 +1038,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             <div className='createuser-main'>
                 <div className='header'>
                     <div>
-                      <h1> <ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/taskassigntable')}} />Monthly Task Details</h1>
+                      <h1> <ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/approvalrequest')}} />Monthly Task Details</h1>
                     </div>
                 </div>
                     <div style={{display:'flex', justifyContent:'space-between'}}>

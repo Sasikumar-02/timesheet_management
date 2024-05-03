@@ -37,6 +37,7 @@ interface TaskTable{
     employees?:EmployeeDetails;
     taskDescription?:string;
     taskStatus?:string;
+    isExistingData?:boolean;
 }
 
 interface EmployeeGrades {
@@ -78,8 +79,8 @@ const TaskAssignTable = () => {
     const [selectedData, setSelectedData] = useState<EmployeeGrades>({});
     console.log("selectedData", selectedData);
     const [employee, setEmployee]= useState<EmployeeDetails[]>([])
-    const [taskTable,setTaskTable]= useState<TaskTable[]>([]);
-    const [specificTaskTable, setSpecificTaskTable]= useState<TaskTable>();
+    const [taskTable,setTaskTable]= useState<any[]>([]); //TaskTable
+    const [specificTaskTable, setSpecificTaskTable]= useState<any>(); //TaskTable
     const [employeeEndDate, setEmployeeEndDate]= useState(null);
     const [taskData, setTaskData] = useState<TaskData | null>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
@@ -92,6 +93,7 @@ const TaskAssignTable = () => {
     const [approvalVisible, setApprovalVisible]=useState(false);
     const [statuses, setStatuses]= useState<boolean>(false);
     const [error, setError] = useState('');
+    const [hoveredRecord, setHoveredRecord] = useState(null);
     const grade: any[]=["Excellent", "Good", "Needs Improvement", "Poor"];
     console.log("taskTable,employee", taskTable);
 
@@ -143,7 +145,8 @@ const TaskAssignTable = () => {
                             endDate: task.endDate,
                             taskStatus: task.taskStatus,
                             taskDescription: task.taskDescription,
-                            employees: task.employees
+                            employees: task.employees,
+                            isExistingData: task.isExistData
                         };
                     });
         
@@ -705,7 +708,7 @@ const TaskAssignTable = () => {
               //   selectedRowKeys: selectedRows,
               //   onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
               // }}
-              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266', cursor:'pointer' }}
+              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266', cursor: 'pointer' }}
               className='addtask-table'
               // onRow={(record: any) => ({
               //   onClick: (event: React.MouseEvent<HTMLElement>) => {
@@ -714,7 +717,16 @@ const TaskAssignTable = () => {
               //   },
               // })}
               onRow={(record: any) => ({
+                onMouseEnter: () => {
+                  setHoveredRecord(record); // Set hovered record
+                  console.log("Hovered Record:", record); // Log the record when mouse enters
+                },
+                onMouseLeave: () => setHoveredRecord(null), // Clear hovered record when leaving row
                 onClick: (event: React.MouseEvent<HTMLElement>) => handleRowClick(record),
+                style: {
+                  cursor: record.isExistingData ? 'pointer' : 'not-allowed',
+                  backgroundColor: hoveredRecord === record ? '#f0f0f0' : 'transparent', // Highlight hovered row
+                },
               })}
               
               columns={columns}
@@ -947,7 +959,7 @@ const TaskAssignTable = () => {
                             columns={approveColumns}
                             dataSource={Object.entries(selectedData).map(([employeeId, grade], index) => ({
                               slNo: index + 1,
-                              employeeName: employeeId, // Assuming employeeId serves as employeeName
+                              employeeName: employeeId, 
                               grade: grade
                             }))}
                             pagination={false}
@@ -963,10 +975,7 @@ const TaskAssignTable = () => {
                           </Button>
                           </div>
                         </div>
-                        
-                       
                       </Form>
-                      
                       )}
                     </Formik>
                   </div>

@@ -29,6 +29,9 @@
 .table-striped-rows thead {
   background-color: #f1f1f1;
 }
+.ant-checkbox-input{
+  width: 16px;
+}
 .modalTitle .ant-modal-content {
   width: 700px;
 }

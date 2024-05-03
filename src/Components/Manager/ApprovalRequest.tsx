@@ -818,6 +818,7 @@ const exportToExcel = async () => {
                 selectedRowKeys: selectedRows,
                 onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
             }}
+            style={{cursor:'pointer'}}
             onRow={(record: GroupedTasks) => ({
               onClick: (event: React.MouseEvent<HTMLElement>) => {
                 const { uniqueRequestId, employeeId, month, employeeName } = record;
