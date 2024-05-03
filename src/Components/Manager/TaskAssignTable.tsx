@@ -487,16 +487,16 @@ const TaskAssignTable = () => {
                     onClick={() => handleEditTask(record)}
                     style={{
                       marginRight: '8px',
-                      cursor: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? 'not-allowed' :'pointer',
-                      color: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : 'blue',
+                      cursor: (record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? 'not-allowed' :'pointer',
+                      color: (record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : 'blue',
                       fontSize: '20px',
                     }}
                   />
                   <DeleteOutlined
                     onClick={() => handleDeleteTask(record?.timeSheetId)}
                     style={{
-                      cursor: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? 'not-allowed' :'pointer',
-                      color: (record.endDate === null || record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : 'red',
+                      cursor: ( record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? 'not-allowed' :'pointer',
+                      color: (record.taskStatus === 'Approved' || record.taskStatus === 'Rejected') ? '#ccc' : 'red',
                       fontSize: '20px',
                     }}
                   />
