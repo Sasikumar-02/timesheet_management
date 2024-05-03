@@ -396,14 +396,14 @@ const TaskAssignTable = () => {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
         dataIndex: 'slNo',
         key: 'slNo',
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         fixed: 'left',
         render: (text, record, index) => index + 1,
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Task Name</div>,
         dataIndex: 'taskName',
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         key: 'taskName',
         fixed: 'left',
         render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
@@ -411,14 +411,14 @@ const TaskAssignTable = () => {
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
         dataIndex: 'projectName',
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         key: 'projectName',
         fixed: 'left',
         render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Start Date</div>,
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         dataIndex: 'startDate',
         key: 'startDate',
         fixed: 'left',
@@ -426,7 +426,7 @@ const TaskAssignTable = () => {
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Estimated End Date</div>,
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         dataIndex: 'estimatedEndDate',
         key: 'estimatedEndDate',
         fixed: 'left',
@@ -434,7 +434,7 @@ const TaskAssignTable = () => {
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>End Date</div>,
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         dataIndex: 'endDate',
         key: 'endDate',
         fixed: 'left',
@@ -442,7 +442,7 @@ const TaskAssignTable = () => {
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employees</div>,
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         dataIndex: 'employees',
         key: 'employees',
         fixed: 'left',
@@ -460,7 +460,7 @@ const TaskAssignTable = () => {
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Description</div>,
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         dataIndex: 'taskDescription',
         key: 'taskDescription',
         fixed: 'left',
@@ -468,7 +468,7 @@ const TaskAssignTable = () => {
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         dataIndex: 'taskStatus',
         key: 'taskStatus',
         fixed: 'left',
@@ -478,7 +478,7 @@ const TaskAssignTable = () => {
         ? [
             {
               title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Actions</div>,
-              width: 'max-content', // Set the column width to adjust to fit widest content
+              width: 'max-content',  
               dataIndex: 'managerActions',
               key: 'managerActions',
               render: (_: any, record: any) => (
@@ -508,7 +508,7 @@ const TaskAssignTable = () => {
         ? [
             {
               title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Actions</div>,
-              width: 'max-content', // Set the column width to adjust to fit widest content
+              width: 'max-content', 
               dataIndex: 'employeeActions',
               key: 'employeeActions',
               render: (_: any, record: any) => (
@@ -537,7 +537,7 @@ const TaskAssignTable = () => {
         ? [
             {
               title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Review</div>,
-              width: 'max-content', // Set the column width to adjust to fit widest content
+              width: 'max-content', 
               dataIndex: 'reviewActions',
               key: 'reviewActions',
               render: (_: any, record: any) => {
@@ -613,14 +613,14 @@ const TaskAssignTable = () => {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
         dataIndex: 'slNo',
         key: 'slNo',
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         fixed: 'left',
         render: (text, record, index) => index + 1,
       },
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Employee</div>,
         dataIndex: 'employeeName',
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         key: 'employeeName',
         fixed: 'left',
         render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
@@ -628,7 +628,7 @@ const TaskAssignTable = () => {
       {
         title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Grade</div>,
         dataIndex: 'grade',
-        width: 'max-content', // Set the column width to adjust to fit widest content
+        width: 'max-content',  
         key: 'grade',
         fixed: 'left',
         render: (text: string) => <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</div>,
@@ -761,7 +761,6 @@ const TaskAssignTable = () => {
                       <Table
                           columns={innerColumns} 
                           dataSource={filteredDataSource} 
-                        // pagination={true}
                       />
                     )}
                   </div>
@@ -880,7 +879,7 @@ const TaskAssignTable = () => {
                                         borderRadius: "4px",
                                         margin: "0px",
                                     }}
-                                    value={values.members} // Control the value based on Formik values
+                                    value={values.members}
                                     onChange={(value, option) => {
                                         setFieldValue("members", value);
                                         console.log("members-v", value);
@@ -925,16 +924,16 @@ const TaskAssignTable = () => {
                                     }}
                                     value={values.approvalGrade}
                                     onChange={(value, option) => {
-                                      setFieldValue("approvalGrade", value); // Update "workLocation" field value
+                                      setFieldValue("approvalGrade", value); 
                                     }}
                                     onBlur={() => {
-                                      setFieldTouched("approvalGrade", true); // Mark "workLocation" field as touched
+                                      setFieldTouched("approvalGrade", true);
                                     }}
                                   >
                                     <Select.Option value="" disabled>
                                       Select the Grade
                                     </Select.Option>
-                                    {grade.map((option, index) => (  // Use 'index' as the key
+                                    {grade.map((option, index) => ( 
                                       <Option key={index} value={option}>
                                         {option}
                                       </Option>
@@ -945,7 +944,7 @@ const TaskAssignTable = () => {
                                       type="danger"
                                       style={{ wordBreak: "break-word", textAlign: "left" }}
                                     >
-                                      <ErrorMessage name="approvalGrade" /> {/* Display error message if any */}
+                                      <ErrorMessage name="approvalGrade" /> 
                                     </Typography.Text>
                                   </div>
                               </Form.Item>
