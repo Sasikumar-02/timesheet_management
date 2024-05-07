@@ -1153,9 +1153,9 @@ const handleManagerAssignedTask=async(value:string)=>{
                       <Form.Item>
                         <Button
                           type="primary"
+                          id='submit-addtask'
                           htmlType="submit"
                           style={{ width: "100%", height: "41px" , marginLeft:'10px', cursor: (selectedKeysToHide.includes(values.date))  ? 'not-allowed' : 'pointer'}} //|| Object.keys(errors).length > 0
-                          className="Button"
                           disabled={isSubmitting || selectedKeysToHide.includes(values.date) } //|| Object.keys(errors).length > 0 Disable if submitting, date is in selectedKeysToHide, or there are form errors
                           title={selectedKeysToHide.includes(values.date) ? 'Approved date should not have the access to add the task' :  ''} //Object.keys(errors).length > 0 ? 'Kindly fill all the required fields':
                         >
