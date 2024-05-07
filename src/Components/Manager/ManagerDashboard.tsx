@@ -85,8 +85,6 @@ const ManagerDashboard = () => {
     const [searchText, setSearchText] = useState("");
   const [taskRequestedOn, setTaskRequestedOn] = useState<TaskRequestedOn>({});
   const [approveTaskRequestedOn, setApproveTaskRequestedOn] = useState<TaskRequestedOn>({});
-  const [workFromHomeCount, setWorkFromHomeCount] = useState(0);
-  const [workFromOfficeCount, setWorkFromOfficeCount] = useState(0);
   const [monthCounts, setMonthCounts]= useState({
     acceptedCount:0,
     pendingCount: 0,
@@ -115,14 +113,15 @@ const ManagerDashboard = () => {
           try{
               const response = await api.get('/api/v1/admin/employee-list')
               const data = response?.data?.response?.data;
-
-              console.log('Fetched data:', data);
-              
               const employee = data.filter((emp: any) => emp.userId === userId).map((emp:any)=>emp?.firstName);
               setUserName(employee);
           }
-          catch(err){
-              throw err;
+          catch(error:any){
+              //throw error;
+              notification.error({
+                message:error?.response?.data?.action,
+                description: error?.response?.data?.message
+              })
           }
           
       }
@@ -222,12 +221,11 @@ const pieData = {
 
 
 // const chartSeries = Object.values(doughChartData);
-//console.log("data", chartSeries, chartOptions);
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; 
 
 useEffect(() => {
-  const monthName = currentMonth.format('MMMM'); // Get full month name (e.g., "April")
-  const year = currentMonth.format('YYYY'); // Get year (e.g., "2024")
+  const monthName = currentMonth.format('MMMM'); 
+  const year = currentMonth.format('YYYY'); 
 
   fetchMonthlyReport(monthName, year);
   fetchPieReport(monthName, year);
@@ -249,10 +247,13 @@ const fetchMonthlyReport = async (month:any, year:any) => {
       pendingCount: responseData?.pendingCount,
       rejectedCount: responseData?.rejectedCount
     };
-    console.log("response-new", countsObject);
     setMonthCounts(countsObject);
-  } catch (error) {
-    throw error;
+  } catch (error:any) {
+    //throw error;
+    notification.error({
+      message:error?.response?.data?.action,
+      description: error?.response?.data?.message
+    })
   }
 };
 
@@ -265,11 +266,14 @@ const fetchPieReport=async(month:any, year:any)=>{
           
       } 
   })
-  console.log("response-pie", response?.data?.response?.data?.categoryPercentages);
   setPieChartData(response?.data?.response?.data?.categoryPercentages);
   }
-  catch(err){
-      throw err;
+  catch(error:any){
+      //throw error;
+      notification.error({
+        message:error?.response?.data?.action,
+        description: error?.response?.data?.message
+      })
   }  
 }
 
@@ -281,11 +285,14 @@ const fetchDoughReport=async(month:any, year:any)=>{
           year
       } 
   })
-  console.log("response-dough", response?.data?.response?.data);
   setDoughChartData(response?.data?.response?.data?.locationPercentages);
   }
-  catch(err){
-      throw err;
+  catch(error:any){
+      //throw error;
+      notification.error({
+        message:error?.response?.data?.action,
+        description: error?.response?.data?.message
+      })
   }  
 }
 
@@ -457,13 +464,10 @@ const fetchDoughReport=async(month:any, year:any)=>{
     const handleFilterChange = (value:any) => {
         setFilterOption(value);
         if (value === 'Month') {
-            // Calculate and set the start of the current month
             setCurrentMonth(dayjs().startOf('month'));
         } else if (value === 'Week') {
-            // Calculate and set the start of the current week
             setCurrentWeek(dayjs().startOf('week'));
         } else {
-            // For 'Date', simply use the current date
             setCurrentDate(dayjs());
         }
     };
@@ -477,7 +481,6 @@ const fetchDoughReport=async(month:any, year:any)=>{
         } else if (filterOption === 'Month') {
             month = dayjs(currentMonth).format('MMMM');
         } else {
-            // Default to current month
             month = dayjs().format('MMMM');
         }
         return month;
@@ -492,7 +495,6 @@ const fetchDoughReport=async(month:any, year:any)=>{
         } else if (filterOption === 'Month') {
             year = dayjs(currentMonth).format('YYYY');
         } else {
-            // Default to current year
             year = dayjs().format('YYYY');
         }
         return year;
@@ -500,16 +502,13 @@ const fetchDoughReport=async(month:any, year:any)=>{
         
     const handleLeftArrowClick = () => {
         if (filterOption === 'Date') {
-          console.log("handleLeftArrowClick -prev", currentDate);
           const previousDate = currentDate.subtract(1, 'day');
-          console.log("handleLeftArrowClick previousDate",previousDate)
           setCurrentDate(previousDate);
     
         } else if (filterOption === 'Week') {
           const previousWeekStart = currentWeek.subtract(1, 'week').startOf('week');
           const previousWeekEnd = currentWeek.subtract(1, 'week').endOf('week');
           setCurrentWeek(previousWeekStart);
-          console.log("previousWeek",previousWeekStart)
         } else if (filterOption === 'Month') {
           const previousMonthStart = currentMonth.subtract(1, 'month').startOf('month');
           const previousMonthEnd = currentMonth.subtract(1, 'month').endOf('month');
@@ -581,12 +580,6 @@ const fetchDoughReport=async(month:any, year:any)=>{
         // Store updated data in localStorage
         localStorage.setItem('taskRequestedOn', JSON.stringify(updatedTaskRequestedOn));
         localStorage.setItem('approveTaskRequestedOn', JSON.stringify(updatedApproveTaskRequestedOn));
-    };
-  
-    // Function to handle rejection
-    const handleReject = (userId: string, month: string, date: string) => {
-      // Implement logic to mark the task as rejected
-      console.log(`Rejected: UserId-${userId}, Month-${month}, Date-${date}`);
     }; 
 
     // const handleClick = (title: string) => {
@@ -729,15 +722,12 @@ const fetchDoughReport=async(month:any, year:any)=>{
       const handleButtonClick = (currentMonth: any) => {
         const formattedMonthYear = dayjs(currentMonth).format('MMMM YYYY');
         const [month, year] = formattedMonthYear.split(' ');
-        console.log("month-year", month, year);
         navigate(`/manager/approvalrequest?month=${month}&year=${year}`);
     };
     
      
     return (
       <>
-          {/* <h1>Manager</h1> */}
-
       <div style={{margin:'30px 0px 0px 0px'}}>
               <Card className="main-card">
               <div style={{ display: "flex", height:'55px' }}>

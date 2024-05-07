@@ -102,8 +102,12 @@ const EmployeeTaskTable = () => {
 
                     // Update the task table state with the new data
                     setTaskTable(updatedTaskTable);
-                } catch (error) {
-                    throw error;
+                } catch (error:any) {
+                    //throw error;
+                    notification.error({
+                      message:error?.response?.data?.action,
+                      description: error?.response?.data?.message
+                    })
                 }
             };
         

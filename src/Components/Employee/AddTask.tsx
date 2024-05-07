@@ -189,8 +189,12 @@ useEffect(() => {
       try {
           const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
           console.log("fetchTaskManager", response.data.response.data);
-      } catch (error) {
-          throw error;
+      } catch (error:any) {
+          //throw error;
+          notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
       }
   };
 
@@ -282,9 +286,6 @@ const handleManagerAssignedTask=async(value:string)=>{
     const fetchData = async () => {
       try {
         const response = await api.get(`/api/v1/admin/employee-list`);
-        if (response.status !== 200) {
-          throw new Error('Failed to fetch data');
-        }
         const data = response?.data?.response?.data;
   
         console.log('Fetched data:', data);
@@ -300,7 +301,11 @@ const handleManagerAssignedTask=async(value:string)=>{
           console.log("reportingManager",reportingManager);
           setReportingTo([reportingManager]);
         }
-      } catch (error) {
+      } catch (error:any) {
+        notification.error({
+          message:error?.response?.data?.action,
+          description: error?.response?.data?.message
+        })
         console.error('Error fetching data:', error);
       }
     };
@@ -532,6 +537,35 @@ const handleManagerAssignedTask=async(value:string)=>{
               reportingTo: values?.reportingTo,
           });
           console.log("response-handleformsubmit", response);
+          if (response.status === 200) {
+            // Handle successful response
+            setRefetch((prevState: any) =>  !prevState);
+            console.log('Task added/edited successfully:', response.data);
+            notification.success({
+              message:response?.data?.response?.action,
+              description:response?.data?.message,
+            })
+            // Handle any other necessary operations after successful submission
+            // For example, resetting form fields, updating state, etc.
+            setIsEdited(false);
+            resetForm();
+            setInitialValue({
+                timeSheetId: 0,
+                date: values?.date, // Update date field with submitted value
+                workLocation: '',
+                task: '',
+                project: '',
+                managerAssignedTask:'',
+                startTime: '',
+                endTime: '',
+                totalHours: '',
+                description: '',
+                reportingTo: '', 
+            })
+          } else {
+            // Handle other response statuses
+            console.error('Failed to add/edit task. Status:', response.status);
+          }
         }
       } else {
         console.log("inside here");
@@ -567,39 +601,40 @@ const handleManagerAssignedTask=async(value:string)=>{
         });
         console.log("response-handleformsubmit", response);
         }
+        if (response.status === 200) {
+          // Handle successful response
+          setRefetch((prevState: any) =>  !prevState);
+          console.log('Task added/edited successfully:', response.data);
+          notification.success({
+            message:response?.data?.response?.action,
+            description:response?.data?.message,
+          })
+          // Handle any other necessary operations after successful submission
+          // For example, resetting form fields, updating state, etc.
+          setIsEdited(false);
+          resetForm();
+          setInitialValue({
+              timeSheetId: 0,
+              date: values?.date, // Update date field with submitted value
+              workLocation: '',
+              task: '',
+              project: '',
+              managerAssignedTask:'',
+              startTime: '',
+              endTime: '',
+              totalHours: '',
+              description: '',
+              reportingTo: '', 
+          })
+        } else {
+          // Handle other response statuses
+          console.error('Failed to add/edit task. Status:', response.status);
+        }
       }
       console.log("handleformsubmit 1");
       console.log("response-handleformsubmit", response.data);
       // Check the response status
-      if (response.status === 200) {
-        // Handle successful response
-        setRefetch((prevState: any) =>  !prevState);
-        console.log('Task added/edited successfully:', response.data);
-        notification.success({
-          message:response?.data?.response?.action,
-          description:response?.data?.message,
-        })
-        // Handle any other necessary operations after successful submission
-        // For example, resetting form fields, updating state, etc.
-        setIsEdited(false);
-        resetForm();
-        setInitialValue({
-            timeSheetId: 0,
-            date: values?.date, // Update date field with submitted value
-            workLocation: '',
-            task: '',
-            project: '',
-            managerAssignedTask:'',
-            startTime: '',
-            endTime: '',
-            totalHours: '',
-            description: '',
-            reportingTo: '', 
-        })
-      } else {
-        // Handle other response statuses
-        console.error('Failed to add/edit task. Status:', response.status);
-      }
+      
     } catch (error:any) {
       // Handle errors
       setSubmitting(false);

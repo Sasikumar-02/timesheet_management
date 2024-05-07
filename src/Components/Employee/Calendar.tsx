@@ -116,8 +116,12 @@ const Calendar = () => {
       
             console.log("events", events);
             setEvents(events);
-        } catch (err) {
-            throw err;
+        } catch (error:any) {
+           // throw error;
+           notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }
     };
 
@@ -201,6 +205,7 @@ const Calendar = () => {
   };
 
   const handleEditTask = async (record: any) => {
+    console.log("handleEditTask-record", record);
     navigate('/employee/addtask', {state:{record}});
   };
 

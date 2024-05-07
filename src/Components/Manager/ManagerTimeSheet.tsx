@@ -21,7 +21,6 @@ import {Table} from 'antd';
 import { ColumnsType } from "antd/es/table";
 import ApprovalRequest from '../Manager/ApprovalRequest';
 import { EditOutlined, DeleteOutlined,CloseCircleOutlined,LeftOutlined, RightOutlined } from '@ant-design/icons';
-// import { RecentRejected, SelectedKeys, RejectedKeys } from '../Manager/MonthTasks';
 import asset from '../../assets/images/asset.svg';
 import type { ThemeConfig } from "antd";
 import TextArea from 'antd/es/input/TextArea';
@@ -29,7 +28,6 @@ import { values } from 'lodash';
 import moment from 'moment';
 import { DecodedToken } from '../Employee/EmployeeTaskStatus';
 import { jwtDecode } from 'jwt-decode';
-// Declare setFieldValue outside of Formik
 let setFieldValue: Function;
 export interface DateTask{
   key: string;
@@ -38,11 +36,11 @@ export interface DateTask{
 }
 
 export interface RequestedOn {
-  [key: string]: string[]; // Each key represents a month (e.g., "February 2024") with an array of dates
+  [key: string]: string[]; 
 }
 
 export interface TaskRequestedOn {
-  [userId: string]: RequestedOn; // Each key represents a month (e.g., "February 2024") with an array of dates
+  [userId: string]: RequestedOn; 
 }
 
 type FieldType={
@@ -104,19 +102,17 @@ const AddTask: React.FC = () => {
   const decoded = jwtDecode(token || "") as DecodedToken;
   const userId = decoded.UserId;
   const [reportingTo, setReportingTo] = useState<UserManager[]>([]);
-  const [reportingToID, setReportingToID] = useState('1234');
+  const [reportingToID, setReportingToID] = useState('');
   const [startTime, setStartTime]= useState('');
   const [endTime, setEndTime] = useState('');
   const [totalHours, setTotalHours]=useState('');
   const [userProject, setProjectUser]= useState([]);
   const [editTaskId, setEditTaskId]= useState<any>();
-  const { Option } = Select; // Destructure the Option component from Select
+  const { Option } = Select; 
   const navigate = useNavigate();
   const {confirm}= Modal;
   const location = useLocation();
-  // Define a state variable to hold the currently edited task
-  //const [editedTask, setEditedTask] = useState<Task | null>(null);
-  const { formattedDate } = location.state || { formattedDate: dayjs() }; // Access formattedDate from location.state
+  const { formattedDate } = location.state || { formattedDate: dayjs() }; 
   const [deletedTask, setDeletedTask] = useState(false);
   const [formWidth, setFormWidth] = useState(800);
   const [currentDate, setCurrentDate] = useState(dayjs(formattedDate));
@@ -139,12 +135,10 @@ const AddTask: React.FC = () => {
   const [deletedTaskIdx, setDeletedTaskIdx] = useState<number | null>(null);
   const [taskList, setTaskList] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
-  //const [reportingOptions, setReportingOptions]= useState<any>('');
   const reportingOptions = ['ManagerA', 'ManagerB', 'ManagerC'];
   const taskOptions = ['Project','Learning','Training','Meeting', 'Interview'];
   const [filterOption, setFilterOption] = useState('Date');
   const [isEdited, setIsEdited]= useState<boolean>(false);
-  // State to manage the search input
   const [searchInput, setSearchInput] = useState('');
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const [selectedKeysToHide, setSelectedKeysToHide]=useState<string[]>([]);
@@ -215,9 +209,6 @@ const AddTask: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/api/v1/admin/employee-list`);
-        if (response?.status !== 200) {
-          throw new Error('Failed to fetch data');
-        }
         const data = response?.data?.response?.data;
   
         console.log('Fetched data:', data);
@@ -233,8 +224,12 @@ const AddTask: React.FC = () => {
           console.log("reportingManager",reportingManager);
           setReportingTo([reportingManager]);
         }
-      } catch (error) {
+      } catch (error:any) {
         console.error('Error fetching data:', error);
+        notification.error({
+          message:error?.response?.data?.action,
+          description: error?.response?.data?.message
+        })
       }
     };
   

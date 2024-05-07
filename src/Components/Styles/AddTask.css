@@ -160,14 +160,19 @@
   gap: 10px;
   border-radius: 4px;
   background: #0B4266; 
-  /* #0B42664D */
   border: none;
   cursor: pointer;
   color: white;
 }
 
+#cancel-new:hover{
+  background:#E7ECF0;
+  color:#0B4266
+}
+
 #cancel-addtask:hover {
   box-shadow: 0 0 11px rgba(33,33,33,.2); 
+ 
 }
 
 /* .ant-input .css-dev-only-do-not-override-1qhpsh8 .ant-input-outlined{
@@ -332,6 +337,12 @@
   cursor: pointer;
   color: #ffffff; 
 }
+
+#submit-overall:hover{
+  background:#E7ECF0;
+  color:#0B4266
+}
+
 
 /* .ant-select-selector{
     margin-top: 10px;

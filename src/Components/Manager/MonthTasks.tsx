@@ -27,12 +27,10 @@ import '../Styles/AddTask.css';
 import '../Styles/CreateUser.css'
 import type { ThemeConfig } from "antd";
 import Chart from 'react-apexcharts';
-//import { Chart } from 'chart.js/auto';
 import { ApexOptions } from 'apexcharts';
 import { theme } from "antd";
 import { DateTask } from '../Employee/AddTask';
 import { saveAs } from 'file-saver';
-// import * as XLSX from 'xlsx';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import { PDFDocument, rgb } from 'pdf-lib';
@@ -119,18 +117,9 @@ const MonthTasks: React.FC = () => {
       const [placeholderValues, setPlaceholderValues] = useState({
         status: "Filter by Role",
       });
-    //const [chartData, setChartData] = useState<{ labels: string[]; series: number[] }>({ labels: [], series: [] }); // Initialize chartData with appropriate types
     const [chartData, setChartData] = useState<{ name: string, value: number }[]>([]);
-    console.log("received data",uniqueRequestId, employeeId, formattedMonth)
     const [modalVisible, setModalVisible] = useState(false);
     const [clickedRecord, setClickedRecord] = useState<any>();
-    // const [chartOptions, setChartOptions] = useState<ChartOptions>({
-    //     labels: [],
-    //     colors: [],
-    //     chart: {
-    //         type: 'pie', // or any other default chart type
-    //     },
-    // });
     const [chartImages, setChartImages] = useState<ChartImage[]>([]);
     const [chartSeries, setChartSeries] = useState<number[]>([]);
     const [monthTasks, setMonthTasks] = useState<any[]>([]);
@@ -148,26 +137,25 @@ const MonthTasks: React.FC = () => {
       
         return null;
       };
-console.log("statuses",statuses);
 const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
     plugins: {
         legend: {
-          position: 'right' as 'right', // Display the legend at the right side
-          align: 'center' as 'center', // Align the legend to the start of the position (right side)
+          position: 'right' as 'right', 
+          align: 'center' as 'center', 
         },
         tooltip: { 
             enabled: true, 
             backgroundColor: "white",
             titleColor: "#042a0b", 
             bodyColor: "#042a0b", 
-            titleFont: { weight: 'bold' as 'bold' }, // Set weight to 'bold' explicitly 
+            titleFont: { weight: 'bold' as 'bold' },
             padding: 10, 
             cornerRadius: 10, 
             borderColor: "#042a0b", 
             borderWidth: 2, 
-            xAlign: "left" as "left", // Set xAlign to "left"
+            xAlign: "left" as "left", 
         },
       },
     width: 200,
@@ -198,7 +186,6 @@ const chartOptions = {
 
   useEffect(() => {
     const [monthName, year] = formattedMonth.split(/\s+/);
-    console.log("monthName, year",monthName, year);
     fetchPieReport(monthName, year, employeeId);
     fetchDoughReport(monthName, year, employeeId);
 }, [formattedMonth, employeeId, monthTasks]);
@@ -214,11 +201,14 @@ const fetchPieReport=async(month:any, year:any, employeeId:any)=>{
             employeeId
         } 
     })
-    console.log("response-pie", response?.data?.response?.data?.categoryPercentages);
     setPieChartData(response?.data?.response?.data?.categoryPercentages);
     }
-    catch(err){
-        throw err;
+    catch(error:any){
+       // throw error;
+       notification.error({
+        message:error?.response?.data?.action,
+        description: error?.response?.data?.message
+      })
     }  
 }
 
@@ -231,15 +221,17 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             employeeId
         } 
     })
-    console.log("response-dough", response?.data?.response?.data);
     setDoughChartData(response?.data?.response?.data?.locationPercentages);
     }
-    catch(err){
-        throw err;
+    catch(error:any){
+        //throw error;
+        notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
     }  
 }
     useEffect(() => {
-        console.log("uniqueRequestId", uniqueRequestId);
         if (uniqueRequestId && Array.isArray(uniqueRequestId)) {
           const fetchData = async () => {      
             try {
@@ -252,18 +244,13 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                     taskDelayed.push(task?.date);
                 }
             })
-            console.log("taskDelayed",taskDelayed);
             setIsDelayed(taskDelayed);
-              console.log('response-new', response?.data?.response?.data);
               setMonthTasks(response?.data?.response?.data);
-              // Process response data here
             } catch (error:any) {
-              console.error("Error fetching data:", error);
               notification.error({
                 message:error?.response?.data?.action,
                 description: error?.response?.data?.message
               })
-              // Handle error here, such as displaying an error message to the user
             }
           };
           
@@ -300,30 +287,22 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     // };
    
     
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; // Add more colors as needed
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']; 
     
     const exportCharts = (): Promise<{ pieChartImage: string; lineChartImage: string }> => {
         return new Promise((resolve, reject) => {
-            // Get chart containers
             const pieChartContainer = document.getElementById('pie-chart-container') as HTMLCanvasElement;
             const lineChartContainer = document.getElementById('line-chart-container') as HTMLCanvasElement;
-    
-            // Create promises for each chart export
-            const pieChartPromise = html2canvas(pieChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
-            const lineChartPromise = html2canvas(lineChartContainer, { backgroundColor: '#ffffff' }); // Set background color to white
-    
-            // Wait for both promises to resolve
+            const pieChartPromise = html2canvas(pieChartContainer, { backgroundColor: '#ffffff' }); 
+            const lineChartPromise = html2canvas(lineChartContainer, { backgroundColor: '#ffffff' }); 
             Promise.all([pieChartPromise, lineChartPromise])
                 .then(([pieCanvas, lineCanvas]) => {
-                    // Convert canvas elements to PNG images
                     const pieChartImage = pieCanvas.toDataURL('image/png');
                     const lineChartImage = lineCanvas.toDataURL('image/png');
-    
-                    // Resolve with the images
                     resolve({ pieChartImage, lineChartImage });
                 })
                 .catch(error => {
-                    reject(error); // Reject if there's an error exporting the charts
+                    reject(error); 
                 });
         });
     };    
@@ -346,13 +325,10 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
         setInterviewTotalHours(interviewTotalHoursArray);
         setOverallTotalHours(overallTotalHoursArray);
         setExtraTotalHours(extraTotalHoursArray);
-    
-        console.log("handleRowSelection", selectedRowKeys, selectedRows);
     };
     
 
     const handleRowClick = (record: any) => {
-        console.log("handleRowClick",record);
         const uniqueRequestId = record.uniqueRequestId;
         fetchDataByUniqueId(uniqueRequestId);
         setModalVisible(true);
@@ -360,53 +336,50 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     const fetchOverallDataByUniqueId = async () => {
         try {
             const newData: any[] = [];
-            // Use Promise.all to await all API calls concurrently
             await Promise.all(
                 uniqueRequestId.map(async (id: any) => {
                     const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${id}`);
                     newData.push(response.data.response.data);
                 })
             );
-            // Update the state with the new data
             setOverallData(newData);
-        } catch (err) {
-            console.error('Error fetching overall data:', err);
+        } catch (error:any) {
+           // throw error;
+           notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }
     };
 
     useEffect(() => {
         fetchOverallDataByUniqueId();
-    }, [monthTasks]); // Empty dependency array means it only runs once, similar to componentDidMount
+    }, [monthTasks]); 
 
     const fetchDataByUniqueId = async (uniqueRequestId: string) => {
         try {
             const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
-            console.log('Response data:', response?.data);
             setClickedRecord(response?.data?.response?.data);
-            // Process response data if needed
         } catch (error) {
             console.error('Error fetching data by unique ID:', error);
-            // Handle error here
         }
     };
 
     const fetchTaskByUniqueId = async (uniqueRequestIds:any[]) => {
-        console.log('exportToExcel - 1', uniqueRequestIds);
         try {
-            // Map each uniqueRequestId to a promise that fetches its corresponding tasks
-            console.log('exportToExcel - 2')
             const tasksPromises = uniqueRequestIds.map(async (uniqueRequestId) => {
                 const response = await api.get(`/api/v1/timeSheet/fetch-tasks-by-uniqueId?uniqueId=${uniqueRequestId}`);
                 return response?.data?.response?.data;
             });
-    
-            // Wait for all promises to resolve
             const tasks = await Promise.all(tasksPromises);
-            console.log("exportToExcel -tasks", tasks);
             return tasks;
         } catch (error) {
             console.error('Error fetching data by unique IDs:', error);
-            throw error; // Rethrow the error for handling in the caller function
+            throw error;
+        //    notification.error({
+        //     message:error?.response?.data?.action,
+        //     description: error?.response?.data?.message
+          //}) 
         }
     };
 
@@ -416,7 +389,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     }, [monthTasks]);
 
     const preparePieChartImage = () => {
-        // Your pie chart logic to render on a canvas
         const chartCanvas = document.getElementById('pie-chart-container') as HTMLCanvasElement;
         if (chartCanvas) {
             html2canvas(chartCanvas).then(canvas => {
@@ -427,7 +399,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     };
 
     const prepareLineChartImage = () => {
-        // Your line chart logic to render on a canvas
         const chartCanvas = document.getElementById('line-chart-container') as HTMLCanvasElement;
         if (chartCanvas) {
             html2canvas(chartCanvas).then(canvas => {
@@ -446,7 +417,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     
       const handleCancel = () => {
         setCommentVisible(false);
-        setComments(''); // Clear comments when modal is canceled
+        setComments(''); 
       };
     
       const handleInputChange = (e:any) => {
@@ -458,7 +429,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           const payload = {
             approvalStatus: "Rejected",
             approvalComments: comments,
-            uniqueRequestId: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+            uniqueRequestId: selectedRows, 
             learningTotalHours:learningTotalHours,
             meetingTotalHours: meetingTotalHours,
             projectTotalHours: projectTotalHours,
@@ -467,37 +438,29 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             overallTotalHours:overallTotalHours,
             extraTotalHours: extraTotalHours
           };
-    
-          // Send the payload to the API
-          const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
-          
-          console.log(response?.data); // Optionally handle the response data
+          const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload); 
           notification.success({
             message:response?.data?.response?.action,
             description:response?.data?.message,
           })
-          // Reset the modal state
           setStatuses(prev=>!prev);
           setCommentVisible(false);
           setComments('');
           setSelectedRows([]);
         } catch (error:any) {
-          console.error('Error occurred:', error);
           notification.error({
             message:error?.response?.data?.response?.action,
             description: error?.response?.data?.message
           })
-          // Optionally handle errors
         }
       };
 
       const handleApprove = async () => {
         try {
             if(selectedRows.length>0){
-                console.log("handleApprove-selectedRows", selectedRows);
                 const payload = {
                     approvalStatus: "Approved",
-                    uniqueRequestId: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+                    uniqueRequestId: selectedRows, 
                     learningTotalHours:learningTotalHours,
                     meetingTotalHours: meetingTotalHours,
                     projectTotalHours: projectTotalHours,
@@ -514,34 +477,25 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                   })
                 setStatuses(prev=>!prev);
                 setSelectedRows([]);
-                console.log("handleApprove",response?.data); // Optionally handle the response data
+                console.log("handleApprove",response?.data); 
             }
         } catch (error:any) {
             notification.error({
                 message:error?.response?.data?.response?.action,
                 description: error?.response?.data?.message
               })
-          console.error('Error occurred:', error);
-          // Optionally handle errors
         }
       };
-    
-    // Function to convert date to "Month Year" format
     function formatDateToMonthYear(dateString: any) {
         const [year, month] = dateString.split('-');
-        const date = new Date(year, month - 1); // Months are zero-based in JavaScript
+        const date = new Date(year, month - 1);
         const monthName = date.toLocaleString('default', { month: 'long' });
         return `${monthName} ${year}`;
     }
-
-
     const exportToExcel = async () => {
         try {
             let imgId1: number;
             let imgId2: number;
-            console.log("exportToExcel - selectedRows", selectedRows);
-            console.log("exportToExcel - monthTasks", monthTasks);
-            
             let dataToExport: any[] = [];
             if (selectedRows?.length > 0) {
                 console.log("sleectedRows", selectedRows);
@@ -549,79 +503,55 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                     .filter(row => selectedRows.includes(row.uniqueRequestId))
                     .map(row => row.uniqueRequestId);
                 const fetchedData = await fetchTaskByUniqueId(ids);
-            
-                // Flatten the fetchedData array of arrays
                 dataToExport = fetchedData.flat();
             } else {
-                // If no rows are selected, export all monthTasks data
                 console.log("sleectedRows -1", overallData)
                 dataToExport = overallData.flat();
             }
-            // Map over dataToExport to extract values for Excel
             const data = dataToExport.map((rowData: any) => {
                 return [
-                    rowData.date || '',          // Date
-                    rowData.workLocation || '',  // Work Location
-                    rowData.task || '',          // Task
-                    rowData.project || '',       // Title
-                    rowData.startTime || '',     // Start Time
-                    rowData.endTime || '',       // End Time
-                    rowData.totalHours || '',    // Shift Hours
-                    rowData.description || '',   // Description
-                    rowData.reportingTo || ''   // Reporting To
+                    rowData.date || '',         
+                    rowData.workLocation || '',  
+                    rowData.task || '',        
+                    rowData.project || '',      
+                    rowData.startTime || '',    
+                    rowData.endTime || '',      
+                    rowData.totalHours || '',  
+                    rowData.description || '', 
+                    rowData.reportingTo || ''  
                 ];
-            });
-            console.log("exportToExcel - dataToExport", dataToExport);
-                
+            });      
             const header = ['Date', 'Work Location', 'Task', 'Project', 'Start Time', 'End Time', 'Shift Hours', 'Description', 'Reporting To'];         
-    
-            // Flatten the array
-            console.log("exportToExcel- data", data);
-            
-            // Create a workbook and add a worksheet
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Sheet1');
-    
             worksheet.views = [{
                 showGridLines: false
             }];
-    
-            // Add Timesheet row with background color, bold, and 24px font size
             const timesheetRow = worksheet.addRow(['TimeSheet']);
             timesheetRow.font = { bold: true, size: 24, color: { argb: 'FFFFFF' } };
             timesheetRow.fill = {
                 type: 'pattern',
                 pattern: 'solid',
-                fgColor: { argb: '0B4266' } // Blue color
+                fgColor: { argb: '0B4266' } 
             };
-    
-            // Add Name and Month rows with specified values
             const nameRow = worksheet.addRow([]);
             nameRow.getCell(1).value = 'Name:';
-            nameRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+            nameRow.getCell(1).font = { bold: true }; 
             nameRow.getCell(2).value = employeeName;
             const userIdRow = worksheet.addRow([]);
             userIdRow.getCell(1).value = 'UserID:';
-            userIdRow.getCell(1).font = { bold: true }; // Making "Name:" bold
+            userIdRow.getCell(1).font = { bold: true }; 
             userIdRow.getCell(2).value = employeeId;
     
             const monthRow = worksheet.addRow([]);
             monthRow.getCell(1).value = 'Month:';
-            monthRow.getCell(1).font = { bold: true }; // Making "Month:" bold
-            monthRow.getCell(2).value = formattedMonth; // Dynamically convert date to "Month Year" format
-                
-            // Add empty rows
+            monthRow.getCell(1).font = { bold: true }; 
+            monthRow.getCell(2).value = formattedMonth; 
             for (let i = 0; i < 1; i++) {
                 worksheet.addRow([]);
             }
-    
-            // Call exportCharts to get the images
             const { pieChartImage, lineChartImage } = await exportCharts();
-    
-            // Calculate the current row number
             const currentRow = worksheet.rowCount + 2;
-    
-            // Add the images to the worksheet
             const pieChartImageId = workbook.addImage({
                 base64: pieChartImage.replace(/^data:image\/png;base64,/, ''),
                 extension: 'png',
@@ -631,46 +561,32 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                 base64: lineChartImage.replace(/^data:image\/png;base64,/, ''),
                 extension: 'png',
             });
-    
-            //Add both images to the same row
             worksheet.addImage(pieChartImageId, {
-                tl: { col: 1, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-                br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, // Bottom-right cell
+                tl: { col: 1, row: currentRow } as ExcelJS.Anchor, 
+                br: { col: 4, row: currentRow + 13 }as ExcelJS.Anchor, 
             });
     
             worksheet.addImage(lineChartImageId, {
-                tl: { col: 5, row: currentRow } as ExcelJS.Anchor, // Top-left cell
-                br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, // Bottom-right cell
+                tl: { col: 5, row: currentRow } as ExcelJS.Anchor, 
+                br: { col: 8, row: currentRow + 13 } as ExcelJS.Anchor, 
             });
-            
-            // Add a row with horizontal gridline (6th row)
-            const gridlineRow = worksheet.addRow(Array(header.length).fill('')); // Add empty content for each column
+            const gridlineRow = worksheet.addRow(Array(header.length).fill('')); 
             gridlineRow.eachCell(cell => {
                 cell.border = {
-                    bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+                    bottom: { style: 'thin' } 
                 };
             });
-    
-            // Add header row with styles starting from 8th row
             const headerRow = worksheet.addRow(header);
-            headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Make the text bold and white
-    
-            // Set background color for header cells
+            headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; 
             headerRow.eachCell(cell => {
                 cell.fill = {
                     type: 'pattern',
                     pattern: 'solid',
-                    fgColor: { argb: '0B4266' } // Blue color
+                    fgColor: { argb: '0B4266' } 
                 };
             });
-
-            console.log("exportToExcel - Data to export:", data);
-
-            // Add data rows
             data?.forEach(rowData => {
-                console.log("exportToExcel - rowData", rowData);
                 const row = worksheet.addRow(rowData);
-                // Set border and text alignment for data rows
                 row.eachCell(cell => {
                     cell.border = {
                         top: { style: 'thin' },
@@ -678,36 +594,33 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                         bottom: { style: 'thin' },
                         right: { style: 'thin' }
                     };
-                    cell.alignment = { horizontal: 'left' }; // Align text to the left
+                    cell.alignment = { horizontal: 'left' }; 
                 });
             });
-    
-    
-            // Set column widths based on header length
             worksheet.columns?.forEach((column, index) => {
                 if (index < header.length) {
-                    column.width = 23; // Adjust width as needed
+                    column.width = 23; 
                 } else {
-                    column.hidden = true; // Hide columns beyond the header length
+                    column.hidden = true; 
                 }
             });
-    
-            // Add a row with horizontal gridline (6th row)
-            const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns?.length).fill('')); // Add empty content for each column
+            const gridlineRowEnd = worksheet.addRow(Array(worksheet.columns?.length).fill('')); 
             gridlineRowEnd.eachCell(cell => {
                 cell.border = {
-                    bottom: { style: 'thin' } // Add a thin bottom border to create a horizontal gridline
+                    bottom: { style: 'thin' } 
                 };
             });
-    
-            // Generate Excel file
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
             saveAs(blob, `user_details_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`);
             setSelectedRows([]);
     
-        } catch (error) {
-            console.error('Error exporting to Excel:', error);
+        } catch (error:any) {
+          //  throw error
+          notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }
     };
     
@@ -721,8 +634,12 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             } else {
                 message.warning('Please select rows to export.');
             }
-        } catch (error) {
-            console.error('Error exporting to Excel:', error);
+        } catch (error:any) {
+           // throw error
+           notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }
     };    
     const exportMenu = (
@@ -745,12 +662,9 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     };
 
     const hoursTimeToHoursMinutes = (decimalHours: string) => {
-        // Parse the decimal hours string
         const [hoursStr, minutesStr] = decimalHours.split(':');
         const hours = parseInt(hoursStr);
         const minutes = parseInt(minutesStr);
-    
-        // Return the formatted string
         if (hours === 0 && minutes === 0) {
             return '➖';
         }
@@ -758,7 +672,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
       };
 
       const handleClearFilter = () => {
-        setSelectedStatus(null); // Clear the selected status
+        setSelectedStatus(null); 
     };
 
   
@@ -796,7 +710,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Manager Assigned Task</div>,
             dataIndex: 'managerAssignedTotalHours',
             key: 'managerAssignedTotalHours',
-            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 console.log('record-managerAssignedTask', record)
@@ -811,7 +724,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Project</div>,
             dataIndex: 'projectTotalHours',
             key: 'projectTotalHours',
-            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 return (
@@ -825,7 +737,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Meeting</div>,
             dataIndex: 'meetingTotalHours',
             key: 'meetingTotalHours',
-            // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
@@ -839,7 +750,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Training</div>,
             dataIndex: 'trainingTotalHours',
             key: 'trainingTotalHours',
-            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 return (
@@ -853,7 +763,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Learning</div>,
             dataIndex: 'learningTotalHours',
             key: 'learningTotalHours',
-            // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
@@ -867,7 +776,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Interview</div>,
             dataIndex: 'interviewTotalHours',
             key: 'interviewTotalHours',
-            // width: '15%',
             fixed: 'left',
             render: (_, record) => {
                 return (
@@ -881,7 +789,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Total Hours</div>,
             dataIndex: 'overallTotalHours',
             key: 'overallTotalHours',
-            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 return (
@@ -895,7 +802,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Extra Hours</div>,
             dataIndex: 'extraHours',
             key: 'extraHours',
-            // width: '15%',
             fixed:'left',
             render: (_, record) => {
                 return (
@@ -909,14 +815,12 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Status</div>,
             dataIndex: 'taskStatus',
             key: 'taskStatus',
-            // width: '10%',
         },
     ];
 
     const innerColumn: ColumnsType<any> = [
         {
           title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>S.No</div>,
-        //   width: '132px',
           dataIndex: 'slNo',
           key: 'slNo',
           fixed: 'left',
@@ -948,7 +852,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
             dataIndex: 'managerTaskName',
             key: 'managerTaskName',
             fixed: 'left',
-            render: (text: string) => text ? text : '➖', // Display '➖' if the field is empty
+            render: (text: string) => text ? text : '➖', 
         },  
         {
           title: <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Date</div>,
@@ -1021,12 +925,8 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
           fixed: 'left',
         }
       ]
-
-    // JSX for modal content
     const modalContent = clickedRecord && (
         <Table
-            // className='addtask-table'
-            // style={{width:'1300px'}}
             columns={innerColumn as ColumnsType<any>}
             dataSource={clickedRecord}
             pagination={false}
@@ -1050,7 +950,6 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                                     <div>
                                         <strong style={{fontSize:'20px'}}>{employeeName}</strong>
                                     </div>
-                                    {/* Displaying the userId */}
                                     <div style={{textAlign:'left', fontSize:'16px'}}>{employeeId}</div>
                                     </div>
                                 </Space>
@@ -1134,14 +1033,13 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                             }}
                             onRow={(record: any) => ({
                                 onClick: () => handleRowClick(record),
-                                // onMouseEnter: () => handleRowHover(record),
-                                // onMouseLeave: handleRowLeave,
+                                
                             })}
                             columns={column} 
                             className='table-striped-rows approvalrequests-table'
                             dataSource={monthTasks.filter(task => selectedStatus ? task.taskStatus === selectedStatus : true)}
                             pagination={false}
-                            rowKey="uniqueRequestId" // Set the rowKey prop to 'uniqueRequestId'
+                            rowKey="uniqueRequestId" 
                         />
                         <Modal
                             title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
@@ -1149,9 +1047,7 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
                             onCancel={() => setModalVisible(false)}
                             className='monthTasks'
                             footer={null}
-                            // width={1300}
-                            // bodyStyle={{ width: '1530px', marginLeft: '-250px' }} // Apply styles directly to the bod
-                            >
+                        >
                             {modalContent}
                         </Modal>
 

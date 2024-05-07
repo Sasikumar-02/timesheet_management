@@ -172,8 +172,12 @@ const EmployeeTaskStatus = () => {
           };
           console.log("response-new", countsObject);
           setMonthCounts(countsObject);
-        } catch (error) {
-          throw error;
+        } catch (error:any) {
+          //throw error;
+          notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }
       };
 
@@ -188,8 +192,12 @@ const EmployeeTaskStatus = () => {
                 const employee = data.filter((emp: any) => emp.userId === userId).map((emp:any)=>emp?.firstName);
                 setUserName(employee);
             }
-            catch(err){
-                throw err;
+            catch(error:any){
+               // throw error;
+               notification.error({
+                message:error?.response?.data?.action,
+                description: error?.response?.data?.message
+              })
             }
             
         }
@@ -218,8 +226,12 @@ const EmployeeTaskStatus = () => {
         console.log("response-pie", response?.data?.response?.data?.categoryPercentages);
         setPieChartData(response?.data?.response?.data?.categoryPercentages);
         }
-        catch(err){
-            throw err;
+        catch(error:any){
+           // throw error;
+           notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }  
     }
 
@@ -235,8 +247,12 @@ const EmployeeTaskStatus = () => {
         console.log("response-dough", response?.data?.response?.data);
         setDoughChartData(response?.data?.response?.data?.locationPercentages);
         }
-        catch(err){
-            throw err;
+        catch(error:any){
+           // throw error;
+           notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
         }  
     }
     

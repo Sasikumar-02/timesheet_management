@@ -192,8 +192,12 @@ useEffect(() => {
       try {
           const response = await api.get('/api/v1/task/fetch-created-tasks-by-manager');
           console.log("fetchTaskManager", response.data.response.data);
-      } catch (error) {
-          throw error;
+      } catch (error:any) {
+          //throw error;
+          notification.error({
+            message:error?.response?.data?.action,
+            description: error?.response?.data?.message
+          })
       }
   };
 
@@ -387,9 +391,6 @@ useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/api/v1/admin/employee-list`);
-        if (response.status !== 200) {
-          throw new Error('Failed to fetch data');
-        }
         const data = response?.data?.response?.data;
   
         console.log('Fetched data:', data);
@@ -397,7 +398,6 @@ useEffect(() => {
         const employee = data.find((emp: any) => emp?.userId === userId);
         console.log("employee", employee);
         if (employee) {
-          // Assuming reportingTo is an array
           const reportingManager: UserManager = {
             reportingManagerName: employee?.reportingMangerName,
             reportingManagerId: employee?.reportingManagerId,
@@ -405,12 +405,16 @@ useEffect(() => {
           console.log("reportingManager",reportingManager);
           setReportingTo([reportingManager]);
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      } catch (error:any) {
+        //console.error('Error fetching data:', error);
+        notification.error({
+          message:error?.response?.data?.action,
+          description: error?.response?.data?.message
+        })
       }
     };
   
-    fetchData(); // Call the fetchData function
+    fetchData(); 
   }, []);
   console.log(reportingTo)
   console.log("final-filterTaask", filteredTasks);
@@ -1013,16 +1017,16 @@ useEffect(() => {
           
          
           <div style={{display:'flex', justifyContent:'flex-end'}}>
-         { !submissionEnable && (
-          <Button 
-              id='cancel-new'
-              onClick={handleRequest} 
-              //title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
-          >
-              Request
-          </Button>
-         )
-         }
+          { !submissionEnable && (
+            <Button 
+                id='cancel-new'
+                onClick={handleRequest} 
+                //title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
+            >
+                Request
+            </Button>
+          )
+          }
           <Modal
             title="Request"
             className='modalTitle'
@@ -1190,24 +1194,29 @@ useEffect(() => {
         </div>
       </div>
 
-        <div style={{ overflowX: 'auto', maxHeight: 'calc(80vh - 200px)' }}> 
+      <div>
+      <div style={{ overflowX: 'auto', maxHeight: 'calc(80vh - 200px)' }}> 
           <Table
-            style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266' }}
-            className='addtask-table'
-            columns={columns}
-            dataSource={filteredTasks}
-            pagination={false}
+              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266' }}
+              className='addtask-table'
+              columns={columns}
+              dataSource={filteredTasks}
+              pagination={false}
           />
-          <Button
+      </div>
+      <div>
+        <Button
             id='submit-overall'
             onClick={handleOverallSubmit}
             disabled={selectedKeysToHide.includes(allowDate)} 
-            style={{ cursor: selectedKeysToHide.includes(allowDate) ? 'not-allowed' : 'pointer' }}
+            style={{ cursor: selectedKeysToHide.includes(allowDate) ? 'not-allowed' : 'pointer'}}
             title={selectedKeysToHide.includes(allowDate) ? 'Approved date should not have the access to submit the task' : ''}
-          >
+        >
             Submit
-          </Button>
-        </div>           
+        </Button>
+      </div>
+</div>
+          
         </>
       </div>
     </ConfigProvider>

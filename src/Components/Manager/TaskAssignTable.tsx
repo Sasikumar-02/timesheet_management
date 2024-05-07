@@ -155,8 +155,12 @@ const TaskAssignTable = () => {
         
                     // Update the task table state with the new data
                     setTaskTable(updatedTaskTable);
-                } catch (error) {
-                    throw error;
+                } catch (error:any) {
+                   // throw error;
+                   notification.error({
+                    message:error?.response?.data?.action,
+                    description: error?.response?.data?.message
+                  })
                 }
             };
 
@@ -694,7 +698,7 @@ const TaskAssignTable = () => {
 
   return (
     <ConfigProvider theme={config}>
-      <div className='createuser-main'>
+      <div className='createuser-main' style={{overflowX:'hidden'}}>
         <div style={{display:'flex', justifyContent:'space-between'}}>
             <div style={{ color: '#0B4266' }}>
                 <h1>Assigned Task Details</h1>
@@ -703,13 +707,14 @@ const TaskAssignTable = () => {
             <Button id='cancel-new' onClick={handleClick} style={{marginTop:'30px'}}>Assign Task</Button>
           )}
         </div>
-          <Table
+        <div style={{ maxHeight: 'calc(100vh - 70px)', overflowY: 'auto' }}>
+        <Table
               // rowSelection={{
               //   type: 'checkbox',
               //   selectedRowKeys: selectedRows,
               //   onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
               // }}
-              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266', cursor: 'pointer' }}
+              style={{ fontSize: '12px', fontFamily: 'poppins', fontWeight: 'normal', color: '#0B4266', cursor: 'pointer'}}
               className='addtask-table'
               // onRow={(record: any) => ({
               //   onClick: (event: React.MouseEvent<HTMLElement>) => {
@@ -735,6 +740,8 @@ const TaskAssignTable = () => {
               pagination={false}
               rowKey="taskId"
             />
+        </div>
+          
             <Modal
                   title={taskName}
                   className='monthTasks'

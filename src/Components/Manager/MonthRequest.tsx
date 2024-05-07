@@ -28,7 +28,6 @@ const MonthRequest = () => {
     const token = localStorage.getItem("authToken");
     const decoded = jwtDecode(token || "") as DecodedToken;
     const role = decoded.Role;
-    console.log("decoded", decoded);
     const {Option}= Select
     const statusOptions = ['Pending', 'Approved', 'Rejected'];
     const [request, setRequest]= useState<any[]>([]);
@@ -40,7 +39,6 @@ const MonthRequest = () => {
     useEffect(()=>{
         const fetchData =async()=>{
             const response= await api.get('/api/v1/timeSheet/fetch-month-block-requests')
-            console.log("response", response.data.response.data);
             setRequest(response.data.response.data);
         }
         fetchData();
@@ -54,7 +52,7 @@ const MonthRequest = () => {
 
       const handleCancel = () => {
         setCommentVisible(false);
-        setComments(''); // Clear comments when modal is canceled
+        setComments(''); 
       };
     
       const handleInputChange = (e:any) => {
@@ -66,19 +64,13 @@ const MonthRequest = () => {
           const payload = {
             action: "Reject",
             comments: comments,
-            requestIds: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+            requestIds: selectedRows, 
           };
-    
-          // Send the payload to the API
           const response = await api.put('/api/v1/timeSheet/timesheet-approval', payload);
           notification.success({
             message:response?.data?.response?.action,
             description:response?.data?.message,
-          })
-          
-          console.log(response?.data); // Optionally handle the response data
-    
-          // Reset the modal state
+          }) 
           setStatuses(prev=>!prev);
           setCommentVisible(false);
           setComments('');
@@ -89,17 +81,15 @@ const MonthRequest = () => {
             message:error?.response?.data?.action,
             description: error?.response?.data?.message
           })
-          // Optionally handle errors
         }
       };
 
       const handleApprove = async () => {
         try {
             if(selectedRows.length>0){
-                console.log("handleApprove-selectedRows", selectedRows);
                 const payload = {
                     action: "Approve",
-                    requestIds: selectedRows, // Assuming id is the property in each selected row that holds the uniqueRequestId
+                    requestIds: selectedRows, 
                 };
                 
                 const response = await api.put('/api/v1/timeSheet/review-month-block-requests', payload);
@@ -108,8 +98,7 @@ const MonthRequest = () => {
                   description:response?.data?.message,
                 })
                 setStatuses(prev=>!prev);
-                setSelectedRows([]);
-                console.log("handleApprove",response?.data); // Optionally handle the response data
+                setSelectedRows([]); 
             }
         } catch (error:any) {
           console.error('Error occurred:', error);
@@ -117,18 +106,15 @@ const MonthRequest = () => {
             message:error?.response?.data?.action,
             description: error?.response?.data?.message
           })
-          // Optionally handle errors
         }
       };
 
       const handleRowSelection = (selectedRowKeys:any, selectedRows:any) => {
-        // Update selectedRows state with the array of uniqueRequestId
-        console.log("selectedRowKeys",selectedRowKeys);
         setSelectedRows(selectedRowKeys);
       };
 
       const handleClearFilter = () => {
-        setSelectedStatus(null); // Clear the selected status
+        setSelectedStatus(null); 
     };
       
 
@@ -171,7 +157,7 @@ const MonthRequest = () => {
         {
           title: 'Description',
           className: 'ant-table-column-title',
-          dataIndex: 'description', // Assuming 'requestedOn' is the property in userTasks containing requestedOn data
+          dataIndex: 'description', 
           key: 'description',
           fixed: 'left',
         },     
@@ -217,7 +203,7 @@ const MonthRequest = () => {
             columns={columns}
             dataSource={request.filter((task:any) => selectedStatus ? task.approvalStatus === selectedStatus : true)}
             pagination={false}
-            rowKey="id" // Set the rowKey prop to 'uniqueRequestId'
+            rowKey="id" 
 
         />
         {

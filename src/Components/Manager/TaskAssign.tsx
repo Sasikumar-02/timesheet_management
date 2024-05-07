@@ -70,18 +70,14 @@ const TaskAssign = () => {
     const navigate = useNavigate();
     const { state } = location;
     const record = state && state.record ? state.record : null;
-    console.log("record", record);
     const [project, setProject] = useState<ProjectDetails[]>([]);
-    console.log("project", project);
     const [employee, setEmployee]= useState<Employee[]>([])
     const [allemployees, setAllEmployees]= useState<Employee[]>([]);
-    console.log("employee,allemployees", employee,allemployees);
     const token = localStorage.getItem("authToken");
     const decoded = jwtDecode(token || "") as DecodedToken;
     const userId = decoded.UserId;
     const [initialValue, setInitialValue] = useState<any>(() => {
       if (record!==null) {
-        console.log("record.employees", record.employees);
           return {
               members: record.employees.map((emp:any)=>emp.employeeId),
               task: record.taskName,
@@ -101,12 +97,10 @@ const TaskAssign = () => {
           };
       }
     });
-  console.log("initialValue", initialValue)
     useEffect(() => {
         const fetchData = async () => {
           try {
             const response = await api.get('/api/v1/employee/fetch-reporting-manager-users');
-            console.log("allemployees", response.data.response.data);
             const employeeNames = response.data.response.data.map((emp: any) => ({
               employeeName: emp.firstName + ' ' + emp.lastName,
               employeeId: emp.userId
@@ -146,8 +140,6 @@ const TaskAssign = () => {
                 startDate: project.startDate,
               };
             });
-            
-            // Add "Other" project
             const otherProject: ProjectDetails = {
               active: false, 
               createdOn: '', 
@@ -171,8 +163,6 @@ const TaskAssign = () => {
             };
             
             setProject([...projectsData, otherProject]);
-            
-            // Extract employee names
             let employeeNames: Employee[] = [];
             response.data.response.data.forEach((project: any) => {
               project.projectMembers.forEach((member: any) => {
@@ -192,7 +182,6 @@ const TaskAssign = () => {
       }, []);
 
       const handleEmployeeName=(value:string)=>{
-        console.log("handleEmployeeName", value);
         if(value === 'Other'){
             setEmployee(allemployees);
         } else{
@@ -214,9 +203,8 @@ const TaskAssign = () => {
 
 
     const handleFormSubmit=async(values: any, { setSubmitting, resetForm }: FormikHelpers<any>)=>{
-      console.log("values", values);
       const response = await api.get('/api/v1/project/get-all-projects');
-      let selectedProject =null; // Initialize a variable to store the matched project
+      let selectedProject =null; 
       response.data.response.data.forEach((project:any) => {
           if (project.projectName === values.project) {
               selectedProject = {
@@ -242,9 +230,6 @@ const TaskAssign = () => {
               };
           }
       });
-
-      // Now, selectedProject contains the details of the matched project
-      console.log(selectedProject);
       try{
         const payload ={
           projectName: values.project,
@@ -255,8 +240,6 @@ const TaskAssign = () => {
           taskDescription: values.description,
           employeeIds: values.members
         }
-
-        console.log("payload-1", payload);
         if(record!==null){
           const edit_payload={
             taskId: record.taskId,
@@ -269,9 +252,7 @@ const TaskAssign = () => {
             employeeIds: values.members
           }
           const responses = await api.put('/api/v1/task/edit-task-by-manager', edit_payload);
-          console.log("payload-1responses", responses);
           if (responses.status === 200) {
-            // Display a notification when the task is submitted successfully
             notification.success({
               message:response?.data?.response?.action,
               description:response?.data?.message,
@@ -282,9 +263,7 @@ const TaskAssign = () => {
           } 
         } else{
           const responses = await api.post('/api/v1/task/create-task', payload);
-          console.log("payload-1responses", responses);
           if (responses.status === 200) {
-            // Display a notification when the task is submitted successfully
             notification.success({
               message:response?.data?.response?.action,
               description:response?.data?.message,
@@ -296,10 +275,8 @@ const TaskAssign = () => {
         }
       }
       catch (error:any) {
-        // Handle errors
         setSubmitting(false);
         console.error('Error adding/editing task:', error);
-        // Display error notification
         notification.error({
           message:error?.response?.data?.response?.action,
           description: error?.response?.data?.message
@@ -333,9 +310,6 @@ const TaskAssign = () => {
       <div className='createuser-main' style={{overflow:'hidden'}}>
         <div className='header' style={{display:'flex', flexDirection:'column'}}>
           <div>
-          {/* <Link to="/manager/taskassigntable"> */}
-            
-          {/* </Link> */}
             <h1><ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/taskassigntable')}} />Task Assign</h1>
           </div>
           <div>
@@ -381,12 +355,12 @@ const TaskAssign = () => {
                                 value={values.project}
                                 onChange={(value, option) => {
                                     handleEmployeeName(value)
-                                    setFieldValue("members", []); // Set "members" field value to an empty array
-                                    setFieldValue("project", value); // Update "workLocation" field value
+                                    setFieldValue("members", []); 
+                                    setFieldValue("project", value); 
                                     
                                 }}
                                 onBlur={() => {
-                                setFieldTouched("project", true); // Mark "workLocation" field as touched
+                                setFieldTouched("project", true); 
                                 }}
                             >
                                 <Select.Option value="" disabled>
@@ -403,7 +377,7 @@ const TaskAssign = () => {
                             type="danger"
                             style={{ wordBreak: "break-word", textAlign: "left" }}
                             >
-                            <ErrorMessage name="project" /> {/* Display error message if any */}
+                            <ErrorMessage name="project" /> 
                             </Typography.Text>
                         </div>
                         </Form.Item>
@@ -431,7 +405,8 @@ const TaskAssign = () => {
                               type="danger"
                               style={{ wordBreak: "break-word", textAlign: "left" }}
                             >
-                              <ErrorMessage name="task" /> {/* Adjusted to use "workLocation" */}
+                              <ErrorMessage name="task" /> 
+                              
                             </Typography.Text>
                           </div>
                         </Form.Item>
