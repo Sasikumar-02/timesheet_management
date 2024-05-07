@@ -8,10 +8,9 @@ import {
   } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import api from '../../Api/Api-Service';
-import Calendar from './Calendar'; // Import your Calendar component
+import Calendar from './Calendar';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ApexCharts from 'react-apexcharts';
-//import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer , Area, AreaChart} from 'recharts';
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, ResponsiveContainer, Brush, ReferenceLine, Label } from 'recharts';
 import { PieChart, Cell } from 'recharts';
 import { Pie } from 'react-chartjs-2';

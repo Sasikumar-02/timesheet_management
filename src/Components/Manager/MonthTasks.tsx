@@ -934,178 +934,174 @@ const fetchDoughReport=async(month:any, year:any, employeeId:any)=>{
     );
 
     return (
-        <div id="dashboardLayout" className='flex gap-5'>
-            <div className='createuser-main'>
-                <div className='header'>
-                    <div>
-                      <h1> <ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/approvalrequest')}} />Monthly Task Details</h1>
-                    </div>
-                </div>
-                    <div style={{display:'flex', justifyContent:'space-between'}}>
-                        <div style={{display:'flex', alignItems:'flex-start', margin:'10px 0px 10px 20px'}}>
-                            <div>
-                                <Space className="flex gap-5">
-                                    <Avatar icon={<UserOutlined />} size={65} />
-                                    <div>
-                                    <div>
-                                        <strong style={{fontSize:'20px'}}>{employeeName}</strong>
-                                    </div>
-                                    <div style={{textAlign:'left', fontSize:'16px'}}>{employeeId}</div>
-                                    </div>
-                                </Space>
-                            </div>
-                            
-                        </div>
-                        <div style={{fontWeight:'bold', color:'#0B4266',fontSize:'20px',textAlign:'center', margin:'30px 20px 10px 0px'}}>{formattedMonth}</div>
-                        <div style={{marginRight:'20px', marginTop:'25px'}}>
-                            <Dropdown overlay={exportMenu} placement="bottomLeft">
-                                <Button
-                                type="primary"
-                                style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
-                                >
-                                Export
-                                </Button>
-                            </Dropdown>
-                        </div>
-
-                    </div>
-                    
-                    <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
-                             <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task By Category</h2>
-                           <div style={{ height: '300px' }} id='pie-chart-container'>
-                            <Pie data={pieData} options={chartOptions} />
-                           </div>
-                            {/* <PieChart width={600} height={300}>
-                                <Pie
-                                    data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
-                                    cx={300}
-                                    cy={150}
-                                    labelLine={false}
-                                    label={true}
-                                    outerRadius={120}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {
-                                        Object.entries(pieChartData).map(([name], index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))
-                                    }
-                                </Pie>
-                                <Tooltip />
-                                <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
-                            </PieChart> */}
-                            
-                        </div>
-                        <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
-                            <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location</h2>
-                            <div style={{ height: '300px' }} id='line-chart-container'>
-                                <Doughnut data={data} options={chartOptions} />
-                            </div>
+        <ConfigProvider theme={config}>
+            <div id="dashboardLayout" className='flex gap-5'>
+                <div className='createuser-main'>
+                    <div className='header'>
+                        <div>
+                        <h1> <ArrowLeftOutlined style={{ marginRight: '10px' }} onClick={()=>{navigate('/manager/approvalrequest')}} />Monthly Task Details</h1>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'left' }}>
-                        <Select
-                            showSearch
-                            style={{ width: 200, marginRight: 8, height: 40, marginLeft:'20px' }}
-                            placeholder="Filter by Status"
-                            onChange={(value) => setSelectedStatus(value)}
-                            value={selectedStatus}
-                        >
-                            <Option value={null}>All Statuses</Option>
-                            {statusOptions.map((status) => (
-                                <Option key={status} value={status}>
-                                    {status}
-                                </Option>
-                            ))}
-                        </Select>
-                        <Button type="default" onClick={handleClearFilter} style={{ width: '100px', height: '40px' }}>Clear Filter</Button>
-                    </div>
-
-                   
-                    <ConfigProvider theme={config}>
-                        <Table
-                            rowSelection={{
-                                type: 'checkbox',
-                                selectedRowKeys: selectedRows,
-                                onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
-                            }}
-                            onRow={(record: any) => ({
-                                onClick: () => handleRowClick(record),
+                        <div style={{display:'flex', justifyContent:'space-between'}}>
+                            <div style={{display:'flex', alignItems:'flex-start', margin:'10px 0px 10px 20px'}}>
+                                <div>
+                                    <Space className="flex gap-5">
+                                        <Avatar icon={<UserOutlined />} size={65} />
+                                        <div>
+                                        <div>
+                                            <strong style={{fontSize:'20px'}}>{employeeName}</strong>
+                                        </div>
+                                        <div style={{textAlign:'left', fontSize:'16px'}}>{employeeId}</div>
+                                        </div>
+                                    </Space>
+                                </div>
                                 
-                            })}
-                            columns={column} 
-                            className='table-striped-rows approvalrequests-table'
-                            dataSource={monthTasks.filter(task => selectedStatus ? task.taskStatus === selectedStatus : true)}
-                            pagination={false}
-                            rowKey="uniqueRequestId" 
-                        />
-                        <Modal
-                            title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
-                            visible={modalVisible}
-                            onCancel={() => setModalVisible(false)}
-                            className='monthTasks'
-                            footer={null}
-                        >
-                            {modalContent}
-                        </Modal>
+                            </div>
+                            <div style={{fontWeight:'bold', color:'#0B4266',fontSize:'20px',textAlign:'center', margin:'30px 20px 10px 0px'}}>{formattedMonth}</div>
+                            <div style={{marginRight:'20px', marginTop:'25px'}}>
+                                <Dropdown overlay={exportMenu} placement="bottomLeft">
+                                    <Button
+                                    type="primary"
+                                    style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
+                                    >
+                                    Export
+                                    </Button>
+                                </Dropdown>
+                            </div>
 
-
-                       
-
-                    </ConfigProvider>
-                    <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}> 
-                    {selectedStatus !== 'Approved' && selectedStatus !== 'Rejected' && (
-                        <>
-                            <Button 
-                                style={{
-                                    height: '200%',
-                                    width: '100px',
-                                    backgroundColor: selectedRows.length===0?'#FC8267': 'red',
-                                    color: 'white',
-                                    marginRight: '10px',
-                                    cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
-                                }} 
-                                onClick={handleReject} 
-                                title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
+                        </div>
+                        
+                        <div style={{display:'flex', justifyContent:'space-between', margin:'20px 20px', alignItems:'center'}}>
+                            <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'50%'}}>
+                                <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Task By Category</h2>
+                            <div style={{ height: '300px' }} id='pie-chart-container'>
+                                <Pie data={pieData} options={chartOptions} />
+                            </div>
+                                {/* <PieChart width={600} height={300}>
+                                    <Pie
+                                        data={Object.entries(pieChartData).map(([name, value]) => ({ name, value }))}
+                                        cx={300}
+                                        cy={150}
+                                        labelLine={false}
+                                        label={true}
+                                        outerRadius={120}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {
+                                            Object.entries(pieChartData).map(([name], index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))
+                                        }
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend layout="vertical" align="right" verticalAlign="middle" formatter={(value, entry) => <span style={{ color: 'black' }}>{value}</span>} />
+                                </PieChart> */}
+                                
+                            </div>
+                            <div style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '5px', padding: '20px', width:'48%' }}>
+                                <h2 style={{ textAlign: 'left', color:'#0B4266', marginTop:'0px' }}>Work Location</h2>
+                                <div style={{ height: '300px' }} id='line-chart-container'>
+                                    <Doughnut data={data} options={chartOptions} />
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'left' }}>
+                            <Select
+                                showSearch
+                                style={{ width: 200, marginRight: 8, height: 40, marginLeft:'20px' }}
+                                placeholder="Filter by Status"
+                                onChange={(value) => setSelectedStatus(value)}
+                                value={selectedStatus}
                             >
-                                Reject
-                            </Button>
-                            <Button 
-                                style={{
-                                    height: '200%', 
-                                    width: '100px', 
-                                    backgroundColor: selectedRows.length===0?'#6CB66B':'green', 
-                                    color: 'white', 
-                                    cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
-                                }} 
-                                onClick={handleApprove} 
-                                title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}
-                            >
-                                Approve
-                            </Button>
-                        </>
-                    )}
+                                <Option value={null}>All Statuses</Option>
+                                {statusOptions.map((status) => (
+                                    <Option key={status} value={status}>
+                                        {status}
+                                    </Option>
+                                ))}
+                            </Select>
+                            <Button type="default" onClick={handleClearFilter} style={{ width: '100px', height: '40px' }}>Clear Filter</Button>
+                        </div>
 
-                        <Modal
-                        title="Comments"
-                        className='modalTitle'
-                        visible={commentVisible}
-                        onCancel={handleCancel}
-                        footer={[
-                            <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
-                            Submit
-                            </Button>,
-                        ]}
-                        >
-                        <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
-                        </Modal>
-                    </div> 
+                    
                 
-            </div>
-        </div>
+                            <Table
+                                rowSelection={{
+                                    type: 'checkbox',
+                                    selectedRowKeys: selectedRows,
+                                    onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
+                                }}
+                                onRow={(record: any) => ({
+                                    onClick: () => handleRowClick(record),
+                                    
+                                })}
+                                columns={column} 
+                                className='table-striped-rows approvalrequests-table'
+                                dataSource={monthTasks.filter(task => selectedStatus ? task.taskStatus === selectedStatus : true)}
+                                pagination={false}
+                                rowKey="uniqueRequestId" 
+                            />
+                            <Modal
+                                title={clickedRecord && clickedRecord.tasks?.length > 0 ? dayjs(clickedRecord.tasks[0].date).format('MMMM DD, YYYY') : ""}
+                                visible={modalVisible}
+                                onCancel={() => setModalVisible(false)}
+                                className='monthTasks'
+                                footer={null}
+                            >
+                                {modalContent}
+                            </Modal>
+                        <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}> 
+                        {selectedStatus !== 'Approved' && selectedStatus !== 'Rejected' && (
+                            <>
+                                <Button 
+                                    style={{
+                                        height: '200%',
+                                        width: '100px',
+                                        backgroundColor: selectedRows.length===0?'#FC8267': 'red',
+                                        color: 'white',
+                                        marginRight: '10px',
+                                        cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
+                                    }} 
+                                    onClick={handleReject} 
+                                    title={selectedRows.length === 0 ? "Please select the row to Reject" : ""}
+                                >
+                                    Reject
+                                </Button>
+                                <Button 
+                                    style={{
+                                        height: '200%', 
+                                        width: '100px', 
+                                        backgroundColor: selectedRows.length===0?'#6CB66B':'green', 
+                                        color: 'white', 
+                                        cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer'
+                                    }} 
+                                    onClick={handleApprove} 
+                                    title={selectedRows.length === 0 ? "Please select the row to Approve" : ""}
+                                >
+                                    Approve
+                                </Button>
+                            </>
+                        )}
 
+                            <Modal
+                            title="Comments"
+                            className='modalTitle'
+                            visible={commentVisible}
+                            onCancel={handleCancel}
+                            footer={[
+                                <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white', cursor: selectedRows.length === 0 ? 'not-allowed' : 'pointer' }} key="submit" type="primary" onClick={handleSubmit}>
+                                Submit
+                                </Button>,
+                            ]}
+                            >
+                            <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
+                            </Modal>
+                        </div> 
+                    
+                </div>
+            </div>
+        </ConfigProvider>
     )
 }
 

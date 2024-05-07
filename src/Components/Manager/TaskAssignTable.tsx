@@ -724,14 +724,13 @@ const TaskAssignTable = () => {
               // })}
               onRow={(record: any) => ({
                 onMouseEnter: () => {
-                  setHoveredRecord(record); // Set hovered record
-                  console.log("Hovered Record:", record); // Log the record when mouse enters
+                  setHoveredRecord(record); 
+                  console.log("Hovered Record:", record); 
                 },
-                onMouseLeave: () => setHoveredRecord(null), // Clear hovered record when leaving row
+                onMouseLeave: () => setHoveredRecord(null), 
                 onClick: (event: React.MouseEvent<HTMLElement>) => handleRowClick(record),
                 style: {
                   cursor: record.isExistingData ? 'pointer' : 'not-allowed',
-                  backgroundColor: hoveredRecord === record ? '#f0f0f0' : 'transparent', // Highlight hovered row
                 },
               })}
               

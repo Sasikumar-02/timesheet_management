@@ -691,134 +691,141 @@ const exportToExcel = async () => {
      
   return (
     <ConfigProvider theme={config}>
-      <div>
-        <div style={{display:'flex', justifyContent:'space-between'}}>
-        <div style={{display:'flex', justifyContent:'flex-start'}}>
-            <Select
-              style={{ width: 120, height:40, marginLeft:'20px' }}
-              className='regenerateactive'
-              placeholder="Select Month"
-              value={selectedMonth}
-              onChange={handleMonthChange}
-            >
-              {months.map(month => (
-                <Option key={month.value} value={month.label}>
-                  {month.label}
-                </Option>
-              ))}
-            </Select>
-            <Select
-              style={{ width: 80,height:40, marginLeft:'20px' }}
-              className='regenerateactive'
-              placeholder="Select Year"
-              value={selectedYear}
-              onChange={handleYearChange}
-            >
-              {years.map((year) => (
-                <Option key={year} value={year}>
-                  {year}
-                </Option>
-              ))}
-            </Select>
-
-              <Button
-             
-                  style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'102px', textAlign:"center", marginLeft:'20px', marginTop:'20px', paddingTop:'8px'}}
-                  className='regenerateactive'
-                  onClick={handleClearFilters}
-              >
-              Clear Filter
-              </Button>
-          </div>
-          <div style={{marginRight:'20px', marginTop:'25px'}}>
-              <Dropdown overlay={exportMenu} placement="bottomLeft">
-                <Button
-                  type="primary"
-                  style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
-                >
-                  Export
-                </Button>
-              </Dropdown>
-          </div>
-        </div>
-         
-          <Table
-            rowSelection={{
-                type: 'checkbox',
-                selectedRowKeys: selectedRows,
-                onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
-            }}
-            style={{cursor:'pointer'}}
-            onRow={(record: GroupedTasks) => ({
-              onClick: (event: React.MouseEvent<HTMLElement>) => {
-                const { uniqueRequestId, employeeId, month, employeeName } = record;
-                setExportMonthName(month);
-                const [monthName, year] = month.split(/\s+/);
-                const monthNumber = moment().month(monthName).format('MMMM');
-                const formattedMonth = `${monthNumber}-${year}`;
-                navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
-                  uniqueRequestId,
-                  formattedMonth: month, 
-                  employeeId: employeeId,
-                  employeeName:employeeName
-              }});
-              },
-            })}
-            rowClassName={(record: GroupedTasks, index: number) =>
-              index % 2 === 0 ? 'even-row' : 'odd-row'
-            }
-            className='custom-table'
-            columns={columns}
-           dataSource={userTasks}
-            pagination={false}
-            rowKey="uniqueRequestId" 
-
-          />
-        
-      </div>
-      {/* <Modal
-        title={
-          modalContent ? (
+      <div className='createuser-main'>
+        <div className='header'>
             <div>
-              <Space className="flex gap-5">
-                <Avatar icon={<UserOutlined />} size={45} />
-                <div>
-                  <div>
-                    <strong>Sasi Kumar</strong>
-                  </div>
-                  {/* Displaying the userId 
-                  <div>{selectedUserId}</div>
-                </div>
-              </Space>
+            <h1> Employee Task Details</h1>
             </div>
-          ) : null
-        }
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-        width="80%"
-      >
-        {modalContent}
-        <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>
-          <Button style={{width:'10%', backgroundColor:'green', color:'white'}}>Approve</Button>
-          <Button style={{ width: '10%', backgroundColor: 'red', color: 'white' }} onClick={handleReject}>
-            Reject
-          </Button>
-          <Modal
-            title="Comments"
-            className='modalTitle'
-            visible={commentVisible}
-            onCancel={handleCancel}
-            footer={[
-              <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white' }} key="submit" type="primary" onClick={handleSubmit}>
-                Submit
-              </Button>,
-            ]}
-          >
-            <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
-          </Modal>
         </div>
-      </Modal> */}
+        <div>
+          <div style={{display:'flex', justifyContent:'space-between'}}>
+          <div style={{display:'flex', justifyContent:'flex-start'}}>
+              <Select
+                style={{ width: 120, height:40, marginLeft:'20px', marginTop:'0px' }}
+                className='regenerateactive'
+                placeholder="Select Month"
+                value={selectedMonth}
+                onChange={handleMonthChange}
+              >
+                {months.map(month => (
+                  <Option key={month.value} value={month.label}>
+                    {month.label}
+                  </Option>
+                ))}
+              </Select>
+              <Select
+                style={{ width: 80,height:40, marginLeft:'20px', marginTop:'0px' }}
+                className='regenerateactive'
+                placeholder="Select Year"
+                value={selectedYear}
+                onChange={handleYearChange}
+              >
+                {years.map((year) => (
+                  <Option key={year} value={year}>
+                    {year}
+                  </Option>
+                ))}
+              </Select>
+
+                <Button
+              
+                    style={{ height: 40, marginRight: "30px", borderRadius: "4px", width:'102px', textAlign:"center", marginLeft:'20px',  paddingTop:'8px', marginTop:'0px'}}
+                    className='regenerateactive'
+                    onClick={handleClearFilters}
+                >
+                Clear Filter
+                </Button>
+            </div>
+            <div style={{marginRight:'20px'}}>
+                <Dropdown overlay={exportMenu} placement="bottomLeft">
+                  <Button
+                    type="primary"
+                    style={{ marginLeft: "8px", height: "40px", width:'75px', background:'#0B4266', color:'white'}}
+                  >
+                    Export
+                  </Button>
+                </Dropdown>
+            </div>
+          </div>
+          
+            <Table
+              rowSelection={{
+                  type: 'checkbox',
+                  selectedRowKeys: selectedRows,
+                  onChange: (selectedRowKeys:any, selectedRows:any[]) => handleRowSelection(selectedRowKeys, selectedRows)
+              }}
+              style={{cursor:'pointer'}}
+              onRow={(record: GroupedTasks) => ({
+                onClick: (event: React.MouseEvent<HTMLElement>) => {
+                  const { uniqueRequestId, employeeId, month, employeeName } = record;
+                  setExportMonthName(month);
+                  const [monthName, year] = month.split(/\s+/);
+                  const monthNumber = moment().month(monthName).format('MMMM');
+                  const formattedMonth = `${monthNumber}-${year}`;
+                  navigate(`/manager/monthtasks?formattedMonth=${formattedMonth}&userId=${employeeId}`, {state: {
+                    uniqueRequestId,
+                    formattedMonth: month, 
+                    employeeId: employeeId,
+                    employeeName:employeeName
+                }});
+                },
+              })}
+              rowClassName={(record: GroupedTasks, index: number) =>
+                index % 2 === 0 ? 'even-row' : 'odd-row'
+              }
+              className='custom-table'
+              columns={columns}
+            dataSource={userTasks}
+              pagination={false}
+              rowKey="uniqueRequestId" 
+
+            />
+          
+        </div>
+        {/* <Modal
+          title={
+            modalContent ? (
+              <div>
+                <Space className="flex gap-5">
+                  <Avatar icon={<UserOutlined />} size={45} />
+                  <div>
+                    <div>
+                      <strong>Sasi Kumar</strong>
+                    </div>
+                    {/* Displaying the userId 
+                    <div>{selectedUserId}</div>
+                  </div>
+                </Space>
+              </div>
+            ) : null
+          }
+          visible={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          footer={null}
+          width="80%"
+        >
+          {modalContent}
+          <div style={{display:'flex', justifyContent:'flex-end', margin:"10px 20px"}}>
+            <Button style={{width:'10%', backgroundColor:'green', color:'white'}}>Approve</Button>
+            <Button style={{ width: '10%', backgroundColor: 'red', color: 'white' }} onClick={handleReject}>
+              Reject
+            </Button>
+            <Modal
+              title="Comments"
+              className='modalTitle'
+              visible={commentVisible}
+              onCancel={handleCancel}
+              footer={[
+                <Button style={{ width: '20%', backgroundColor: '#0B4266', color: 'white' }} key="submit" type="primary" onClick={handleSubmit}>
+                  Submit
+                </Button>,
+              ]}
+            >
+              <Input.TextArea placeholder='Write here...' rows={4} value={comments} onChange={handleInputChange} />
+            </Modal>
+          </div>
+        </Modal> */}
+      </div>
     </ConfigProvider>
   );
   

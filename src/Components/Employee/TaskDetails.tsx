@@ -137,7 +137,6 @@ const TaskDetails: React.FC = () => {
       projectName: "Other"
     }
   ]);
-  const [managerGivenTask, setManagerGivenTask]= useState<ManagerAssignedTask[]>([]);
   const [submissionEnable, setSubmissionEnable] = useState(true);
   console.log("submissionEnable",submissionEnable);
   const [refetch, setRefetch] = useState<boolean>(false);

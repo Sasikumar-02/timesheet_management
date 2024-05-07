@@ -115,10 +115,8 @@ const AddTask: React.FC = () => {
   const {filter, date, week, month} = location.state;
   console.log("filter, date, week, month",filter);
   const [reportingTo, setReportingTo] = useState<UserManager[]>([]);
-  const [reportingToID, setReportingToID] = useState('1234');
   const [startTime, setStartTime]= useState('');
   const [endTime, setEndTime] = useState('');
-  const [totalHours, setTotalHours]=useState('');
   const [editTaskId, setEditTaskId]= useState<any>();
   const { Option } = Select;
   const navigate = useNavigate();
@@ -216,10 +214,7 @@ const handleProject=async(value:string)=>{
     let projectArray: any[] = [];
 
     response.data.response.data.forEach((project: any) => {
-        // Check if the project name already exists in projectArray
         const exists = projectArray.some(item => item.projectName === project.projectName);
-
-        // If the project name doesn't exist, push it to projectArray
         if (!exists) {
             projectArray.push({
                 projectName: project.projectName,
@@ -234,29 +229,19 @@ const handleProject=async(value:string)=>{
       console.log("userId", userId);
       const data = response?.data?.response?.data;
       console.log("fetchData", data);
-
-      // Initialize an empty array to store updated projects
       const updatedProjects: any[] = [];
-
-      // Loop through each project to update only the projectName
       data.forEach((project: any) => {
-        // Store the updated project with modified projectName in the array
         const updatedProject = {
           ...project,
-          projectName: project?.projectName, // Replace "New Project Name" with the desired value
+          projectName: project?.projectName,
         };
         console.log("updatedProject", updatedProject);
         updatedProjects.push(updatedProject);
       });
       const otherProject = {
         projectName: "Other",
-        // Add other properties as needed
       };
-      
-      // Add the "Other" project data object to the updatedProjects array
       const updatedProjectsWithOther = [...updatedProjects, otherProject];
-      
-      // Set the projectData state with the updated array including the "Other" project
       setProjectData(updatedProjectsWithOther);
     } catch (error: any) {
       if (error.response?.status === 403) {
@@ -293,7 +278,6 @@ const handleManagerAssignedTask=async(value:string)=>{
         const employee = data.find((emp: any) => emp?.userId === userId);
         console.log("employee", employee);
         if (employee) {
-          // Assuming reportingTo is an array
           const reportingManager: UserManager = {
             reportingManagerName: employee?.reportingMangerName,
             reportingManagerId: employee?.reportingManagerId,
@@ -310,7 +294,7 @@ const handleManagerAssignedTask=async(value:string)=>{
       }
     };
   
-    fetchData(); // Call the fetchData function
+    fetchData();
   }, []);
   console.log(reportingTo)
   console.log("final-filterTaask", filteredTasks);
@@ -322,29 +306,19 @@ const handleManagerAssignedTask=async(value:string)=>{
         console.log("userId", userId);
         const data = response?.data?.response?.data;
         console.log("fetchData", data);
-  
-        // Initialize an empty array to store updated projects
         const updatedProjects: any[] = [];
-  
-        // Loop through each project to update only the projectName
         data.forEach((project: any) => {
-          // Store the updated project with modified projectName in the array
           const updatedProject = {
             ...project,
-            projectName: project?.projectName, // Replace "New Project Name" with the desired value
+            projectName: project?.projectName, 
           };
           console.log("updatedProject", updatedProject);
           updatedProjects.push(updatedProject);
         });
         const otherProject = {
           projectName: "Other",
-          // Add other properties as needed
         };
-        
-        // Add the "Other" project data object to the updatedProjects array
         const updatedProjectsWithOther = [...updatedProjects, otherProject];
-        
-        // Set the projectData state with the updated array including the "Other" project
         setProjectData(updatedProjectsWithOther);
       } catch (error: any) {
         if (error.response?.status === 403) {
@@ -364,16 +338,16 @@ const handleManagerAssignedTask=async(value:string)=>{
       console.log("upatedTotalHours-start", start);
       const end = dayjs(endTime, 'HH:mm');
       console.log("upatedTotalHours-end", end);
-      const duration = end.diff(start, 'minute', true); // Calculate difference in minutes
+      const duration = end.diff(start, 'minute', true); 
       console.log("upatedTotalHours-duration", duration);
-      const hours = Math.floor(duration / 60); // Extract hours
+      const hours = Math.floor(duration / 60); 
       console.log("upatedTotalHours-hours", hours);
-      const minutes = duration % 60; // Extract remaining minutes
+      const minutes = duration % 60; 
       console.log("upatedTotalHours-minutes", minutes);
-      const formattedDuration = hours + (minutes / 100); // Combine hours and minutes
+      const formattedDuration = hours + (minutes / 100); 
       console.log("upatedTotalHours-formattedDuration", formattedDuration);
       console.log("upatedTotalHours-formattedDuration", formattedDuration.toFixed(2));
-      setFieldValue("totalHours", formattedDuration.toFixed(2)); // Update totalHours
+      setFieldValue("totalHours", formattedDuration.toFixed(2)); 
     }
 };
   const workLocation = ['Work From Home', 'Office', 'Client Location', 'On-Duty'];
@@ -396,41 +370,27 @@ const handleManagerAssignedTask=async(value:string)=>{
   }, []); //no use
 
   const borderStyle = {
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', // Add box shadow
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', 
     margin: '10px 20px',
-   // padding: '10px 20px',
-    //width: formWidth + 'px',
     width: '1350px',
     height:'540px'
   };
 
 
   useEffect(() => {
-    // Calculate data for the pie chart
     const taskHours: { [key: string]: number } = {};
-    
-    // Calculate total hours worked
     let totalHours = 0;
     filteredTasks.forEach(task => {
-      // Convert totalHours to a number before adding
       totalHours += parseFloat(task.totalHours) || 0;
     });
-
-    // Calculate hours for each task and add to the taskHours object
     filteredTasks.forEach(task => {
-      // Convert totalHours to a number before calculating percentage
       const taskHoursValue = parseFloat(task.totalHours) || 0;
-      // Check if the task name exists in the taskHours object
       if (taskHours[task.task]) {
-        // If it exists, add the hours to the existing value
         taskHours[task.task] += taskHoursValue;
       } else {
-        // If it doesn't exist, initialize the value with the hours
         taskHours[task.task] = taskHoursValue;
       }
     });
-
-    // Calculate percentage for each task
     const taskPercentage: { [key: string]: number } = {};
     Object.keys(taskHours).forEach(taskName => {
       taskPercentage[taskName] = (taskHours[taskName] / totalHours) * 100;
@@ -438,15 +398,13 @@ const handleManagerAssignedTask=async(value:string)=>{
 
     const labels = Object.keys(taskHours);
     const data = Object.values(taskPercentage);
-
-    // Update pie chart data
     setPieChartDataInForm({
       options: {
         labels: labels,
       },
       series: data,
     });
-  }, [filteredTasks]); //this is for piechart
+  }, [filteredTasks]);
 
   <Chart
     options={pieChartDataInForm.options}
@@ -459,32 +417,18 @@ const handleManagerAssignedTask=async(value:string)=>{
     setIsFormEnabled((prevIsFormEnabled) => !prevIsFormEnabled);
     setCancelButton((prevIsFormEnabled) => !prevIsFormEnabled);
   };
-
-  // Function to handle submitting the form (including both adding and editing tasks)
   const handleFormSubmit = async (values: any, { setSubmitting, resetForm }: FormikHelpers<any>) => {
     console.log("handleFormSubmit-filteredTasks", filteredTasks);
     console.log("handleFormSubmit-values", values)
-    // Check for overlapping tasks in the specified time range
-
-    // Check if any field is empty
-    // if (!values.startTime || !values.endTime || !values.workLocation || !values.task || !values.project || !values.description || !values.reportingTo) {
-    //     notification.warning({
-    //         message: 'Missing Information',
-    //         description: 'Please fill in all fields before submitting the task.',
-    //     });
-    //     return; // Abort submission
-    // }
 
     const overlappingTask = filteredTasks.find((task:any )=> {
       
       let date = values.date;
       console.log('handleFormSubmit-date', date);
-      const newTaskStartTime = dayjs(values.startTime, 'HH:mm'); // Change to 24-hour format
-      const newTaskEndTime = dayjs(values.endTime, 'HH:mm'); // Change to 24-hour format
-      const taskStartTime = dayjs(task.startTime, 'HH:mm'); // Change to 24-hour format
-      const taskEndTime = dayjs(task.endTime, 'HH:mm'); // Change to 24-hour format
-    
-      // Check if the new task overlaps with any existing task
+      const newTaskStartTime = dayjs(values.startTime, 'HH:mm');  
+      const newTaskEndTime = dayjs(values.endTime, 'HH:mm');  
+      const taskStartTime = dayjs(task.startTime, 'HH:mm');  
+      const taskEndTime = dayjs(task.endTime, 'HH:mm');  
       return (
         (!isEdited && task.date === date) &&
         (
@@ -506,7 +450,6 @@ const handleManagerAssignedTask=async(value:string)=>{
       setSubmitting(true);
       let response: any;
       if (isEdited && values) {
-        // If editing an existing task, send a PUT request to the edit-task API endpoint
         if(values.task ==='Manager Assigned Task'){
           console.log("3")
           response = await api.put(`/api/v1/timeSheet/edit-task/${editTaskId}`, {
@@ -538,20 +481,17 @@ const handleManagerAssignedTask=async(value:string)=>{
           });
           console.log("response-handleformsubmit", response);
           if (response.status === 200) {
-            // Handle successful response
             setRefetch((prevState: any) =>  !prevState);
             console.log('Task added/edited successfully:', response.data);
             notification.success({
               message:response?.data?.response?.action,
               description:response?.data?.message,
             })
-            // Handle any other necessary operations after successful submission
-            // For example, resetting form fields, updating state, etc.
             setIsEdited(false);
             resetForm();
             setInitialValue({
                 timeSheetId: 0,
-                date: values?.date, // Update date field with submitted value
+                date: values?.date, 
                 workLocation: '',
                 task: '',
                 project: '',
@@ -563,13 +503,11 @@ const handleManagerAssignedTask=async(value:string)=>{
                 reportingTo: '', 
             })
           } else {
-            // Handle other response statuses
             console.error('Failed to add/edit task. Status:', response.status);
           }
         }
       } else {
         console.log("inside here");
-        // If adding a new task, send a POST request to the add-task API endpoint
         if(values.task ==='Manager Assigned Task'){
           console.log("1");
           response = await api.post('/api/v1/timeSheet/add-task', {
@@ -602,20 +540,17 @@ const handleManagerAssignedTask=async(value:string)=>{
         console.log("response-handleformsubmit", response);
         }
         if (response.status === 200) {
-          // Handle successful response
           setRefetch((prevState: any) =>  !prevState);
           console.log('Task added/edited successfully:', response.data);
           notification.success({
             message:response?.data?.response?.action,
             description:response?.data?.message,
           })
-          // Handle any other necessary operations after successful submission
-          // For example, resetting form fields, updating state, etc.
           setIsEdited(false);
           resetForm();
           setInitialValue({
               timeSheetId: 0,
-              date: values?.date, // Update date field with submitted value
+              date: values?.date,
               workLocation: '',
               task: '',
               project: '',
@@ -627,30 +562,24 @@ const handleManagerAssignedTask=async(value:string)=>{
               reportingTo: '', 
           })
         } else {
-          // Handle other response statuses
           console.error('Failed to add/edit task. Status:', response.status);
         }
       }
       console.log("handleformsubmit 1");
       console.log("response-handleformsubmit", response.data);
-      // Check the response status
-      
     } catch (error:any) {
-      // Handle errors
       setSubmitting(false);
       console.error('Error adding/editing task:', error);
       notification.error({
         message:error?.response?.data?.action,
         description: error?.response?.data?.message
       })
-      // You can also show a notification or perform other error handling here
     }
   };
 
   const handleClearForm = (resetForm:any) => {
-    resetForm(); // Reset the form to its initial values
+    resetForm();
   };
-    // Define validation schema using Yup
   const validationSchema = yup.object().shape({
     date: yup.string().required('Date is required'),
     workLocation: yup.string().required('Work Location is required'),
@@ -719,11 +648,11 @@ const handleManagerAssignedTask=async(value:string)=>{
          return (  
           <Form name='basic' layout='vertical' autoComplete='off' onFinish={handleSubmit}>
             <div>
-              {(isFormEnabled && submissionEnable)&& ( //&& filterOption!=='Date'
+              {(isFormEnabled && submissionEnable)&& ( 
                 <CloseCircleOutlined
                   style={{ margin: '10px 20px', display: 'flex', justifyContent: 'flex-end', color: 'black', width:'1000px' }}
                   title='Click the icon to disable the form'
-                  onClick={handleToggleForm} // Call the handleToggleForm function on click
+                  onClick={handleToggleForm}
                 />
               )}
               <div style={{display:'flex', marginLeft:'10px'}}>
@@ -761,25 +690,22 @@ const handleManagerAssignedTask=async(value:string)=>{
                       }                 
                       onChange={(date, dateString) => {
                         if (date) {
-                          // Update currentDate, currentWeek, or currentMonth based on filterOption
                           if (filterOption === 'Week') {
                             setCurrentWeek(date);
-                            setAllowDate(date.format('YYYY-MM-DD')); // Update allowDate
+                            setAllowDate(date.format('YYYY-MM-DD'));
                           } else if (filterOption === 'Month') {
                             setCurrentMonth(date);
-                            setAllowDate(date.format('YYYY-MM-DD')); // Update allowDate
+                            setAllowDate(date.format('YYYY-MM-DD'));
                           } else {
                             setCurrentDate(date);
-                            setAllowDate(date.format('YYYY-MM-DD')); // Update allowDate
+                            setAllowDate(date.format('YYYY-MM-DD'));
                           }
-                          // Set Formik field value
-                          setAllowDate(dayjs(dateString).format('YYYY-MM-DD')); // Update allowDate
+                          setAllowDate(dayjs(dateString).format('YYYY-MM-DD'));
                           setFieldValue('date', dayjs(dateString).format('YYYY-MM-DD'));
                         }
                       }}
                       onBlur={handleBlur}
                       disabledDate={(current) => {
-                        // Disable dates after today
                         return current && current > moment().endOf('day');
                       }}
                     />
@@ -809,10 +735,10 @@ const handleManagerAssignedTask=async(value:string)=>{
                         }}
                         value={values.workLocation}
                         onChange={(value, option) => {
-                          setFieldValue("workLocation", value); // Update "workLocation" field value
+                          setFieldValue("workLocation", value);
                         }}
                         onBlur={() => {
-                          setFieldTouched("workLocation", true); // Mark "workLocation" field as touched
+                          setFieldTouched("workLocation", true);
                         }}
                       >
                         <Select.Option value="" disabled>
@@ -851,13 +777,13 @@ const handleManagerAssignedTask=async(value:string)=>{
                         }}
                         value={values.task}
                         onChange={(value, option) => {
-                          setFieldValue("task", value); // Update "workLocation" field value
+                          setFieldValue("task", value); 
                           handleProject(value);
                           setFieldValue("project", null);
                           setFieldValue("managerAssignedTask", null);
                         }}
                         onBlur={() => {
-                          setFieldTouched("task", true); // Mark "workLocation" field as touched
+                          setFieldTouched("task", true); 
                         }}
                       >
                         <Select.Option value="" disabled>
@@ -874,7 +800,7 @@ const handleManagerAssignedTask=async(value:string)=>{
                           type="danger"
                           style={{ wordBreak: "break-word", textAlign: "left" }}
                         >
-                          <ErrorMessage name="task" /> {/* Adjusted to use "workLocation" */}
+                          <ErrorMessage name="task" />
                         </Typography.Text>
                       </div>
                     </Form.Item>
@@ -894,18 +820,18 @@ const handleManagerAssignedTask=async(value:string)=>{
                         }}
                         value={values.project}
                         onChange={(value, option) => {
-                          setFieldValue("project", value); // Update "workLocation" field value
+                          setFieldValue("project", value);
                           setFieldValue("managerAssignedTask", null);
                           handleManagerAssignedTask(value);
                         }}
                         onBlur={() => {
-                          setFieldTouched("project", true); // Mark "workLocation" field as touched
+                          setFieldTouched("project", true);
                         }}
                       >
                         <Select.Option value="" disabled>
                           Select the Project
                         </Select.Option>
-                        {projectData.map((option, index) => (  // Use 'index' as the key
+                        {projectData.map((option, index) => (
                           <Option key={index} value={option.projectName}>
                             {option.projectName}
                           </Option>
@@ -941,16 +867,16 @@ const handleManagerAssignedTask=async(value:string)=>{
                           }}
                           value={values.task==='Manager Assigned Task' ? values.managerAssignedTask: null}
                           onChange={(value, option) => {
-                            setFieldValue("managerAssignedTask", value); // Update "workLocation" field value
+                            setFieldValue("managerAssignedTask", value); 
                           }}
                           onBlur={() => {
-                            setFieldTouched("managerAssignedTask", true); // Mark "workLocation" field as touched
+                            setFieldTouched("managerAssignedTask", true);
                           }}
                         >
                           <Select.Option value="" disabled>
                             Select the Manager Assigned Task
                           </Select.Option>
-                          {managerGivenTask.map((option:any, index:any) => (  // Use 'index' as the key
+                          {managerGivenTask.map((option:any, index:any) => ( 
                             <Option key={index} value={option.taskId}>
                               {option.taskName}
                             </Option>
@@ -977,19 +903,18 @@ const handleManagerAssignedTask=async(value:string)=>{
                     >
                       <TimePicker
                           style={{height:'50px', width:'470px'}}
-                          value={values.startTime ? dayjs(values.startTime, 'HH:mm') : null} // Convert string to Dayjs object
+                          value={values.startTime ? dayjs(values.startTime, 'HH:mm') : null} 
                           onChange={(value) => {
                             const formattedStartTime = value ? value.format('HH:mm') : '';
                             setStartTime(formattedStartTime);
-                            setFieldValue("startTime", formattedStartTime); // Update endTime field value
-                            updateTotalHours(formattedStartTime, values.endTime, setFieldValue); // Update totalHours
-                            // Now you can perform any other necessary operations with formattedEndTime
+                            setFieldValue("startTime", formattedStartTime); 
+                            updateTotalHours(formattedStartTime, values.endTime, setFieldValue); 
                           }}
                           onBlur={() => {
                             setFieldTouched("startTime", true); 
                           }}
                           
-                          format='HH:mm' // Change the format to 24-hour HH:mm
+                          format='HH:mm'
                       />
                       <div>
                         <Typography.Text
@@ -1009,26 +934,25 @@ const handleManagerAssignedTask=async(value:string)=>{
                     >
                       <TimePicker
                           style={{height:'50px', width:'470px'}}
-                          value={values.endTime ? dayjs(values.endTime, 'HH:mm') : null} // Convert string to Dayjs object
+                          value={values.endTime ? dayjs(values.endTime, 'HH:mm') : null}
                           onChange={(value) => {
                             const formattedEndTime = value ? value.format('HH:mm') : '';
                             setEndTime(formattedEndTime);
-                            setFieldValue("endTime", formattedEndTime); // Update endTime field value
-                            updateTotalHours(values.startTime, formattedEndTime, setFieldValue); // Update totalHours
-                            // Now you can perform any other necessary operations with formattedEndTime
+                            setFieldValue("endTime", formattedEndTime); 
+                            updateTotalHours(values.startTime, formattedEndTime, setFieldValue);
                           }}
                           onBlur={() => {
-                            setFieldTouched("endTime", true); // Mark "workLocation" field as touched
+                            setFieldTouched("endTime", true); 
                           }}
                           
-                          format='HH:mm' // Change the format to 24-hour HH:mm
+                          format='HH:mm'
                       />
                       <div>
                         <Typography.Text
                           type="danger"
                           style={{ wordBreak: "break-word", textAlign: "left" }}
                         >
-                          <ErrorMessage name="endTime" /> {/* Adjusted to use "workLocation" */}
+                          <ErrorMessage name="endTime" /> 
                         </Typography.Text>
                       </div>
                     </Form.Item>
@@ -1052,7 +976,7 @@ const handleManagerAssignedTask=async(value:string)=>{
                         value={values.totalHours}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        readOnly // Optionally, you can set it as readOnly
+                        readOnly 
                       />
                       <div>
                         <Typography.Text
@@ -1080,16 +1004,16 @@ const handleManagerAssignedTask=async(value:string)=>{
                         }}
                         value={values.reportingTo}
                         onChange={(value, option) => {
-                          setFieldValue("reportingTo", value); // Update "workLocation" field value
+                          setFieldValue("reportingTo", value);
                         }}
                         onBlur={() => {
-                          setFieldTouched("reportingTo", true); // Mark "workLocation" field as touched
+                          setFieldTouched("reportingTo", true);
                         }}
                       >
                         <Select.Option value="" disabled>
                           Select the Reporting Manager
                         </Select.Option>
-                        {reportingTo.map((option, index) => (  // Use 'index' as the key
+                        {reportingTo.map((option, index) => ( 
                           <Option key={index} value={option.reportingManagerId}>
                             {option.reportingManagerName}
                           </Option>
@@ -1100,7 +1024,7 @@ const handleManagerAssignedTask=async(value:string)=>{
                           type="danger"
                           style={{ wordBreak: "break-word", textAlign: "left" }}
                         >
-                          <ErrorMessage name="reportingTo" /> {/* Display error message if any */}
+                          <ErrorMessage name="reportingTo" /> 
                         </Typography.Text>
                       </div>
                     </Form.Item>
@@ -1139,13 +1063,12 @@ const handleManagerAssignedTask=async(value:string)=>{
                   <div style={{display:'flex', marginLeft:'760px'}}>
                     <Form.Item>
                       <Button
-                        //type="primary"
                         htmlType="button"
                         style={{ width: "100px", height: "41px", cursor: selectedKeysToHide.includes(values.date) ? 'not-allowed' : 'pointer'}}
                         className="Button"
                         id='cancel-addTask'
                         onClick={() => handleClearForm(resetForm)}
-                        disabled={selectedKeysToHide.includes(values.date)} // Disable if currentDate is in selectedKeysToHide
+                        disabled={selectedKeysToHide.includes(values.date)}
                       >
                         Clear
                       </Button>

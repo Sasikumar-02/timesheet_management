@@ -331,13 +331,6 @@ const Calendar = () => {
         key: 'reportingTo',
         fixed: 'left',
       }, 
-      // {
-      //   title: 'Status',
-      //   //sorter: (a: Task, b: Task) => a.reportingTo.localeCompare(b.reportingTo),
-      //   dataIndex: 'taskStatus',
-      //   key: 'taskStatus',
-      //   fixed: 'left',
-      // }, 
       {
         title: 'Actions',
         dataIndex: 'actions',
